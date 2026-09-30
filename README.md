@@ -2,7 +2,7 @@
 
 Monorepo de interfaces comunitarias para páginas de la Administración. Una extensión de Chrome aplica los subproyectos incluidos en cada versión. Las interfaces se desarrollan con React, TypeScript y Tailwind, y siguen un único sistema de diseño ([DESIGN.md](DESIGN.md)).
 
-La extensión funciona localmente. Los formularios, las sesiones y las solicitudes siguen perteneciendo a la web original. Solo se guarda la preferencia de activar o desactivar un portal.
+La extensión funciona localmente. Los formularios, las sesiones y las solicitudes siguen perteneciendo a la web original. Solo se guardan preferencias de activación y, si reportas una pantalla pendiente, un informe ya censurado al buzón privado configurado con `BG_INTAKE_ORIGIN` (ver [SECURITY.md](SECURITY.md)).
 
 ## Organización
 

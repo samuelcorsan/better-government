@@ -121,11 +121,17 @@ it('shows a dismissible notice when an expected screen never matches', async () 
   expect(hosts()).toHaveLength(0);
 });
 
-it('leaves unknown screens untouched and shows no notice', () => {
+it('shows a reportable notice on site URLs with no registered screen', async () => {
   vi.useFakeTimers();
   fixture('info');
-  controller = startAdapter(adapter, { url: new URL(URLS.entrada) });
-  vi.advanceTimersByTime(LATE_CONTENT_MS + 1);
+  controller = startAdapter(adapter, {
+    url: new URL(URLS.entrada),
+    canShowNotice: () => true,
+  });
+  await vi.waitFor(() => expect(document.querySelector('[data-bg-notice]')).toBeTruthy());
   expect(controller.state()).toBe('unsupported');
-  expect(document.querySelector('[data-bg-host], [data-bg-notice]')).toBeNull();
+  expect(document.querySelector('[data-bg-notice]')?.shadowRoot?.textContent).toContain(
+    'aún no tiene interfaz',
+  );
+  expect(hosts()).toHaveLength(0);
 });

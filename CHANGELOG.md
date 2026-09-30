@@ -13,3 +13,4 @@
 - Pantallas guiadas en el runtime (`panels`, `page`, `shell`) y espera a contenido oficial tardío con aviso de interfaz original.
 - Acciones `custom` en `DomBridge` para elementos no nativos revisados.
 - Herramientas `site:live`, `site:record` y `site:preview` para trabajar con la web real y sin conexión.
+- Reportes de pantallas pendientes: captura local (`packages/capture` + Rampart), revisión en `report.html`, envío al intake privado y PR draft en `fixtures/inbox/` tras etiqueta de mantenimiento.

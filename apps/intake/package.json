@@ -1,0 +1,13 @@
+{
+  "name": "@reforma-digital/intake",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Stateless report intake worker (Cloudflare Worker compatible).",
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@reforma-digital/capture": "*"
+  }
+}

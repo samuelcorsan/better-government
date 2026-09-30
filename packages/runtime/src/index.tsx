@@ -277,10 +277,22 @@ export const LATE_CONTENT_MS = 12_000;
  * Content-script entry point. Mounts immediately when possible. If a registered screen claims the
  * URL but its DOM is not ready yet, keeps observing until LATE_CONTENT_MS; if it never matches,
  * the official page stays untouched and a small dismissible notice explains why.
+ * When the URL is on the site but no screen claims it, shows an "unsupported" notice (reportable).
  */
 export function startAdapter(
   adapter: SiteAdapter,
-  options: { url?: URL; demo?: boolean; onState?: (state: RuntimeState) => void } = {},
+  options: {
+    url?: URL;
+    demo?: boolean;
+    onState?: (state: RuntimeState) => void;
+    /** When true, skip showing the unsupported/mismatch notices (tests / caller handles UI). */
+    silent?: boolean;
+    /** Called before showing an unsupported/mismatch notice; return false to suppress. */
+    canShowNotice?: (kind: 'unsupported' | 'mismatch') => boolean | Promise<boolean>;
+    /** True when this path is already queued in the public inbox. */
+    pending?: boolean;
+    onNoticeShown?: (kind: 'unsupported' | 'mismatch') => void;
+  } = {},
 ): RuntimeController {
   const url = options.url ?? new URL(location.href);
   let current = mountAdapter(adapter, options);
@@ -291,6 +303,12 @@ export function startAdapter(
     observer?.disconnect();
     clearTimeout(timer);
     observer = undefined;
+  };
+  const show = async (kind: 'unsupported' | 'mismatch', reason: string) => {
+    if (options.silent) return;
+    if (options.canShowNotice && !(await options.canShowNotice(kind))) return;
+    notice = showPageNotice(adapter.name, kind, reason, options.pending === true);
+    options.onNoticeShown?.(kind);
   };
   if (current.state() === 'unsupported' && adapter.expects(url)) {
     observer = new MutationObserver(() => {
@@ -303,8 +321,15 @@ export function startAdapter(
     observer.observe(document.documentElement, { childList: true, subtree: true });
     timer = setTimeout(() => {
       stop();
-      notice = showOriginalNotice(adapter.name);
+      void show('mismatch', 'La pantalla no coincide con la estructura revisada.');
     }, LATE_CONTENT_MS);
+  } else if (
+    current.state() === 'unsupported' &&
+    matchesSite(adapter, url) &&
+    !adapter.expects(url) &&
+    !adapter.reportExcluded?.(url)
+  ) {
+    void show('unsupported', 'Ninguna pantalla registrada reclama esta URL dentro del portal.');
   }
   return {
     restore: () => {
@@ -321,7 +346,12 @@ export function startAdapter(
   };
 }
 
-function showOriginalNotice(siteName: string): () => void {
+function showPageNotice(
+  siteName: string,
+  variant: 'unsupported' | 'mismatch',
+  reason: string,
+  pending: boolean,
+): () => void {
   const host = document.createElement('div');
   host.setAttribute('data-bg-notice', '');
   const shadow = host.attachShadow({ mode: 'open' });
@@ -339,7 +369,9 @@ function showOriginalNotice(siteName: string): () => void {
     root.render(
       <FallbackNotice
         adapterName={siteName}
-        reason="La pantalla no coincide con la estructura revisada."
+        reason={reason}
+        variant={variant}
+        pending={pending}
         onClose={close}
       />,
     ),

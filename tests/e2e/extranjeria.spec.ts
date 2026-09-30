@@ -91,7 +91,9 @@ test('info: equivalent official options; the personal-data form keeps its origin
   await page.getByRole('button', { name: /Presentación sin Cl@ve/ }).click();
   await page.waitForURL(/acEntrada/);
   await expect(page.getByText('Pantalla sin adaptación')).toBeVisible();
-  await expect(page.locator('[data-bg-host], [data-bg-notice]')).toHaveCount(0);
+  await expect(page.locator('[data-bg-host]')).toHaveCount(0);
+  await expect(page.locator('[data-bg-notice]')).toHaveCount(1);
+  await expect(page.locator('[data-bg-notice]')).toContainText('icono de Reforma Digital');
 });
 
 test('"Ver original" restores official controls and removes the page theme', async ({

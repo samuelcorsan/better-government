@@ -78,6 +78,20 @@ it('validates site.config.json', () => {
   );
   expect(validateSiteConfig({ ...config, routes: [] }).join()).toMatch(/either routes/);
   expect(validateSiteConfig({ ...config, verifiedAt: '27/09/2026' }).join()).toMatch(/verifiedAt/);
+  expect(
+    validateSiteConfig({
+      ...config,
+      report: {
+        exclude: [{ origin: 'https://example.test', pathPrefix: '/form/pago/' }],
+      },
+    }),
+  ).toEqual([]);
+  expect(
+    validateSiteConfig({
+      ...config,
+      report: { exclude: [{ origin: 'https://example.test', pathPrefix: '/' }] },
+    }).join(),
+  ).toMatch(/whole origin/);
   // Disabled placeholders may keep an empty configuration.
   expect(validateSiteConfig({ ...config, enabled: false, origins: [], pathPrefix: '/' })).toEqual(
     [],

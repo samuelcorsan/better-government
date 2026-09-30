@@ -7,5 +7,6 @@ playwright-report
 package-lock.json
 # HTML capturado de webs oficiales (npm run site:live): se conserva tal cual
 sites/extranjeria/fixtures/*.html
+sites/*/fixtures/inbox/**
 .cache
 .astro

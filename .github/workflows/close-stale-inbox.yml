@@ -1,0 +1,29 @@
+# Close stale inbox PRs on the public repository after 90 days of inactivity.
+
+name: Close stale inbox PRs
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-issue-stale: -1
+          days-before-pr-stale: 90
+          days-before-pr-close: 7
+          stale-pr-label: inbox-stale
+          only-pr-labels: ''
+          any-of-pr-labels: ''
+          stale-pr-message: 'Esta PR de inbox lleva 90 días sin movimiento y se cerrará en 7 días.'
+          close-pr-message: 'Cerrada por inactividad (inbox).'
+          ascending: true
+          # Limit to inbox branches via title prefix matching in operations-per-run budget
+          operations-per-run: 50

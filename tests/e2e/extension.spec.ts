@@ -127,3 +127,19 @@ test('unrecognized routes and page messages cannot activate a redesign', async (
   await page.evaluate(() => window.postMessage({ type: 'enable', site: 'dni' }, '*'));
   await expect(page.locator('[data-bg-site]')).toHaveCount(0);
 });
+
+test('unsupported site routes show a reportable notice without calling the network', async ({
+  extension,
+}) => {
+  const page = await extension.newPage();
+  const requests: string[] = [];
+  page.on('request', (req) => requests.push(req.url()));
+  await page.goto('http://127.0.0.1:4173/citaPreviaDni/Unknown.action');
+  await expect(page.locator('[data-bg-notice]')).toHaveCount(1);
+  await expect(page.locator('[data-bg-notice]')).toContainText('icono de Reforma Digital');
+  expect(
+    requests.every(
+      (url) => url.startsWith('http://127.0.0.1:4173/') || url.startsWith('chrome-extension://'),
+    ),
+  ).toBe(true);
+});

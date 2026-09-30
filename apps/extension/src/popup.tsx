@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './popup.css';
 
-type Status = { site: string; name: string; state: string };
+type Status = {
+  site: string;
+  name: string;
+  state: string;
+  reportable?: boolean;
+  reason?: string | null;
+  pending?: boolean;
+};
 const stateText: Record<string, string> = {
   active: 'Interfaz activada',
   original: 'Estás usando la interfaz original',
@@ -19,7 +26,11 @@ function Popup() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [noticesOff, setNoticesOff] = useState(false);
   useEffect(() => {
+    void chrome.storage.local.get('reportNoticesDisabled').then((saved) => {
+      setNoticesOff(saved.reportNoticesDisabled === true);
+    });
     void send('status')
       .then((value) => setStatus(value as Status))
       .catch(() => {})
@@ -59,6 +70,20 @@ function Popup() {
       setBusy(false);
     }
   }
+  async function openReport() {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) {
+      setError('No hay una pestaña activa.');
+      return;
+    }
+    const url = chrome.runtime.getURL(`report.html?tab=${tab.id}`);
+    await chrome.tabs.create({ url });
+  }
+  async function toggleNotices() {
+    const next = !noticesOff;
+    await chrome.storage.local.set({ reportNoticesDisabled: next });
+    setNoticesOff(next);
+  }
   return (
     <main className="bg-text space-y-3 p-4 text-[14px]">
       <header>
@@ -75,6 +100,9 @@ function Popup() {
               : 'No hay una integración disponible en esta pestaña.'}
         </p>
         {status ? <p className="bg-hint">{status.name}</p> : null}
+        {status?.pending ? (
+          <p className="bg-hint mt-1">Esta pantalla ya está en la cola de trabajo.</p>
+        ) : null}
       </section>
       {status ? (
         <div className="space-y-2">
@@ -86,6 +114,16 @@ function Popup() {
               onClick={() => void showOriginal()}
             >
               Ver original en esta pestaña
+            </button>
+          ) : null}
+          {status.reportable ? (
+            <button
+              type="button"
+              className="bg-btn bg-btn-secondary w-full"
+              disabled={busy}
+              onClick={() => void openReport()}
+            >
+              Reportar pantalla sin adaptar
             </button>
           ) : null}
           <button
@@ -118,13 +156,18 @@ function Popup() {
           </ul>
         </section>
       )}
+      <label className="bg-hint flex items-start gap-2">
+        <input type="checkbox" checked={noticesOff} onChange={() => void toggleNotices()} />
+        <span>No mostrar avisos de pantallas pendientes</span>
+      </label>
       {error ? (
         <p role="alert" className="bg-callout bg-callout-danger">
           {error}
         </p>
       ) : null}
       <footer className="bg-hint border-t border-line pt-3">
-        Adaptaciones comunitarias. No es un servicio oficial. Sin servidores propios ni telemetría.
+        Adaptaciones comunitarias. No es un servicio oficial. Sin servidores propios de formularios
+        ni telemetría. La censura de reportes usa Rampart (CC BY 4.0).
       </footer>
     </main>
   );

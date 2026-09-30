@@ -44,6 +44,8 @@ export interface SiteAdapter {
    * official content and, if the DOM never matches, shows a non-blocking "original page" notice.
    */
   expects: (url: URL) => boolean;
+  /** True when this URL is in report.exclude and must never be captured. */
+  reportExcluded?: (url: URL) => boolean;
 }
 
 function routeMatches(route: SiteRoute, url: URL): boolean {
@@ -82,6 +84,11 @@ export interface SiteConfig {
   status: string;
   /** Last date (YYYY-MM-DD) the bindings were checked against the real site. */
   verifiedAt?: string;
+  /**
+   * Paths that must never be offered for capture (receipts, payments, summaries).
+   * Same shape as routes: exact `path` or `pathPrefix` ending in "/".
+   */
+  report?: { exclude?: SiteRoute[] };
 }
 
 /** Normalizes both config forms to a list of routes. */
@@ -147,12 +154,43 @@ export function validateSiteConfig(config: unknown, folder?: string): string[] {
         `A route cannot cover a whole origin (${route.origin}); declare the service paths`,
       );
   }
+  if (c.report !== undefined) {
+    if (typeof c.report !== 'object' || c.report === null) errors.push('report must be an object');
+    else if (c.report.exclude !== undefined) {
+      if (!Array.isArray(c.report.exclude)) errors.push('report.exclude must be an array');
+      else {
+        for (const route of c.report.exclude) {
+          if (!route || typeof route !== 'object') {
+            errors.push('Invalid report.exclude route');
+            continue;
+          }
+          const r = route as SiteRoute;
+          let origin: URL | null = null;
+          try {
+            origin = new URL(r.origin);
+          } catch {
+            /* below */
+          }
+          if (!origin || origin.protocol !== 'https:' || origin.origin !== r.origin)
+            errors.push(`report.exclude must use exact HTTPS origins (${r.origin})`);
+          const value = 'path' in r ? r.path : r.pathPrefix;
+          if (typeof value !== 'string' || !value.startsWith('/') || value.includes('*'))
+            errors.push(`Invalid report.exclude path (${value})`);
+          else if (!('path' in r) && !value.endsWith('/'))
+            errors.push(`report.exclude pathPrefix must end in "/" (${value})`);
+          else if (!('path' in r) && value === '/')
+            errors.push(`report.exclude cannot cover a whole origin (${r.origin})`);
+        }
+      }
+    }
+  }
   return errors;
 }
 
 export function createSiteAdapter(config: SiteConfig, pages: readonly SitePage[]): SiteAdapter {
   if (!['experimental', 'verified'].includes(config.status)) throw new Error('Invalid site status');
   const claim = (url: URL) => pages.filter((page) => page.matches(url));
+  const excluded = config.report?.exclude ?? [];
   const adapter: SiteAdapter = {
     id: config.id,
     name: config.name,
@@ -166,6 +204,8 @@ export function createSiteAdapter(config: SiteConfig, pages: readonly SitePage[]
       return matches.length === 1 ? matches[0]!.prepare(document, url, restore) : null;
     },
     expects: (url) => matchesSite(adapter, url) && claim(url).length === 1,
+    reportExcluded: (url) =>
+      matchesSite(adapter, url) && excluded.some((route) => routeMatches(route, url)),
   };
   return adapter;
 }

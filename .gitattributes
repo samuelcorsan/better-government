@@ -1,0 +1,2 @@
+# Pending page captures (report intake). Treated as data, not source.
+sites/*/fixtures/inbox/** linguist-generated=true

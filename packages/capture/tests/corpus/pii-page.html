@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="csrf-token" content="abc123csrfsecrettoken99" />
+    <title>Cita previa — Ana García</title>
+    <link rel="stylesheet" href="/secret.css?token=abc" />
+    <style>
+      .banner {
+        background: url('/photo.jpg?jsessionid=DEADBEEF');
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cita para X1234567L</h1>
+    <p>Solicitante: Ana García · DNI 12345678Z · NIE X1234567L</p>
+    <p>Correo: ana.garcia@example.com · Tel: 612 345 678</p>
+    <p>IBAN ES91 2100 0418 4502 0005 1332</p>
+    <p>Tarjeta: 4111 1111 1111 1111</p>
+    <p>اسم عربي و中文名字</p>
+    <img src="/face.jpg" alt="Ana García" width="100" height="100" srcset="/face.jpg 1x" />
+    <form action="/enviar?jsessionid=SESSIONTOKEN123456" method="post">
+      <input type="hidden" name="csrf" value="csrf-secret-value-9999" />
+      <label for="nie">NIE</label>
+      <input id="nie" name="nie" type="text" value="X1234567L" data-user="secret" />
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" value="ana.garcia@example.com" />
+      <textarea name="notes">Cita para X1234567L el 01/02/2026</textarea>
+      <button type="submit">Enviar</button>
+    </form>
+    <a href="/detalle/a1b2c3d4e5f67890?jsessionid=ABC">Ver</a>
+    <script>
+      window.TOKEN = 'should-not-appear';
+    </script>
+  </body>
+</html>

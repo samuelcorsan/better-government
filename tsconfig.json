@@ -15,6 +15,7 @@
     "types": ["vite/client", "chrome", "node"],
     "paths": {
       "@reforma-digital/bridge": ["./packages/bridge/src/index.ts"],
+      "@reforma-digital/capture": ["./packages/capture/src/index.ts"],
       "@reforma-digital/react": ["./packages/react/src/index.tsx"],
       "@reforma-digital/registry": ["./packages/registry/src/index.ts"],
       "@reforma-digital/runtime": ["./packages/runtime/src/index.tsx"],

@@ -1,0 +1,45 @@
+name: Página pendiente
+description: Informe de una pantalla de un portal sin interfaz comunitaria (solo metadatos; el HTML llega por el buzón privado).
+title: 'Página pendiente: '
+labels: ['pagina-pendiente']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este formulario es para seguimiento manual. Los informes de la extensión
+        llegan al buzón privado; no pegues HTML ni datos personales aquí.
+  - type: input
+    id: portal
+    attributes:
+      label: Portal
+      placeholder: extranjeria
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL normalizada
+      description: Origen + pathname (sin query ni hash).
+    validations:
+      required: true
+  - type: input
+    id: fingerprint
+    attributes:
+      label: Huella (SHA-256)
+    validations:
+      required: true
+  - type: dropdown
+    id: reason
+    attributes:
+      label: Motivo
+      options:
+        - unsupported
+        - mismatch
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versión de la extensión
+    validations:
+      required: true

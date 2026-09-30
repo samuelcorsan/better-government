@@ -1,15 +1,24 @@
 # Contribuir
 
-Cada cambio de un trámite se desarrolla dentro de `sites/<portal>`. El código compartido se mantiene en `packages/`; `apps/extension` se encarga de Chrome y `apps/playground` sirve para desarrollo local.
+Cada cambio de un trámite se desarrolla dentro de `sites/<portal>`. El código compartido se mantiene en `packages/`; `apps/extension` se encarga de Chrome, `apps/playground` sirve para desarrollo local y `apps/intake` es el buzón privado de reportes.
 
 ## Crear o mejorar una interfaz
 
 1. Crea el subproyecto con `npm run site:new -- <id>` o entra en uno existente.
-2. Define los dominios HTTPS exactos y el prefijo de rutas en `site.config.json`. Mantén `enabled: false` mientras no haya una pantalla implementada. Si el servicio usa rutas distintas en cada dominio, usa `routes` en lugar de `origins` + `pathPrefix` (ver `sites/extranjeria/site.config.json`): cada ruta es un `pathPrefix` terminado en `/` o un `path` exacto, y nunca un dominio entero. Anota en `verifiedAt` la fecha en que comprobaste las conexiones contra la web real.
+2. Define los dominios HTTPS exactos y el prefijo de rutas en `site.config.json`. Mantén `enabled: false` mientras no haya una pantalla implementada. Si el servicio usa rutas distintas en cada dominio, usa `routes` en lugar de `origins` + `pathPrefix` (ver `sites/extranjeria/site.config.json`): cada ruta es un `pathPrefix` terminado en `/` o un `path` exacto, y nunca un dominio entero. Anota en `verifiedAt` la fecha en que comprobaste las conexiones contra la web real. Opcional: `report.exclude` para rutas que nunca deben reportarse (justificantes, pagos).
 3. Crea `src/pages/<pantalla>/page.tsx` y `bindings.ts`. La primera define la interfaz y la segunda identifica los controles originales. Registra la pantalla en `src/pages/index.ts`.
 4. Reutiliza componentes de `packages/react` (campos conectados) y `packages/design` (componentes visuales). Los componentes específicos de ese portal van en su `src/components/`. Todo lo visual sigue [DESIGN.md](DESIGN.md): no definas colores, tamaños ni componentes propios.
-5. Añade HTML sintético o anonimizado en `fixtures/` y pruebas en `tests/`. Documenta si proviene del DOM real o si solo representa el contrato esperado. Si el portal tiene `flow.ts`, `npm run site:live -- <id>` captura el HTML real de las páginas públicas sin scripts ni tokens de sesión. Añade `fixtures/routes.json` para que el laboratorio sirva esas páginas a las pruebas de navegador.
+5. Añade HTML sintético o anonimizado en `fixtures/` y pruebas en `tests/`. Documenta si proviene del DOM real o si solo representa el contrato esperado. Si el portal tiene `flow.ts`, `npm run site:live -- <id>` captura el HTML real de las páginas públicas sin scripts ni tokens de sesión. Añade `fixtures/routes.json` para que el laboratorio sirva esas páginas a las pruebas de navegador. Las capturas pendientes de usuarios llegan a `fixtures/inbox/<huella>/` vía el intake (dato, no se ejecuta).
 6. Actualiza el README del portal con rutas adaptadas, controles que permanecen originales y verificaciones pendientes.
+
+## Reportar una pantalla desde la extensión
+
+1. En una ruta del portal sin interfaz (o con DOM que no encaja), abre el popup y pulsa **Reportar pantalla sin adaptar**.
+2. Revisa la vista previa censurada y la lista de textos. Tacha lo que falte. Confirma y envía.
+3. El informe llega al buzón privado. Quien mantiene el repo revisa el HTML y añade la etiqueta `captura-revisada` para abrir la PR draft en `fixtures/inbox/`.
+4. Implementa la pantalla a partir del fixture, borra la carpeta de `inbox/` cuando la `SitePage` ya reclame esa ruta.
+
+Despliegue del intake: ver [apps/intake/README.md](apps/intake/README.md). Compila la extensión con `BG_INTAKE_ORIGIN=https://tu-intake.example` para habilitar el envío.
 
 Las páginas implementan `SitePage`. El registro verifica el dominio y rechaza rutas ambiguas. `prepare` devuelve `null` si el DOM no coincide con el contrato, o una `Enhancement` con el motor de conexiones, las zonas a reemplazar y una comprobación de integridad.
 
