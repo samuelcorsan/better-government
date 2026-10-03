@@ -29,7 +29,11 @@ export function understandQuery(query: string, region?: Region | null): QueryUnd
   const places: [RegExp, string, string][] = [
     [/alcala de henares/, 'ES-MD-ALCALA', 'Alcalá de Henares'],
     [/alcobendas/, 'ES-MD-ALCOBENDAS', 'Alcobendas'],
-    [/barcelona|cataluna/, 'ES-CT-BARCELONA', 'Barcelona / Cataluña'],
+    [/\bbarcelona\b/, 'ES-CT-BARCELONA', 'Barcelona'],
+    [/\b(?:girona|gerona)\b/, 'ES-CT-GIRONA', 'Girona'],
+    [/\b(?:lleida|lerida)\b/, 'ES-CT-LLEIDA', 'Lleida'],
+    [/\btarragona\b/, 'ES-CT-TARRAGONA', 'Tarragona'],
+    [/\b(?:catalunya|cataluna)\b/, 'ES-CT', 'Catalunya'],
     [/valencia/, 'ES-VC-VALENCIA', 'Valencia'],
     [/sevilla|andalucia/, 'ES-AN-SEVILLA', 'Sevilla / Andalucía'],
     [/bilbao|pais vasco/, 'ES-PV-BILBAO', 'Bilbao / País Vasco'],
