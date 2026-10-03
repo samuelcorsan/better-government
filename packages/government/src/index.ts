@@ -139,8 +139,21 @@ export function sourceById(id: string): Source {
   if (!s) throw new Error('Fuente no aprobada: ' + id);
   return s;
 }
-export function documentJurisdiction(source: Source, _title: string, _url: string): string {
-  return source.jurisdictionValue;
+// A place name can disqualify a general source, but cannot establish a narrower scope.
+const territorialSignal =
+  /\b(?:asturias|andalucia|aragon|illes balears|islas baleares|canarias|cantabria|castilla la mancha|castilla y leon|cataluna|catalunya|comunitat valenciana|comunidad valenciana|extremadura|galicia|madrid|murcia|navarra|pais vasco|euskadi|la rioja|ceuta|melilla|barcelona|girona|gerona|lleida|lerida|tarragona)\b/;
+
+export function documentJurisdiction(
+  source: Source,
+  text: string,
+  url: string,
+): string | undefined {
+  if (source.jurisdictionValue !== 'ES') return source.jurisdictionValue;
+  try {
+    return territorialSignal.test(normalizeText(text + ' ' + decodeURI(url))) ? undefined : 'ES';
+  } catch {
+    return undefined;
+  }
 }
 export function documentYear(title: string, url: string): number | null {
   const match = (title + ' ' + url).match(

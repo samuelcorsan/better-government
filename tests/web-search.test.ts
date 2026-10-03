@@ -96,6 +96,51 @@ describe('chat web retrieval', () => {
     expect(result.answer.status).toBe('needs_clarification');
   });
 
+  it('excludes regional rules on national sites from evidence for another region', async () => {
+    vi.stubEnv('OPENROUTER_API_KEY', 'test-only-key');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', '');
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(classification('Deducciones fiscales en Madrid', 'ES-MD'))
+      .mockResolvedValue(
+        Response.json({
+          id: 'test',
+          model: 'openai/gpt-6-luna',
+          created: 0,
+          choices: [
+            {
+              index: 0,
+              finish_reason: 'stop',
+              message: {
+                role: 'assistant',
+                content: 'Resumen del modelo',
+                annotations: [
+                  {
+                    type: 'url_citation',
+                    url_citation: {
+                      url: 'https://sede.agenciatributaria.gob.es/Sede/deducciones-autonomicas',
+                      title: 'Deducciones autonómicas',
+                      content: 'Esta deducción corresponde a residentes en Asturias.',
+                      start_index: 0,
+                      end_index: 10,
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+          usage: { prompt_tokens: 2, completion_tokens: 1, total_tokens: 3, cost: 0.0001 },
+        }),
+      );
+    vi.stubGlobal('fetch', fetch);
+    const result = await search('Deducciones fiscales en Madrid', {
+      mode: 'live',
+      retrievalOnly: true,
+    });
+    expect(result.understanding.region).toBe('ES-MD');
+    expect(result.evidence).toEqual([]);
+  });
+
   it('usa la comunidad validada del modelo y conserva intacta una pregunta sin historial', async () => {
     vi.stubEnv('OPENROUTER_API_KEY', 'test-only-key');
     const query = 'Vengo de Madrid y necesito una ayuda en Aragón';

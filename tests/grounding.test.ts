@@ -182,14 +182,38 @@ describe('Real ingestion regressions', () => {
     ).toBe(true);
     expect(quoteSupported('El importe es de 15 euros.', 'El importe es de 50 euros.')).toBe(false);
   });
-  it('takes jurisdiction from the approved source, not result titles or URL substrings', () => {
+  it('does not promote a territorially signalled national document to general evidence', () => {
+    expect(
+      documentJurisdiction(
+        sourceById('aeat'),
+        'Deducciones Asturias',
+        'https://sede.agenciatributaria.gob.es/Sede/asturias',
+      ),
+    ).toBeUndefined();
     expect(
       documentJurisdiction(
         sourceById('aeat'),
         'Deducciones Catalunya y Madrid',
         'https://sede.agenciatributaria.gob.es/Sede/catalunya/madrid',
       ),
+    ).toBeUndefined();
+    expect(
+      documentJurisdiction(
+        sourceById('aeat'),
+        'Deducciones autonómicas',
+        'https://sede.agenciatributaria.gob.es/Sede/asturias',
+      ),
+    ).toBeUndefined();
+    expect(
+      documentJurisdiction(
+        sourceById('seg-social'),
+        'Informe de vida laboral',
+        'https://portal.seg-social.gob.es/vida-laboral',
+      ),
     ).toBe('ES');
+    expect(
+      documentJurisdiction(sourceById('aeat'), 'Información general', 'https://example.test/%ZZ'),
+    ).toBeUndefined();
     expect(
       documentJurisdiction(
         {

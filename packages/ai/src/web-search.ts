@@ -42,8 +42,13 @@ export async function retrieveWebEvidence(
     )
       continue;
     const canonicalUrl = canonicalize(result.url);
-    const jurisdiction = documentJurisdiction(source, result.title ?? '', canonicalUrl);
-    if (!compatibleJurisdiction(jurisdiction, understanding.jurisdiction)) continue;
+    const jurisdiction = documentJurisdiction(
+      source,
+      `${result.title ?? ''} ${content}`,
+      canonicalUrl,
+    );
+    if (!jurisdiction || !compatibleJurisdiction(jurisdiction, understanding.jurisdiction))
+      continue;
     if (seen.has(canonicalUrl)) continue;
     seen.add(canonicalUrl);
     const documentId = createHash('sha256').update(canonicalUrl).digest('hex');
