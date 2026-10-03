@@ -77,6 +77,9 @@
   fill: rgb(var(--bg-ink-muted));
   font-size: 14px;
 }
+.sources-map-region .sources-map-label {
+  text-decoration: underline;
+}
 .sources-map-legend {
   display: flex;
   flex-wrap: wrap;

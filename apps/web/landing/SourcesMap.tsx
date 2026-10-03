@@ -55,6 +55,12 @@ export default function SourcesMap() {
                   setSelectedId(region.id);
                 }}
               >
+                {region.id === 'ES-CE' && (
+                  <rect x="180" y="405" width="95" height="100" fill="transparent" />
+                )}
+                {region.id === 'ES-ML' && (
+                  <rect x="283" y="420" width="100" height="100" fill="transparent" />
+                )}
                 <path
                   d={region.path}
                   data-band={sourceBand(region.sources.length)}
@@ -63,14 +69,18 @@ export default function SourcesMap() {
                 >
                   <title>{`${region.name}: ${region.sources.length} fuentes`}</title>
                 </path>
+                {region.id === 'ES-CE' && (
+                  <text className="sources-map-label" x="202" y="433" aria-hidden="true">
+                    Ceuta
+                  </text>
+                )}
+                {region.id === 'ES-ML' && (
+                  <text className="sources-map-label" x="294" y="464" aria-hidden="true">
+                    Melilla
+                  </text>
+                )}
               </a>
             ))}
-            <text className="sources-map-label" x="202" y="433" aria-hidden="true">
-              Ceuta
-            </text>
-            <text className="sources-map-label" x="294" y="464" aria-hidden="true">
-              Melilla
-            </text>
           </svg>
           <ul className="sources-map-legend" aria-label="Fuentes registradas por zona">
             {bands.map((label, band) => (
