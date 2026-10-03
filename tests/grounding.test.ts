@@ -86,6 +86,20 @@ describe('Jurisdiction precedes similarity', () => {
   );
   it('does not infer a jurisdiction from a sentence containing a place', () =>
     expect(resolveJurisdictionAlias('Ordenanza de Girona para Tarragona')).toBeUndefined());
+  it.each([
+    ['Cataluña', 'ES-CT'],
+    ['Catalunya', 'ES-CT'],
+    ['Barcelona', 'ES-CT-BARCELONA'],
+    ['Gerona', 'ES-CT-GIRONA'],
+    ['Girona', 'ES-CT-GIRONA'],
+    ['Lérida', 'ES-CT-LLEIDA'],
+    ['Lleida', 'ES-CT-LLEIDA'],
+    ['Tarragona', 'ES-CT-TARRAGONA'],
+  ])('filters a query for %s at its own territorial level', (place, jurisdiction) => {
+    expect(understandQuery(`¿Cómo me empadrono en ${place}?`).jurisdiction).toBe(jurisdiction);
+  });
+  it('keeps a Catalan municipality when the region is confirmed', () =>
+    expect(understandQuery('Padrón en Girona', 'ES-CT').jurisdiction).toBe('ES-CT-GIRONA'));
   it.each(['BARCELONA', 'GIRONA', 'LLEIDA', 'TARRAGONA'])(
     'does not show %s municipal rules in another city',
     (city) => {
