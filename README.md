@@ -1,115 +1,170 @@
-# Reforma Digital
+<p align="center">
+  <img src="apps/web/public/favicon.svg" alt="" width="64" height="64">
+</p>
 
-Monorepo de interfaces comunitarias para páginas de la Administración. Una extensión de Chrome aplica los subproyectos incluidos en cada versión. Las interfaces se desarrollan con React, TypeScript y Tailwind, y siguen un único sistema de diseño ([DESIGN.md](DESIGN.md)).
+<h1 align="center">Reforma Digital</h1>
 
-La extensión funciona localmente. Los formularios, las sesiones y las solicitudes siguen perteneciendo a la web original. Solo se guarda la preferencia de activar o desactivar un portal.
+<p align="center">
+  <strong>La próxima reforma de la Administración, hecha en comunidad.</strong><br>
+  Una iniciativa abierta para que relacionarse con el Estado sea más claro, accesible y sencillo.
+</p>
 
-## Organización
+<p align="center">
+  <a href="https://github.com/samuelcorsan/reforma-digital/releases">Descargar la extensión</a>
+  &nbsp;·&nbsp;
+  <a href="#la-iniciativa">La iniciativa</a>
+  &nbsp;·&nbsp;
+  <a href="CONTRIBUTING.md">Contribuir</a>
+  &nbsp;·&nbsp;
+  <a href="SECURITY.md">Seguridad y privacidad</a>
+</p>
 
-```text
-apps/
-  extension/                Extensión Chrome Manifest V3 y popup
-  web/                      Landing Next.js, buscador, API y evaluaciones
-  playground/               Laboratorio local con datos ficticios
-packages/
-  bridge/                   Conexiones con controles originales
-  design/                   Sistema de diseño: tokens, componentes y temas (DESIGN.md)
-  react/                    Componentes y hooks conectados
-  registry/                 Contratos y selección de portales/pantallas
-  runtime/                  Montaje, estilos compartidos y restauración
-sites/
-  dni/                      Cita previa DNI y pasaporte, experimental
-  extranjeria/              Cita previa de Extranjería, experimental
-  hacienda/                 Asistencia y Cita de la Agencia Tributaria, experimental
-  registro-asociaciones/    Consulta pública de asociaciones, experimental
+<p align="center">
+  <a href="https://github.com/samuelcorsan/reforma-digital/actions/workflows/check.yml"><img src="https://github.com/samuelcorsan/reforma-digital/actions/workflows/check.yml/badge.svg" alt="Comprobaciones y empaquetado"></a>
+  <a href="sites"><img src="https://img.shields.io/badge/estado-experimental-ad182b?labelColor=141414" alt="Estado: experimental"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-MIT-f1c232?labelColor=141414" alt="Licencia MIT"></a>
+</p>
+
+## La iniciativa
+
+Reforma Digital propone mejorar la manera en que nos relacionamos con la Administración a través de internet. Una sede electrónica es una ventanilla pública: su diseño influye en que una persona entienda qué necesita, encuentre el trámite correcto y pueda avanzar con confianza.
+
+Pedir una cita, responder a una notificación o buscar una ayuda exige conocer palabras, organismos y procedimientos que no forman parte de la vida cotidiana. Queremos que las webs públicas acompañen a quien las usa: que expliquen dónde está, qué se le pide y qué viene después. Entender una pantalla no debería exigir conocer de antemano el funcionamiento de la Administración.
+
+La propuesta empieza por esa experiencia. Podemos estudiar las páginas, probar otras formas de presentar la información y compartir mejoras concretas sin cambiar las normas del procedimiento. El código abierto permite que cualquiera examine las decisiones, proponga alternativas y reutilice el trabajo.
+
+## Qué queremos mejorar
+
+- **Encontrar el camino.** Partir de la necesidad de una persona y ayudarla a localizar el organismo, los requisitos y el trámite que le corresponden, con fuentes oficiales que pueda consultar.
+- **Entender cada paso.** Dar contexto a los formularios, ordenar las opciones y mostrar los avisos donde hacen falta, conservando la información y las validaciones oficiales.
+- **Aprender una vez.** Compartir criterios de diseño entre sedes para que lo aprendido en un trámite sirva en el siguiente.
+- **Poder participar.** Hacer públicas las propuestas, las decisiones de diseño y las comprobaciones, para que ciudadanía y equipos públicos puedan discutirlas y mejorarlas.
+
+Una interfaz más clara puede ahorrar dudas a quien hace un trámite, trabajo repetido a una empresa y solicitudes que necesitan subsanación a un equipo público. Esos son los beneficios que buscamos; comprobarlos con personas y recorridos reales forma parte del trabajo.
+
+## De la comunidad a las sedes
+
+Empezamos con dos herramientas que permiten poner la propuesta a prueba:
+
+- **Un buscador de trámites.** Preguntas en lenguaje natural y recibes respuestas con enlaces y fragmentos de fuentes oficiales.
+- **Una extensión de Chrome.** Añade interfaces más claras a pantallas concretas de las sedes: buscadores, pasos y campos conectados a sus controles originales.
+
+A partir de esas experiencias queremos construir un sistema de diseño público y abierto: componentes, criterios y ejemplos que los equipos de una sede puedan incorporar a su propio código. El objetivo a largo plazo es que las mejoras lleguen a las webs oficiales y que la extensión deje de hacer falta. Es el horizonte de la iniciativa; la integración actual sigue siendo experimental.
+
+La extensión funciona localmente. Los formularios, las sesiones, la validación y los envíos siguen perteneciendo a la web oficial; solo se guarda la preferencia de activar o desactivar un portal. Puedes volver a la interfaz original con **«Ver original»**. Si una pantalla no se reconoce o sus controles cambian, se conserva o restaura el original.
+
+El buscador utiliza servicios de IA y búsqueda web. Es independiente de la extensión y tiene sus propios límites de privacidad, explicados en [la documentación del buscador](docs/search.md#datos-personales).
+
+**Proyecto independiente, sin vinculación con la Administración. Las adaptaciones son experimentales.**
+
+## Cómo sumarte
+
+La iniciativa necesita experiencia de uso, diseño, conocimiento de los procedimientos y desarrollo. Puedes participar aunque no escribas código:
+
+- Contar dónde te has atascado en una web pública y qué información te habría ayudado, sin compartir datos personales ni documentos privados.
+- Proponer mejoras de textos, navegación o accesibilidad, y ayudar a comprobarlas.
+- Revisar fuentes y requisitos para detectar explicaciones incompletas o confusas.
+- Mejorar una adaptación, añadir un portal o contribuir a los componentes compartidos.
+
+Puedes [abrir una propuesta en GitHub](https://github.com/samuelcorsan/reforma-digital/issues) o seguir la [guía para contribuir](CONTRIBUTING.md). Si trabajas en una sede electrónica y quieres explorar cómo llevar estas mejoras a su web, puedes contactar con [Samu](https://x.com/disamdev) o [Leo](https://x.com/mrloldev).
+
+## Portales incluidos
+
+| Portal                       | Qué se adapta                                                                                                                                           | Cobertura y límites                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| **DNI y pasaporte**          | Entrada y cinco campos de identificación, con CAPTCHA y controles oficiales conservados.                                                                | [Ver integración](sites/dni/README.md)                    |
+| **Extranjería**              | Información, provincia, oficina y trámite, requisitos y opciones de acceso. Los datos personales y los pasos siguientes mantienen la interfaz original. | [Ver integración y capturas](sites/extranjeria/README.md) |
+| **Agencia Tributaria**       | Asistencia y Cita, y búsqueda entre los servicios del catálogo oficial. La identificación y los pasos siguientes mantienen la interfaz original.        | [Ver integración](sites/hacienda/README.md)               |
+| **Registro de asociaciones** | Consulta pública de denominaciones, resultados y estado sin resultados.                                                                                 | [Ver integración](sites/registro-asociaciones/README.md)  |
+
+Los cuatro portales tienen comprobaciones documentadas sobre sus webs reales del **27 de septiembre de 2026**. En DNI también se comprobó la conexión de un campo con un valor ficticio el 10 de septiembre, sin enviar el formulario. **No se ha validado ningún trámite oficial completo ni reservado citas.** Las pruebas locales con fixtures no sustituyen esa verificación.
+
+CAPTCHA, audio, contraseñas, certificados, firmas y archivos se mantienen como controles originales. Cada integración documenta las pantallas comprobadas y el trabajo pendiente.
+
+## En este repositorio
+
+| Directorio                           | Qué contiene                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| [`apps/web`](apps/web)               | Web pública, buscador, API y laboratorio de evaluaciones con Next.js.                       |
+| [`apps/extension`](apps/extension)   | Extensión de Chrome Manifest V3 y popup.                                                    |
+| [`apps/playground`](apps/playground) | Laboratorio local para trabajar con datos ficticios.                                        |
+| [`sites`](sites)                     | Adaptaciones por portal, con configuración, pantallas, fixtures y pruebas.                  |
+| [`packages`](packages)               | Conexiones al DOM, componentes React, diseño, registro, runtime y capacidades del buscador. |
+
+```mermaid
+flowchart LR
+  Persona["Tu pregunta"] --> Buscador["Buscador · Next.js"]
+  Buscador --> OpenRouter["IA y búsqueda web · OpenRouter"]
+  OpenRouter --> Respuesta["Respuesta con fuentes oficiales"]
+  Extension["Extensión · Chrome"] --> Interfaz["Interfaz comunitaria · React"]
+  Interfaz -->|controles originales| Portal["Web oficial · validación y envíos"]
 ```
 
-Cada portal es un workspace de pnpm y tiene la misma estructura:
-
-```text
-sites/<portal>/
-  package.json
-  site.config.json          Dominio, rutas, estado y activación
-  src/
-    adapter.ts              Entrada del subproyecto
-    pages/
-      index.ts              Registro de pantallas
-      <pantalla>/
-        page.tsx            Interfaz React de esa pantalla
-        bindings.ts         Conexiones con la web original
-    components/             Componentes propios compartidos
-    styles/                 Estilos propios
-  fixtures/                 Páginas de prueba sin datos personales
-  tests/                    Pruebas del portal
-  flow.ts                   Opcional: recorrido de la web real para site:live/record/preview
-  README.md                 Cobertura y límites de la integración
-```
-
-El build descubre `sites/*/site.config.json`. Solo incluye los portales con `enabled: true`. Añadir un portal no requiere escribir condiciones específicas en la extensión. Todas las interfaces activadas se distribuyen dentro del mismo paquete de extensión, cada una en su propio content script que solo se inyecta en sus rutas. Cómo encaja todo: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+El build descubre `sites/*/site.config.json` e incluye los portales con `enabled: true`. Cada uno recibe su propio content script, limitado a sus rutas. Añadir un portal no requiere condiciones específicas en la extensión. Consulta [la arquitectura](docs/ARCHITECTURE.md).
 
 ## Desarrollo
 
-Requiere Node.js 22.18 o posterior y pnpm 11. Desde la raíz:
+Requiere **Node.js 22.18+** y **pnpm 11**. Desde la raíz:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm dev:extension
+pnpm dev                     # Web y buscador en http://localhost:3000
 ```
 
-Abre el laboratorio en `http://127.0.0.1:4173`. Usa datos ficticios. Permite editar controles React y originales, comparar sus valores, restablecer el formulario y comprobar qué recibe el formulario original. No reserva citas.
+Sin credenciales, el buscador muestra ejemplos locales. Para usar búsqueda real, configura `OPENROUTER_API_KEY` en `.env`. `SEARCH_MODE=preview` fuerza los ejemplos sin llamadas a proveedores. PostgreSQL es opcional para feedback e informes; la extensión no depende de estos servicios. Configuración y evaluaciones en [docs/search.md](docs/search.md).
+
+Para trabajar en la extensión:
 
 ```sh
-pnpm check         # Tipos, estructura, pruebas y compilación
+pnpm dev:extension           # Laboratorio en http://127.0.0.1:4173
+pnpm build:extension         # Extensión en dist/
+```
+
+El laboratorio permite comparar los valores de los controles React y originales, restablecer formularios y comprobar qué recibiría la web original. Usa datos ficticios y no reserva citas.
+
+Para cargar la extensión, abre `chrome://extensions`, activa el **modo de desarrollador** y elige **Cargar descomprimida** con la carpeta `dist/`.
+
+### Comprobaciones y empaquetado
+
+```sh
+pnpm lint                              # Comprobaciones semánticas y anti-slop
+pnpm check                             # Lint, estructura, tipos, pruebas, build y bundle
 pnpm exec playwright install chromium
-pnpm test:e2e      # Pruebas de la extensión en Chromium
-pnpm package      # ZIP instalable en artifacts/
+pnpm test:e2e                          # Extensión cargada en Chromium
+pnpm package                           # Comprobaciones y ZIP en artifacts/
 ```
 
-La web pública y el buscador comparten una aplicación Next.js en `apps/web`. La portada presenta Reforma Digital como iniciativa y sus dos herramientas: un buscador de trámites y una extensión para mejorar las webs oficiales.
-
-```sh
-pnpm dev               # http://localhost:3000
-pnpm landing:build     # Build de Next.js
-pnpm build:extension   # Extensión en dist/
-```
-
-Rutas: `/` presenta el ensayo, con el buscador sobre la fotografía del hero. Al preguntar, el chat sustituye a la portada en la misma ruta; el logo vuelve al inicio y «Nueva conversación» abre un chat vacío. «Lee nuestra propuesta» baja a `/#texto`; `/propuesta` redirige allí por compatibilidad. `/explorar` conserva una portada alternativa, sin indexar. Las fuentes están en `/sources` y el laboratorio protegido en `/admin/evals`.
-
-El chat utiliza Web Search de OpenRouter con GPT-6 Luna y razonamiento high. Con `OPENROUTER_API_KEY` configurada, la web usa la búsqueda real; `SEARCH_MODE=preview` selecciona los ejemplos locales. PostgreSQL es opcional para feedback e informes. Consulta [la puesta en marcha, arquitectura y evaluaciones del buscador](docs/search.md). La extensión sigue funcionando localmente y no depende de estos servicios.
-
-Para trabajar con la web oficial real (ventana visible, un solo recorrido, nunca datos personales ni CAPTCHA):
-
-```sh
-pnpm site:live -- extranjeria      # Comprobaciones, capturas y fixtures desde la web real
-pnpm site:record -- extranjeria    # Graba una visita para trabajar sin conexión
-pnpm site:preview -- extranjeria   # Reproduce la grabación con la extensión y guarda capturas
-```
-
-Para cargarla en Chrome, ejecuta `pnpm build`, abre `chrome://extensions`, activa el modo de desarrollador y elige **Cargar descomprimida** con la carpeta `dist/`. El build de pruebas `dist-test/` añade acceso al servidor local; no se distribuye.
+Otros comandos en [`package.json`](package.json). El build de pruebas `dist-test/` añade acceso al laboratorio local y no se distribuye.
 
 ## Añadir un portal
+
+Para empezar una nueva adaptación:
 
 ```sh
 pnpm site:new -- nombre-del-portal
 pnpm install
 ```
 
-El generador crea un workspace completo y desactivado. También admite un dominio HTTPS exacto y un prefijo de ruta como segundo y tercer argumentos. Se desarrolla dentro de su carpeta y se activa en `site.config.json` cuando sus rutas y conexiones estén preparadas. Lee [CONTRIBUTING.md](CONTRIBUTING.md).
+El generador crea un workspace desactivado. Define sus rutas y conexiones, reutiliza los componentes compartidos y documenta la cobertura antes de activarlo. La guía está en [CONTRIBUTING.md](CONTRIBUTING.md) y el sistema visual en [DESIGN.md](DESIGN.md).
 
-## Migración local a Next.js
+Para un portal con `flow.ts`, las herramientas de navegador permiten trabajar con sus páginas públicas:
 
-La base de esta integración es `origin/main` (`d0807b5`). La landing de Astro se ha trasladado a componentes React en `apps/web/landing`. Los componentes interactivos mantienen los filtros y la selección compartida de la demo. El grupo `(search)` sirve la portada y el buscador; la antigua página de propuesta se ha retirado.
+```sh
+pnpm site:live -- extranjeria      # Comprueba y captura la web real
+pnpm site:record -- extranjeria    # Graba una visita para trabajar sin conexión
+pnpm site:preview -- extranjeria   # Reproduce la grabación con la extensión
+```
 
-Validado: instalación con lockfile congelado, typecheck, 146 pruebas, build de Next.js y extensión, auditoría de bundle y revisión del navegador en escritorio y móvil, incluida una consulta real y su cita. El check de estructura heredado de `main` falla porque exige `sites/registro-asociaciones/src/components`, que no está versionado en esa base; no se ha modificado el check para ocultarlo. No se han ejecutado los E2E de la extensión en esta migración.
+Los recorridos reales abren una ventana visible, se ejecutan una sola vez y se detienen antes de datos personales, CAPTCHA, disponibilidad o reservas. No eluden las comprobaciones anti-bot.
 
-## Estado real
+## Documentación
 
-La base se compila y dispone de pruebas unitarias y pruebas con la extensión cargada. El 10 de septiembre de 2026 se comprobó la extensión instalada en Chrome de pruebas sobre el portal oficial: se montaron los cinco campos React de identificación y se verificó que un valor ficticio introducido en la nueva interfaz llegaba al input original, sin enviar el formulario. La adaptación es parcial: quedan la maquetación antigua y alguna etiqueta duplicada. **No se ha validado el trámite oficial completo**. Las pantallas no reconocidas mantienen su interfaz original.
+- [Contribuir](CONTRIBUTING.md): crear portales, conectar controles y verificar cambios.
+- [Arquitectura](docs/ARCHITECTURE.md): paquetes, runtime, restauración y límites.
+- [Sistema de diseño](DESIGN.md): tokens, componentes y temas compartidos.
+- [Buscador](docs/search.md): puesta en marcha, fuentes, privacidad y evaluaciones.
+- [Seguridad y privacidad](SECURITY.md): medidas implementadas y límites conocidos.
 
-El 27 de septiembre de 2026 se recorrió la web oficial de cita previa de Extranjería con la extensión cargada: página informativa, provincia, oficina y trámite, e información del trámite con la elección con o sin Cl@ve (Madrid, «Toma de huellas»). La interfaz se detiene antes del formulario de datos personales. Sus fixtures son HTML real de esas páginas públicas. Consulta [la cobertura de Extranjería](sites/extranjeria/README.md).
+## Licencia
 
-El mismo día se comprobaron con la extensión cargada en su web real la cita previa del DNI con el tema completo del sistema de diseño, «Asistencia y Cita» y el catálogo de servicios de la Agencia Tributaria, y la consulta pública del Fichero de Denominaciones de Asociaciones. Todos terminan antes de pedir identificación o datos personales. Consulta [DNI](sites/dni/README.md), [Hacienda](sites/hacienda/README.md) y [Asociaciones](sites/registro-asociaciones/README.md).
-
-CAPTCHA, audio, certificados, firma, archivos y controles de navegador se mantienen como controles originales. No se simulan ni se sustituyen genéricamente. Conservar esos controles no demuestra por sí solo que todos los flujos de un portal funcionen: cada integración requiere verificación. Consulta [SECURITY.md](SECURITY.md) y [la cobertura del DNI](sites/dni/README.md).
-
-Código bajo licencia [MIT](LICENSE). Proyecto independiente, sin vinculación con la Administración.
+Código bajo licencia [MIT](LICENSE).
