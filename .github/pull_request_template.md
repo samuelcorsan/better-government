@@ -1,11 +1,21 @@
-## Cambio
+<!-- Keep these headings in English. Write the PR description in Spanish, preserving technical terms and identifiers. -->
 
-Qué portal y pantallas cambian, y qué mejora para quien hace el trámite.
+## Change
 
-## Verificación
+<!-- Explain the current problem, what changes, and the expected outcome. Link the issue if one exists; use Closes #N only if this PR resolves it. -->
 
-Pruebas ejecutadas, procedencia de las fixtures y comprobaciones realizadas en el portal real. Indica qué queda pendiente.
+<!-- For UI changes, describe the affected screens or components here and add screenshots or video. When modifying an existing interface, show a comparable before/after. For a new interface, show the result. Link the preview when available. -->
 
-## Comportamiento original
+## Verification
 
-Cómo se conservan validaciones, mensajes, navegación, controles de seguridad y recuperación de la interfaz original. Explica cualquier cambio de permisos.
+<!-- Report the commands run and their results, manual checks, and pending verification. Include the diff review and Ponytail Review. Do not claim checks you have not performed. -->
+
+<!-- For portal adaptations, distinguish fixture-based tests from checks on the real portal and identify the fixture provenance. -->
+
+## Impact
+
+<!-- Describe relevant changes to contracts, data, permissions, or deployment, and known limitations. For portal changes, explain how validation, messages, navigation, security controls, and restoration of the original interface are preserved. Remove this section if it does not apply. -->
+
+## Agent assistance
+
+<!-- If an agent materially contributed, name the tool and describe its contribution (implementation, tests, or review). Otherwise, write N/A. -->
