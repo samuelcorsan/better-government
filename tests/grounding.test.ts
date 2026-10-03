@@ -9,6 +9,7 @@ import {
   approvedSource,
   canonicalize,
   documentJurisdiction,
+  resolveJurisdictionAlias,
   sourceById,
 } from '../packages/government/src/index';
 import { understandQuery } from '../packages/retrieval/src/index';
@@ -67,6 +68,37 @@ describe('Jurisdiction precedes similarity', () => {
   );
   it('does not invent location', () =>
     expect(understandQuery('¿Dónde saco mi vida laboral?').jurisdiction).toBeUndefined());
+  it.each([
+    ['España', 'ES'],
+    ['Espanya', 'ES'],
+    ['Comunidad de Madrid', 'ES-MD'],
+    ['Madrid', 'ES-MD-MADRID'],
+    ['Cataluña', 'ES-CT'],
+    ['Catalunya', 'ES-CT'],
+    ['Barcelona', 'ES-CT-BARCELONA'],
+    ['Gerona', 'ES-CT-GIRONA'],
+    ['Girona', 'ES-CT-GIRONA'],
+    ['Lérida', 'ES-CT-LLEIDA'],
+    ['Lleida', 'ES-CT-LLEIDA'],
+    ['Tarragona', 'ES-CT-TARRAGONA'],
+  ])('resolves the exact ca/es alias %s', (alias, id) =>
+    expect(resolveJurisdictionAlias(alias)).toBe(id),
+  );
+  it('does not infer a jurisdiction from a sentence containing a place', () =>
+    expect(resolveJurisdictionAlias('Ordenanza de Girona para Tarragona')).toBeUndefined());
+  it.each(['BARCELONA', 'GIRONA', 'LLEIDA', 'TARRAGONA'])(
+    'does not show %s municipal rules in another city',
+    (city) => {
+      const document = `ES-CT-${city}`;
+      expect(compatibleJurisdiction(document, document)).toBe(true);
+      expect(compatibleJurisdiction('ES-CT', document)).toBe(true);
+      expect(compatibleJurisdiction('ES', document)).toBe(true);
+      for (const other of ['BARCELONA', 'GIRONA', 'LLEIDA', 'TARRAGONA']) {
+        if (other !== city) expect(compatibleJurisdiction(document, `ES-CT-${other}`)).toBe(false);
+      }
+      expect(compatibleJurisdiction(document, 'ES-MD-MADRID')).toBe(false);
+    },
+  );
   it('asks for a municipality', () =>
     expect(understandQuery('¿Cómo me empadrono?').clarification).toBeTruthy());
   it('does not confuse Alcobendas with Madrid capital', () =>
@@ -136,14 +168,37 @@ describe('Real ingestion regressions', () => {
     ).toBe(true);
     expect(quoteSupported('El importe es de 15 euros.', 'El importe es de 50 euros.')).toBe(false);
   });
-  it('national publishers do not turn regional rules into national rules', () =>
+  it('takes jurisdiction from the approved source, not result titles or URL substrings', () => {
     expect(
       documentJurisdiction(
         sourceById('aeat'),
-        'Deducciones Asturias',
-        'https://sede.agenciatributaria.gob.es/Sede/asturias',
+        'Deducciones Catalunya y Madrid',
+        'https://sede.agenciatributaria.gob.es/Sede/catalunya/madrid',
       ),
-    ).toBe('ES-AS'));
+    ).toBe('ES');
+    expect(
+      documentJurisdiction(
+        {
+          ...sourceById('comunidad-madrid'),
+          jurisdictionValue: 'ES-CT',
+          jurisdictionType: 'region',
+        },
+        'Trámite en Madrid',
+        'https://example.test/madrid',
+      ),
+    ).toBe('ES-CT');
+    expect(
+      documentJurisdiction(
+        {
+          ...sourceById('ayuntamiento-madrid'),
+          jurisdictionValue: 'ES-CT-GIRONA',
+          jurisdictionType: 'municipality',
+        },
+        'Ordenanza de Tarragona',
+        'https://example.test/tarragona',
+      ),
+    ).toBe('ES-CT-GIRONA');
+  });
   it('recognizes a precise fiscal query without asking for the procedure again', () =>
     expect(understandQuery('Cómo cambio mi domicilio fiscal').clarification).toBeUndefined());
 });

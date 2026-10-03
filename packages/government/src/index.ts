@@ -1,4 +1,32 @@
-import type { Source } from '@reforma-digital/core';
+import { normalizeText, type Source } from '@reforma-digital/core';
+
+const jurisdictionAliases = new Map([
+  ['es', 'ES'],
+  ['espana', 'ES'],
+  ['espanya', 'ES'],
+  ['es md', 'ES-MD'],
+  ['comunidad de madrid', 'ES-MD'],
+  ['es md madrid', 'ES-MD-MADRID'],
+  ['madrid', 'ES-MD-MADRID'],
+  ['es ct', 'ES-CT'],
+  ['cataluna', 'ES-CT'],
+  ['catalunya', 'ES-CT'],
+  ['es ct barcelona', 'ES-CT-BARCELONA'],
+  ['barcelona', 'ES-CT-BARCELONA'],
+  ['es ct girona', 'ES-CT-GIRONA'],
+  ['girona', 'ES-CT-GIRONA'],
+  ['gerona', 'ES-CT-GIRONA'],
+  ['es ct lleida', 'ES-CT-LLEIDA'],
+  ['lleida', 'ES-CT-LLEIDA'],
+  ['lerida', 'ES-CT-LLEIDA'],
+  ['es ct tarragona', 'ES-CT-TARRAGONA'],
+  ['tarragona', 'ES-CT-TARRAGONA'],
+]);
+
+export function resolveJurisdictionAlias(alias: string): string | undefined {
+  return jurisdictionAliases.get(normalizeText(alias));
+}
+
 const define = (
   id: string,
   name: string,
@@ -14,7 +42,7 @@ const define = (
   jurisdictionType:
     jurisdictionValue === 'ES'
       ? 'country'
-      : jurisdictionValue === 'ES-MD'
+      : jurisdictionValue.split('-').length === 2
         ? 'region'
         : 'municipality',
   jurisdictionValue,
@@ -111,35 +139,8 @@ export function sourceById(id: string): Source {
   if (!s) throw new Error('Fuente no aprobada: ' + id);
   return s;
 }
-export function documentJurisdiction(source: Source, title: string, url: string): string {
-  if (source.jurisdictionValue !== 'ES') return source.jurisdictionValue;
-  const scope = decodeURI(title + ' ' + url)
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase();
-  const regions: [RegExp, string][] = [
-    [/asturias/, 'ES-AS'],
-    [/andalucia/, 'ES-AN'],
-    [/aragon/, 'ES-AR'],
-    [/illes.balears|islas.baleares/, 'ES-IB'],
-    [/canarias/, 'ES-CN'],
-    [/cantabria/, 'ES-CB'],
-    [/castilla.la.mancha/, 'ES-CM'],
-    [/castilla.y.leon/, 'ES-CL'],
-    [/cataluna|catalunya/, 'ES-CT'],
-    [/comunitat.valenciana|comunidad.valenciana/, 'ES-VC'],
-    [/extremadura/, 'ES-EX'],
-    [/galicia/, 'ES-GA'],
-    [/comunidad.de.madrid|comunidad-autonoma-madrid/, 'ES-MD'],
-    [/region.de.murcia/, 'ES-MC'],
-    [/navarra/, 'ES-NC'],
-    [/pais.vasco|euskadi/, 'ES-PV'],
-    [/la.rioja/, 'ES-RI'],
-    [/ceuta/, 'ES-CE'],
-    [/melilla/, 'ES-ML'],
-  ];
-  const matches = regions.filter(([re]) => re.test(scope));
-  return matches.length === 1 ? matches[0]![1] : source.jurisdictionValue;
+export function documentJurisdiction(source: Source, _title: string, _url: string): string {
+  return source.jurisdictionValue;
 }
 export function documentYear(title: string, url: string): number | null {
   const match = (title + ' ' + url).match(
