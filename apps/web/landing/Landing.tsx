@@ -3,7 +3,6 @@ import ReadingProgress from './ReadingProgress';
 
 import Banner from './Banner';
 import Hero from './Hero';
-import SourcesMap from './SourcesMap';
 import Footer from './Footer';
 import Figure from './Figure';
 import Annotated from './Annotated';
@@ -157,7 +156,6 @@ export default function Landing({ composer }: { composer?: ReactNode }) {
       <Hero composer={composer} />
       <div className="full-landing">
         <main id="main" className="full-article">
-          <SourcesMap />
           <section id="resumen" aria-labelledby="resumen-title">
             <h2 id="resumen-title">Resumen</h2>
             <p>

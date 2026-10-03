@@ -1,21 +1,25 @@
 'use client';
 
-import { useState } from 'react';
 import { sources } from '@reforma-digital/government';
 import { ExternalLink } from '@reforma-digital/design';
-import { sourceBand, sourceCoverage } from './data/source-coverage';
+import { sourceBand, sourceCoverage } from '../lib/source-coverage';
 import './sources-map.css';
 
 const coverage = sourceCoverage(sources);
 const bands = ['0 fuentes', '1–2 fuentes', '3–5 fuentes', '6 o más fuentes'];
 
-export default function SourcesMap() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export default function SourcesMap({
+  selectedId,
+  onSelect,
+}: {
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
   const selected = coverage.regions.find((region) => region.id === selectedId);
 
   return (
-    <section className="wide sources-map" aria-labelledby="sources-map-title">
-      <h2 id="sources-map-title">Nuestras fuentes en España</h2>
+    <section className="sources-map" aria-labelledby="sources-map-title">
+      <h2 id="sources-map-title">Fuentes por territorio</h2>
       <p className="sources-map-intro">
         Cada zona muestra cuántas fuentes oficiales habilitadas tenemos registradas. Contamos
         organismos, no documentos ni trámites; su presencia no garantiza una respuesta.
@@ -52,11 +56,11 @@ export default function SourcesMap() {
                 aria-controls="sources-map-detail"
                 onClick={(event) => {
                   event.preventDefault();
-                  setSelectedId(region.id);
+                  onSelect(region.id);
                 }}
               >
                 {region.id === 'ES-CE' && (
-                  <rect x="180" y="405" width="95" height="100" fill="transparent" />
+                  <rect x="180" y="405" width="100" height="100" fill="transparent" />
                 )}
                 {region.id === 'ES-ML' && (
                   <rect x="283" y="420" width="100" height="100" fill="transparent" />
@@ -134,7 +138,7 @@ export default function SourcesMap() {
               className="bg-btn bg-btn-secondary"
               aria-pressed={selectedId === region.id}
               aria-controls="sources-map-detail"
-              onClick={() => setSelectedId(region.id)}
+              onClick={() => onSelect(region.id)}
             >
               <span>{region.name}</span>
               <span>

@@ -1,4 +1,4 @@
-import type { Source } from '@reforma-digital/core';
+import type { Region, Source } from '@reforma-digital/core';
 import regions from './spain-regions.json';
 
 export function sourceCoverage(sources: readonly Source[]) {
@@ -21,4 +21,10 @@ export function sourceCoverage(sources: readonly Source[]) {
 
 export function sourceBand(count: number) {
   return count === 0 ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : 3;
+}
+
+export function limitedSourceCoverage(sources: readonly Source[], regionId?: Region | null) {
+  return sourceCoverage(sources).regions.find(
+    (region) => region.id === regionId && region.sources.length <= 2,
+  );
 }

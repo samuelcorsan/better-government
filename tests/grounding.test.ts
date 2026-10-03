@@ -71,6 +71,23 @@ describe('Jurisdiction precedes similarity', () => {
     expect(understandQuery('¿Cómo me empadrono?').clarification).toBeTruthy());
   it('does not confuse Alcobendas with Madrid capital', () =>
     expect(understandQuery('Padrón en Alcobendas, Madrid').jurisdiction).toBe('ES-MD-ALCOBENDAS'));
+  it('usa la comunidad del modelo en vez de la primera mención del texto', () => {
+    const query = understandQuery('Vengo de Madrid y necesito una ayuda en Aragón', 'ES-AR');
+    expect(query.jurisdiction).toBe('ES-AR');
+    expect(query.region).toBe('ES-AR');
+    expect(query.location).toBeUndefined();
+  });
+  it('conserva un municipio solo cuando pertenece a la comunidad identificada', () => {
+    expect(understandQuery('Padrón en Alcobendas, Madrid', 'ES-MD').jurisdiction).toBe(
+      'ES-MD-ALCOBENDAS',
+    );
+  });
+  it('no fabrica una comunidad cuando el modelo devuelve null', () => {
+    const query = understandQuery('Compara ayudas de Aragón y Madrid', null);
+    expect(query.jurisdiction).toBeUndefined();
+    expect(query.region).toBeNull();
+    expect(understandQuery('Cómo empadronarme', null).clarification).toBeTruthy();
+  });
 });
 describe('Citation integrity, fail closed', () => {
   const q = understandQuery('¿Cómo obtengo mi vida laboral?');
