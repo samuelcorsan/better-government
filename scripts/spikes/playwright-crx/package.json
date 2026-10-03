@@ -1,0 +1,8 @@
+{
+  "name": "reforma-digital-playwright-crx-spike",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright-crx": "0.15.0"
+  }
+}
