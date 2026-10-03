@@ -34,20 +34,20 @@
   stroke: rgb(var(--bg-surface));
 }
 .sources-map [data-band='0'] {
-  fill: rgb(var(--bg-surface-muted));
-  background: rgb(var(--bg-surface-muted));
+  fill: rgb(var(--bg-danger-line));
+  background: rgb(var(--bg-danger-line));
 }
 .sources-map [data-band='1'] {
-  fill: rgb(var(--bg-brand-200));
-  background: rgb(var(--bg-brand-200));
+  fill: rgb(var(--bg-warning-line));
+  background: rgb(var(--bg-warning-line));
 }
 .sources-map [data-band='2'] {
-  fill: rgb(var(--bg-line-control));
-  background: rgb(var(--bg-line-control));
+  fill: rgb(var(--bg-success-line));
+  background: rgb(var(--bg-success-line));
 }
 .sources-map [data-band='3'] {
-  fill: rgb(var(--bg-brand-600));
-  background: rgb(var(--bg-brand-600));
+  fill: rgb(var(--bg-success-fg));
+  background: rgb(var(--bg-success-fg));
 }
 .sources-map-region[aria-current] path {
   stroke: rgb(var(--bg-brand-600));
