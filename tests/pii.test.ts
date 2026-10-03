@@ -1,8 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ChatGuard } from '../apps/web/node_modules/@nationaldesignstudio/rampart';
 
 const createGuard = vi.hoisted(() => vi.fn());
 // Path, not package name: Rampart is only a dependency of apps/web.
-vi.mock('../apps/web/node_modules/@nationaldesignstudio/rampart', () => ({ createGuard }));
+vi.mock(
+  import('../apps/web/node_modules/@nationaldesignstudio/rampart'),
+  async (importOriginal) => ({
+    ...(await importOriginal()),
+    createGuard,
+  }),
+);
 
 const guard = (protect: (text: string) => Promise<{ text: string }>) => ({ protect });
 
@@ -89,6 +96,23 @@ describe('pii protection', () => {
     expect(seen).toEqual(['Soy Ana, DNI [DNI omitido]']);
   });
 
+  it('protects Spanish identifiers and whole email addresses before Rampart', async () => {
+    createGuard.mockResolvedValue(new ChatGuard());
+    const { protectMessages } = await import('../apps/web/lib/pii');
+    const original =
+      '12345678Z y ES91 2100 0418 4502 0005 1332. Correo 12345678Z@example.test y 612345678@example.test';
+    const [protectedText] = await protectMessages([original], new AbortController().signal);
+    expect(protectedText?.text).toBe(
+      '[DNI omitido] y [IBAN omitido]. Correo [correo omitido] y [correo omitido]',
+    );
+    expect(protectedText?.ranges.map(({ start, end }) => original.slice(start, end))).toEqual([
+      '12345678Z',
+      'ES91 2100 0418 4502 0005 1332',
+      '12345678Z@example.test',
+      '612345678@example.test',
+    ]);
+  });
+
   it('fails closed when Rampart cannot load, then retries', async () => {
     createGuard.mockRejectedValueOnce(new Error('model unavailable'));
     createGuard.mockResolvedValue(guard(async (text) => ({ text })));
@@ -99,6 +123,36 @@ describe('pii protection', () => {
     expect(await protectMessages(['Soy Ana'], new AbortController().signal)).toMatchObject([
       { text: 'Soy Ana' },
     ]);
+  });
+
+  it('protects the question, both conversation roles and the PDF without losing their order', async () => {
+    createGuard.mockResolvedValue(
+      guard(async (text) => ({ text: text.replace('Ana', '[GIVEN_NAME_1]') })),
+    );
+    const { protectSearchRequest } = await import('../apps/web/lib/pii');
+    const result = await protectSearchRequest(
+      '¿Y la segunda opción, Ana?',
+      {
+        context: [
+          { role: 'user', content: 'Soy Ana, DNI 12345678Z' },
+          {
+            role: 'assistant',
+            content: 'Ana, primera opción: informe. Segunda opción: requisitos.',
+          },
+        ],
+        attachmentContext: 'Documento de Ana, NIE X1234567L',
+      },
+      new AbortController().signal,
+    );
+    expect(result.question.text).toBe('¿Y la segunda opción, [GIVEN_NAME_1]?');
+    expect(result.context).toEqual([
+      { role: 'user', content: 'Soy [GIVEN_NAME_1], DNI [DNI omitido]' },
+      {
+        role: 'assistant',
+        content: '[GIVEN_NAME_1], primera opción: informe. Segunda opción: requisitos.',
+      },
+    ]);
+    expect(result.attachmentContext).toBe('Documento de [GIVEN_NAME_1], NIE [NIE omitido]');
   });
 
   it('fails closed when Rampart throws while protecting', async () => {

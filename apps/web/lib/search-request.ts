@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { conversationMessageSchema } from '@reforma-digital/core';
 
 // The composer still allows 1,200 characters and PDF extraction 6,000.
 // Wire limits include a bounded allowance for longer redaction markers.
@@ -28,5 +29,5 @@ export async function readSearchBody(request: Request): Promise<string> {
 export const searchRequestSchema = z.object({
   query: z.string().trim().min(4).max(6_000),
   attachmentContext: z.string().max(30_000).optional(),
-  context: z.array(z.string().trim().min(4).max(6_000)).max(6).optional(),
+  context: z.array(conversationMessageSchema).max(12).optional(),
 });

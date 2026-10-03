@@ -21,12 +21,18 @@ import {
   Info,
   PencilLine,
 } from 'lucide-react';
-import type { Evidence, SearchResult, Stage, VerifiedClaim } from '@reforma-digital/core';
+import type {
+  ConversationMessage,
+  Evidence,
+  SearchResult,
+  Stage,
+  VerifiedClaim,
+} from '@reforma-digital/core';
 import { ProjectBrand } from './project-header';
 import { AttachmentPicker } from './attachment-picker';
 import type { PdfContext } from '../lib/attachment';
-import { protectMessages, ProtectionTimeoutError } from '../lib/pii';
-import type { HiddenRange, ProtectedText } from '../lib/pii-display';
+import { protectSearchRequest, ProtectionTimeoutError } from '../lib/pii';
+import type { HiddenRange } from '../lib/pii-display';
 import { ProtectedQuestion } from './protected-question';
 import { readChatStream } from '../lib/chat-stream';
 
@@ -409,11 +415,24 @@ export default function Chat({
     setAttachmentError('');
     nearBottom.current = true;
     try {
-      const outgoing = [query, ...prior.slice(-6).map((t) => t.query)];
-      if (documentContext) outgoing.push(documentContext.text);
-      let protectedMessages: ProtectedText[];
+      const context = prior.slice(-6).flatMap((turn): ConversationMessage[] => {
+        const messages: ConversationMessage[] = [{ role: 'user', content: turn.query }];
+        if (turn.result) {
+          const answer = turn.result.answer;
+          messages.push({
+            role: 'assistant',
+            content: [answer.answer, ...answer.claims.map((claim) => claim.text)].join('\n'),
+          });
+        }
+        return messages;
+      });
+      let protectedRequest: Awaited<ReturnType<typeof protectSearchRequest>>;
       try {
-        protectedMessages = await protectMessages(outgoing, controller.signal);
+        protectedRequest = await protectSearchRequest(
+          query,
+          { context, attachmentContext: documentContext?.text },
+          controller.signal,
+        );
       } catch (error) {
         if (controller.signal.aborted || error instanceof ProtectionTimeoutError) throw error;
         throw new Error(
@@ -421,15 +440,14 @@ export default function Chat({
         );
       }
       controller.signal.throwIfAborted();
-      const safe = protectedMessages.map((message) => message.text);
-      update(id, { protecting: false, hiddenData: protectedMessages[0]?.ranges ?? [] });
+      update(id, { protecting: false, hiddenData: protectedRequest.question.ranges });
       const response = await fetch('/api/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: safe[0],
-          attachmentContext: documentContext ? safe.at(-1) : undefined,
-          context: safe.slice(1, outgoing.length - (documentContext ? 1 : 0)),
+          query: protectedRequest.question.text,
+          attachmentContext: protectedRequest.attachmentContext,
+          context: protectedRequest.context,
         }),
         signal: controller.signal,
       });

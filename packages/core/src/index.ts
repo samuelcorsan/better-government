@@ -40,6 +40,15 @@ export type QueryUnderstanding = {
   temporal: boolean;
   requestedYear?: number;
 };
+export const conversationMessageSchema = z.discriminatedUnion('role', [
+  z.object({ role: z.literal('user'), content: z.string().trim().min(4).max(6000) }),
+  z.object({ role: z.literal('assistant'), content: z.string().trim().min(1).max(30000) }),
+]);
+export type ConversationMessage = z.infer<typeof conversationMessageSchema>;
+export type SearchContext = {
+  context?: ConversationMessage[];
+  attachmentContext?: string;
+};
 export const answerSchema = z.object({
   status: z.enum(['answered', 'insufficient_evidence', 'needs_clarification']),
   answer: z.string().max(1800),

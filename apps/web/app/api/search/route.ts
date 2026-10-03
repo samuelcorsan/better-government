@@ -71,7 +71,10 @@ export async function POST(request: Request) {
           const result = await search(redactQuery(parsed.data.query), {
             mode: searchMode(),
             signal,
-            context: parsed.data.context?.map(redactQuery),
+            context: parsed.data.context?.map((message) => ({
+              ...message,
+              content: redactQuery(message.content),
+            })),
             attachmentContext: parsed.data.attachmentContext
               ? redactQuery(parsed.data.attachmentContext)
               : undefined,
