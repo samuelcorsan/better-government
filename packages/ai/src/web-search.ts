@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto';
 import {
   compatibleJurisdiction,
   type Evidence,
-  type QueryUnderstanding,
   type SearchConfig,
+  type SearchContext,
 } from '@reforma-digital/core';
 import {
   approvedSource,
@@ -16,18 +16,18 @@ import { searchWebSources } from './models';
 
 export async function retrieveWebEvidence(
   query: string,
-  understanding: QueryUnderstanding,
   config: SearchConfig,
-): Promise<Evidence[]> {
-  const domains = sources
-    .filter(
-      (source) =>
-        source.enabled &&
-        compatibleJurisdiction(source.jurisdictionValue, understanding.jurisdiction),
-    )
-    .flatMap((source) => source.hosts);
-  const results = await searchWebSources(query, config, [...new Set(domains)]);
+  context: SearchContext = {},
+) {
+  const domains = sources.filter((source) => source.enabled).flatMap((source) => source.hosts);
+  const { understanding, sources: results } = await searchWebSources(
+    query,
+    config,
+    [...new Set(domains)],
+    context,
+  );
   const evidence: Evidence[] = [];
+  if (understanding.clarification) return { understanding, evidence };
   const seen = new Set<string>();
   for (const result of results) {
     if (result.sourceType !== 'url') continue;
@@ -69,5 +69,5 @@ export async function retrieveWebEvidence(
     });
     if (evidence.length >= config.finalEvidenceCount) break;
   }
-  return evidence;
+  return { understanding, evidence };
 }

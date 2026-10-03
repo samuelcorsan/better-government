@@ -1,4 +1,5 @@
 import type { ChatGuard } from '@nationaldesignstudio/rampart';
+import type { SearchContext } from '@reforma-digital/core';
 import { redactQuery } from './redact';
 import { protectionDetails, type ProtectedText } from './pii-display';
 let guard: Promise<ChatGuard> | undefined;
@@ -62,4 +63,27 @@ export async function protectMessages(
     clearTimeout(timer!);
     signal.removeEventListener('abort', abort!);
   }
+}
+
+export async function protectSearchRequest(
+  query: string,
+  { context = [], attachmentContext }: SearchContext,
+  signal: AbortSignal,
+) {
+  const protectedMessages = await protectMessages(
+    [
+      query,
+      ...context.map((message) => message.content),
+      ...(attachmentContext ? [attachmentContext] : []),
+    ],
+    signal,
+  );
+  return {
+    question: protectedMessages[0]!,
+    context: context.map((message, i) => ({
+      ...message,
+      content: protectedMessages[i + 1]!.text,
+    })),
+    attachmentContext: attachmentContext ? protectedMessages.at(-1)!.text : undefined,
+  };
 }
