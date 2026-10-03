@@ -32,6 +32,10 @@ export type Source = {
   jurisdictionValue: Jurisdiction;
   authorityScore: number;
   enabled: boolean;
+  /** Idiomas comprobados para las páginas públicas inventariadas. */
+  languages?: ('ca' | 'es')[];
+  /** URLs públicas verificadas; si existe, ninguna otra ruta del host está aprobada. */
+  publicUrls?: string[];
 };
 export type Evidence = {
   chunkId: string;

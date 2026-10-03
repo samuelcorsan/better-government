@@ -44,6 +44,7 @@ describe('fuentes por territorio', () => {
       new Set(regionSchema.options),
     );
     expect(coverage.regions.find((region) => region.id === 'ES-MD')?.sources).toHaveLength(2);
+    expect(coverage.regions.find((region) => region.id === 'ES-CT')?.sources).toHaveLength(0);
     expect(coverage.regions.filter((region) => region.sources.length === 0)).toHaveLength(18);
     expect(coverage.national).toHaveLength(8);
   });
