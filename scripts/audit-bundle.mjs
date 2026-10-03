@@ -5,7 +5,7 @@ import { readSites } from './sites.mjs';
 const manifest = JSON.parse(await readFile('dist/manifest.json', 'utf8'));
 assert.equal(manifest.manifest_version, 3);
 assert.deepEqual(manifest.permissions, ['storage']);
-assert.equal(manifest.background, undefined);
+assert.deepEqual(manifest.background, { service_worker: 'background.js', type: 'module' });
 assert.equal(manifest.externally_connectable, undefined);
 assert.equal(manifest.web_accessible_resources, undefined);
 assert.equal(manifest.host_permissions, undefined);
@@ -36,6 +36,7 @@ const forbidden = [
 for (const file of await readdir('dist', { recursive: true })) {
   if (!/\.(js|html|css)$/.test(file)) continue;
   const code = await readFile(path.join('dist', file), 'utf8');
+  assert.ok(!code.includes('TRUSTED_AND_UNTRUSTED_CONTEXTS'), `${file}: session exposed`);
   for (const pattern of forbidden)
     assert.ok(!pattern.test(code), `${file}: forbidden runtime capability ${pattern}`);
   assert.ok(!/<script[^>]+src=["']https?:/i.test(code));

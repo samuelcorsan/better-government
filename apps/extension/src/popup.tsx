@@ -19,6 +19,7 @@ function Popup() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
   useEffect(() => {
     void send('status')
       .then((value) => setStatus(value as Status))
@@ -55,6 +56,20 @@ function Popup() {
       setStatus((await send('status')) as Status);
     } catch {
       setError('No se pudo cambiar la vista. Recarga esta página e inténtalo de nuevo.');
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function endSession() {
+    setBusy(true);
+    setError('');
+    try {
+      const response: unknown = await chrome.runtime.sendMessage({ type: 'session:end' });
+      if (!response || typeof response !== 'object' || !('ok' in response) || !response.ok)
+        throw new Error('Session was not cleared');
+      setSessionEnded(true);
+    } catch {
+      setError('No se pudo finalizar la sesión personal. Inténtalo de nuevo.');
     } finally {
       setBusy(false);
     }
@@ -123,6 +138,21 @@ function Popup() {
           {error}
         </p>
       ) : null}
+      <section className="border-t border-line pt-3">
+        <button
+          type="button"
+          className="bg-btn bg-btn-secondary w-full"
+          disabled={busy}
+          onClick={() => void endSession()}
+        >
+          Finalizar sesión personal
+        </button>
+        {sessionEnded ? (
+          <p className="bg-hint mt-1" role="status">
+            Se han borrado los datos de esta sesión de la extensión.
+          </p>
+        ) : null}
+      </section>
       <footer className="bg-hint border-t border-line pt-3">
         Adaptaciones comunitarias. No es un servicio oficial. Sin servidores propios ni telemetría.
       </footer>
