@@ -40,6 +40,22 @@ await build({
   },
 });
 
+// Trusted extension worker owns personal context; portal content scripts cannot read it.
+await build({
+  configFile: false,
+  logLevel: 'warn',
+  build: {
+    outDir,
+    emptyOutDir: false,
+    sourcemap: false,
+    lib: {
+      entry: path.resolve('apps/extension/src/background.ts'),
+      formats: ['es'],
+      fileName: () => 'background.js',
+    },
+  },
+});
+
 // One content script per site: each official page loads only its own adapter.
 for (const site of sites) {
   await build({
@@ -81,6 +97,7 @@ await writeFile(
       minimum_chrome_version: '120',
       permissions: ['storage'],
       action: { default_popup: 'popup.html', default_title: 'Reforma Digital' },
+      background: { service_worker: 'background.js', type: 'module' },
       content_scripts: sites.map((site) => ({
         matches: test ? [...site.matches, ...testMatches(site)] : site.matches,
         js: [`content/${site.id}.js`],
