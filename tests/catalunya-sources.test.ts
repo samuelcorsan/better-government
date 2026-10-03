@@ -89,4 +89,23 @@ describe('inventario público de Catalunya', () => {
       source.enabled = false;
     }
   });
+
+  it('mantiene fuera del registro una URL publicada cuyo contenido no se pudo verificar', () => {
+    const source = sources.find((item) => item.id === 'tarragona-tramits');
+    if (!source) throw new Error('Falta la fuente Tarragona');
+    const pending =
+      'https://seu.tarragona.cat/sta/CarpetaPublic/doEvent?APP_CODE=STA&PAGE_CODE=CATALOGO&lang=CA';
+    expect(source.publicUrls).not.toContain(pending);
+    source.enabled = true;
+    try {
+      expect(
+        approvedSource(
+          'https://seu.tarragona.cat/sta/CarpetaPublic/doEvent?APP_CODE=STA&PAGE_CODE=CATALOGO&lang=ES',
+        )?.id,
+      ).toBe('tarragona-tramits');
+      expect(approvedSource(pending)).toBeUndefined();
+    } finally {
+      source.enabled = false;
+    }
+  });
 });

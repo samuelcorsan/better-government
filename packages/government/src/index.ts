@@ -210,11 +210,8 @@ export const sources: Source[] = [
     'tarragona-tramits',
     'Ajuntament de Tarragona · Tràmits',
     'ES-CT-TARRAGONA',
-    ['ca', 'es'],
-    [
-      'https://seu.tarragona.cat/sta/CarpetaPublic/doEvent?APP_CODE=STA&PAGE_CODE=CATALOGO&lang=CA',
-      'https://seu.tarragona.cat/sta/CarpetaPublic/doEvent?APP_CODE=STA&PAGE_CODE=CATALOGO&lang=ES',
-    ],
+    ['es'],
+    ['https://seu.tarragona.cat/sta/CarpetaPublic/doEvent?APP_CODE=STA&PAGE_CODE=CATALOGO&lang=ES'],
   ),
   publicSource(
     'atc-irpf',
