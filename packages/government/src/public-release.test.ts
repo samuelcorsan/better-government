@@ -95,6 +95,11 @@ describe('catálogo público versionado', () => {
       guides: [{ current: true }],
       flows: [{ status: 'available' }],
     });
+    expect(
+      await readPublicRelease(result.stored, '2026-10-04', [
+        { id: 'synthetic-flow', version: '1.0.0' },
+      ]),
+    ).toEqual(result.catalogue);
     expect(requests.map((item) => item.url)).toEqual([
       'https://raw.githubusercontent.com/samuelcorsan/reforma-digital/main/catalogue/latest.json',
       'https://raw.githubusercontent.com/samuelcorsan/reforma-digital/main/catalogue/releases/1.json',
@@ -120,7 +125,7 @@ describe('catálogo público versionado', () => {
     expect(valid.stored).not.toBeNull();
     await publish({ ...first, revision: 2 }, true);
     const failed = await refreshPublicRelease(valid.stored, '2026-10-05');
-    expect(failed.stored).toEqual(valid.stored);
+    expect(failed.stored).toEqual({ ...valid.stored, checkedAt: null });
     expect(failed.catalogue).toMatchObject({
       revision: 1,
       publishedAt: '2026-10-04',
@@ -134,6 +139,11 @@ describe('catálogo público versionado', () => {
     expect((await refreshPublicRelease(valid.stored, '2026-10-05')).catalogue).toEqual(
       failed.catalogue,
     );
+    expect(
+      await readPublicRelease(failed.stored, '2026-10-05', [
+        { id: 'synthetic-flow', version: '1.0.0' },
+      ]),
+    ).toEqual(failed.catalogue);
     expect(
       await readPublicRelease({ body: valid.stored!.body, sha256: '0'.repeat(64) }, '2026-10-05'),
     ).toMatchObject({ revision: null, guides: [], flows: [] });
@@ -194,5 +204,31 @@ describe('catálogo público versionado', () => {
     expect(() =>
       parsePublicRelease({ ...first, flows: [{ ...first.flows[0], map: { screens: [] } }] }),
     ).toThrow();
+  });
+
+  it('no anticipa una publicación ni la vigencia futura de una guía', async () => {
+    const future = guideSchema.parse({
+      ...guide,
+      period: { from: '2026-10-10', evidenceIds: ['rule'] },
+      evidence: [
+        {
+          ...guide.evidence[0],
+          applicableFrom: '2026-10-10',
+          quote: 'Regla ficticia desde 2026-10-10.',
+        },
+      ],
+    });
+    const release = { ...first, guides: [future] };
+    await publish(release);
+    const early = await refreshPublicRelease(null, '2026-10-04');
+    expect(early.catalogue.guides[0]?.current).toBe(false);
+    expect((await readPublicRelease(early.stored, '2026-10-04')).guides[0]?.current).toBe(false);
+    expect((await refreshPublicRelease(null, '2026-10-10')).catalogue.guides[0]?.current).toBe(
+      true,
+    );
+
+    const body = JSON.stringify({ ...first, publishedAt: '2026-10-10' });
+    const stored = { body, sha256: await digest(body), checkedAt: '2026-10-04' };
+    expect((await readPublicRelease(stored, '2026-10-04')).fresh).toBe(false);
   });
 });

@@ -15,7 +15,7 @@ export type PublicRelease = {
   retiredGuides: string[];
   flows: FlowStatus[];
 };
-export type StoredRelease = { body: string; sha256: string };
+export type StoredRelease = { body: string; sha256: string; checkedAt: string | null };
 export type PublicCatalogue = {
   revision: number | null;
   publishedAt: string | null;
@@ -141,16 +141,17 @@ async function readStored(
   value: unknown,
 ): Promise<{ stored: StoredRelease; release: PublicRelease } | null> {
   if (
-    !record(value, ['body', 'sha256']) ||
+    !record(value, ['body', 'sha256', 'checkedAt']) ||
     typeof value.body !== 'string' ||
     value.body.length > maxBytes ||
     !sha256(value.sha256) ||
+    (value.checkedAt !== null && !date(value.checkedAt)) ||
     (await digest(value.body)) !== value.sha256
   )
     return null;
   try {
     return {
-      stored: { body: value.body, sha256: value.sha256 },
+      stored: { body: value.body, sha256: value.sha256, checkedAt: value.checkedAt },
       release: parsePublicRelease(JSON.parse(value.body)),
     };
   } catch {
@@ -164,14 +165,18 @@ function view(
   downloaded: boolean,
   packagedFlows: readonly { id: string; version: string }[],
 ): PublicCatalogue {
-  const fresh = !!release && downloaded && asOf <= release.validUntil;
+  const fresh =
+    !!release && downloaded && release.publishedAt <= asOf && asOf <= release.validUntil;
   return {
     revision: release?.revision ?? null,
     publishedAt: release?.publishedAt ?? null,
     fresh,
     guides: (release?.guides ?? []).map((guide) => ({
       guide,
-      current: fresh && (!guide.period.until || asOf <= guide.period.until),
+      current:
+        fresh &&
+        (!guide.period.from || guide.period.from <= asOf) &&
+        (!guide.period.until || asOf <= guide.period.until),
     })),
     flows: (release?.flows ?? []).map((flow) => ({
       ...flow,
@@ -230,11 +235,11 @@ export async function refreshPublicRelease(
           (release.revision === old.release.revision && pointer.sha256 !== old.stored.sha256)))
     )
       throw new Error('Invalid catalogue transition');
-    const stored = { body, sha256: pointer.sha256 };
+    const stored = { body, sha256: pointer.sha256, checkedAt: asOf };
     return { stored, catalogue: view(release, asOf, true, packagedFlows) };
   } catch {
     return {
-      stored: old?.stored ?? null,
+      stored: old ? { ...old.stored, checkedAt: null } : null,
       catalogue: view(old?.release ?? null, asOf, false, packagedFlows),
     };
   }
@@ -246,5 +251,6 @@ export async function readPublicRelease(
   packagedFlows: readonly { id: string; version: string }[] = [],
 ): Promise<PublicCatalogue> {
   if (!date(asOf)) throw new RangeError('Invalid catalogue date');
-  return view((await readStored(stored))?.release ?? null, asOf, false, packagedFlows);
+  const cached = await readStored(stored);
+  return view(cached?.release ?? null, asOf, cached?.stored.checkedAt === asOf, packagedFlows);
 }

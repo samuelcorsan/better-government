@@ -22,7 +22,12 @@ async function catalogue(refresh: boolean) {
   const today = new Date().toISOString().slice(0, 10);
   if (!refresh) return readPublicRelease(stored, today);
   const result = await refreshPublicRelease(stored, today);
-  if (result.stored && (!record(stored) || stored.sha256 !== result.stored.sha256))
+  if (
+    result.stored &&
+    (!record(stored) ||
+      stored.sha256 !== result.stored.sha256 ||
+      stored.checkedAt !== result.stored.checkedAt)
+  )
     await chrome.storage.session.set({ [catalogueKey]: result.stored });
   return result.catalogue;
 }
