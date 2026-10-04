@@ -164,3 +164,117 @@ export function quoteSupported(content: string, quote: string): boolean {
   const text = evidenceText(quote);
   return text.length >= 8 && evidenceText(content).includes(text);
 }
+
+const guideId = z.string().trim().min(1);
+const guideDate = z.iso.date();
+const bilingual = z.strictObject({ ca: z.string().trim().min(1), es: z.string().trim().min(1) });
+const guideJurisdiction = z.string().regex(/^ES(?:-[A-Z]{2}(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?)?$/);
+const citedText = z.strictObject({
+  id: guideId,
+  text: bilingual,
+  evidenceIds: z.array(guideId).min(1),
+});
+
+/** Structural checks only: citations are internal references and ISO dates are matched literally. Source authenticity and applicability need separate automatic gates before `verified`; parsing alone is insufficient. */
+export const guideSchema = z
+  .strictObject({
+    id: guideId,
+    revision: z.number().int().positive(),
+    title: bilingual,
+    domain: z.string().regex(/^D-(0[1-9]|1[0-8])$/),
+    subtopic: guideId,
+    profiles: z.array(guideId).min(1),
+    jurisdiction: guideJurisdiction,
+    consultedAt: guideDate,
+    period: z.strictObject({
+      from: guideDate.optional(),
+      until: guideDate.optional(),
+      evidenceIds: z.array(guideId),
+    }),
+    validation: z.discriminatedUnion('status', [
+      z.strictObject({ status: z.literal('pending') }),
+      z.strictObject({
+        status: z.literal('verified'),
+        checkedAt: guideDate,
+        method: z.literal('automatic'),
+      }),
+    ]),
+    evidence: z
+      .array(
+        z.strictObject({
+          id: guideId,
+          sourceId: guideId,
+          url: z.url().refine((url) => {
+            const parsed = new URL(url);
+            return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
+          }),
+          jurisdiction: guideJurisdiction,
+          quote: z.string().trim().min(8),
+        }),
+      )
+      .min(1),
+    conditions: z.array(citedText),
+    exclusions: z.array(citedText),
+    claims: z
+      .array(
+        citedText.extend({
+          kind: z.enum(['fact', 'obligation']),
+          conditionIds: z.array(guideId),
+        }),
+      )
+      .min(1),
+    steps: z.array(citedText.extend({ dependsOn: z.array(guideId) })),
+  })
+  .superRefine((guide, context) => {
+    const issue = (message: string) => context.addIssue({ code: 'custom', message });
+    const evidence = new Map(guide.evidence.map((item) => [item.id, item]));
+    const hasDateCitation = (ids: string[], date: string) =>
+      ids.some((id) => evidence.get(id)?.quote.includes(date));
+    if (evidence.size !== guide.evidence.length) issue('Evidencia duplicada');
+    for (const item of guide.evidence)
+      if (!compatibleJurisdiction(item.jurisdiction, guide.jurisdiction))
+        issue(`Ámbito incompatible en evidencia ${item.id}`);
+
+    const statements = [...guide.conditions, ...guide.exclusions, ...guide.claims, ...guide.steps];
+    if (new Set(statements.map((item) => item.id)).size !== statements.length)
+      issue('Identificador de afirmación duplicado');
+    for (const statement of statements) {
+      for (const id of statement.evidenceIds)
+        if (!evidence.has(id)) issue(`Cita inexistente ${id}`);
+      for (const date of [
+        ...statement.text.ca.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
+        ...statement.text.es.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
+      ])
+        if (!hasDateCitation(statement.evidenceIds, date[0]))
+          issue(`Fecha de afirmación sin cita literal ${date[0]}`);
+    }
+
+    const conditions = new Set(guide.conditions.map((item) => item.id));
+    for (const claim of guide.claims) {
+      if (claim.kind === 'obligation' && claim.conditionIds.length === 0)
+        issue(`Obligación sin condiciones ${claim.id}`);
+      for (const id of claim.conditionIds)
+        if (!conditions.has(id)) issue(`Condición inexistente ${id}`);
+    }
+
+    const priorSteps = new Set<string>();
+    for (const step of guide.steps) {
+      for (const id of step.dependsOn)
+        if (!priorSteps.has(id)) issue(`Dependencia inexistente o posterior ${id}`);
+      priorSteps.add(step.id);
+    }
+
+    if (guide.period.from && guide.period.until && guide.period.from > guide.period.until)
+      issue('Periodo invertido');
+    if (guide.validation.status === 'verified' && !guide.period.from && !guide.period.until)
+      issue('Vigencia desconocida');
+    for (const id of guide.period.evidenceIds)
+      if (!evidence.has(id)) issue(`Cita de vigencia inexistente ${id}`);
+    for (const date of [guide.period.from, guide.period.until]) {
+      if (date && !hasDateCitation(guide.period.evidenceIds, date))
+        issue(`Fecha de vigencia sin cita literal ${date}`);
+    }
+    if (guide.validation.status === 'verified' && guide.validation.checkedAt < guide.consultedAt)
+      issue('Validación anterior a la consulta');
+  });
+export type Guide = z.infer<typeof guideSchema>;
