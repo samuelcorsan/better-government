@@ -17,6 +17,7 @@ type Card = {
   evidence: Evidence;
   additionalEvidence?: Evidence[];
   periodFrom?: string;
+  periodUntil?: string;
 };
 
 const aeat = 'Agencia Estatal de Administración Tributaria';
@@ -397,16 +398,21 @@ const cards: Card[] = [
       ca: 'La taula general no resol automàticament els supòsits amb regles especials.',
       es: 'La tabla general no resuelve automáticamente los supuestos con reglas especiales.',
     },
-    evidence: citation(
-      'tgss-base-2026',
-      'seg-social',
-      tgssRates,
-      'La base de cotización en este régimen especial será la elegida por el trabajador entre las bases mínima y máxima de su tramo de rendimientos.',
-      tgss,
-      '2026-01-01',
-      tgssRates,
-      'observed-2026-10-04-year-2026',
-    ),
+    evidence: {
+      ...citation(
+        'tgss-base-2026',
+        'seg-social',
+        tgssRates,
+        'La base de cotización en este régimen especial será la elegida por el trabajador entre las bases mínima y máxima de su tramo de rendimientos.',
+        tgss,
+        '2026-01-01',
+        tgssRates,
+        'observed-2026-10-04-year-2026',
+      ),
+      applicableUntil: '2026-12-31',
+    },
+    periodFrom: '2026-01-01',
+    periodUntil: '2026-12-31',
     additionalEvidence: [
       citation(
         'tgss-especiales-2026',
@@ -486,16 +492,21 @@ const cards: Card[] = [
       ca: 'Aquesta regla de reintegrament no s’estén automàticament al 2027.',
       es: 'Esta regla de reintegro no se extiende automáticamente a 2027.',
     },
-    evidence: citation(
-      'tgss-pluriactividad-2026',
-      'seg-social',
-      tgssRates,
-      'durante el año 2026, teniendo en cuenta tanto las cotizaciones efectuadas en este régimen especial como las aportaciones empresariales',
-      tgss,
-      '2026-01-01',
-      tgssRates,
-      'observed-2026-10-04-year-2026',
-    ),
+    evidence: {
+      ...citation(
+        'tgss-pluriactividad-2026',
+        'seg-social',
+        tgssRates,
+        'durante el año 2026, teniendo en cuenta tanto las cotizaciones efectuadas en este régimen especial como las aportaciones empresariales',
+        tgss,
+        '2026-01-01',
+        tgssRates,
+        'observed-2026-10-04-year-2026',
+      ),
+      applicableUntil: '2026-12-31',
+    },
+    periodFrom: '2026-01-01',
+    periodUntil: '2026-12-31',
     additionalEvidence: [
       citation(
         'tgss-reintegro-2026',
@@ -574,7 +585,11 @@ export const fiscalSocialGuides: Guide[] = cards.map((card) => {
     profiles: card.profiles,
     jurisdiction: 'ES-CT',
     consultedAt: checkedAt,
-    period: card.periodFrom ? { from: card.periodFrom, evidenceIds } : { evidenceIds },
+    period: {
+      ...(card.periodFrom ? { from: card.periodFrom } : {}),
+      ...(card.periodUntil ? { until: card.periodUntil } : {}),
+      evidenceIds,
+    },
     validation: { status: 'pending' },
     evidence,
     conditions: [statement('applies', card.condition, evidenceIds)],

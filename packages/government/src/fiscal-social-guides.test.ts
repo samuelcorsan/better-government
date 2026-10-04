@@ -4,6 +4,7 @@ import {
   fiscalSocialGuides,
   fiscalSocialRights,
 } from './fiscal-social-guides';
+import { reviseKnowledgeCatalog } from './knowledge-invalidation';
 
 describe('guías fiscales y sociales controladas', () => {
   it('mantiene cobertura por subtema y perfil con citas, versiones y traducciones pendientes', () => {
@@ -45,7 +46,12 @@ describe('guías fiscales y sociales controladas', () => {
     }
     expect(
       fiscalSocialGuides.filter((guide) => guide.period.from).map((guide) => guide.id),
-    ).toEqual(['fiscal-036-vigente', 'social-mutualidad-alternativa']);
+    ).toEqual([
+      'fiscal-036-vigente',
+      'social-mutualidad-alternativa',
+      'social-cotizacion-2026',
+      'social-pluriactividad-2026',
+    ]);
     expect(fiscalSocialCoverage.state).toBe('controlled-pending');
     expect(new Set(fiscalSocialCoverage.partial.map((item) => item.guideId))).toEqual(
       new Set(fiscalSocialGuides.map((guide) => guide.id)),
@@ -54,6 +60,8 @@ describe('guías fiscales y sociales controladas', () => {
 
   it('conserva las abstenciones materiales frente a 037, cuota fija y plazo RETA extrapolado', () => {
     const byId = new Map(fiscalSocialGuides.map((guide) => [guide.id, guide]));
+    for (const id of ['social-cotizacion-2026', 'social-pluriactividad-2026'])
+      expect(byId.get(id)?.period.until).toBe('2026-12-31');
     expect(byId.get('fiscal-036-vigente')?.claims[0]?.text.es).toContain('suprimido');
     expect(byId.get('fiscal-pae-sin-duplicar')?.steps[0]?.text.es).toContain('antes de presentar');
     expect(byId.get('social-cotizacion-2026')?.steps[0]?.text.es).toContain('no calcules');
@@ -67,5 +75,13 @@ describe('guías fiscales y sociales controladas', () => {
         (guide) => !guide.steps.some((step) => /tres días|seis días|80 €/i.test(step.text.es)),
       ),
     ).toBe(true);
+  });
+
+  it('retira las fichas del ejercicio 2026 al empezar 2027', () => {
+    const annual = fiscalSocialGuides.filter((guide) => guide.period.until === '2026-12-31');
+    const revised = reviseKnowledgeCatalog(annual, [], '2027-01-01');
+    expect(annual).toHaveLength(2);
+    expect(revised.guides).toEqual([]);
+    expect(revised.reports.map((report) => report.status)).toEqual(['withdrawn', 'withdrawn']);
   });
 });
