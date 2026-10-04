@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { privacyCommerceGuides } from '@reforma-digital/government/privacy-commerce-guides';
-import { privacyCommerceDataset } from '@reforma-digital/evals/privacy-commerce-cases';
-import { approvedSource, sources } from '@reforma-digital/government';
+import { privacyCommerceGuides } from '../packages/government/src/privacy-commerce-guides';
+import { privacyCommerceDataset } from '../packages/evals/src/privacy-commerce-cases';
+import { approvedSource, sources } from '../packages/government/src/index';
 
 describe('D-11/D-12 privacy, commerce and consumer guides', () => {
   it('registers the AEPD and Consum public documents without enabling remote search', () => {
