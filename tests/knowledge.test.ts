@@ -18,6 +18,14 @@ const guide = {
       id: 'e1',
       sourceId: 'synthetic-office',
       url: 'https://example.test/rule',
+      originalUrl: 'https://example.test/rule',
+      version: 'synthetic-v1',
+      language: 'es',
+      attribution: 'Fuente sintética',
+      sourceUpdatedAt: '2026-05-31',
+      applicableFrom: '2026-01-01',
+      applicableUntil: null,
+      informative: false,
       jurisdiction: 'ES-CT',
       quote: 'Regla sintética aplicable desde 2026-01-01 a perfiles ficticios.',
     },
@@ -27,6 +35,7 @@ const guide = {
       id: 'c1',
       text: { ca: 'Condició fictícia', es: 'Condición ficticia' },
       evidenceIds: ['e1'],
+      translation: 'ca',
     },
   ],
   exclusions: [
@@ -34,6 +43,7 @@ const guide = {
       id: 'x1',
       text: { ca: 'Exclusió fictícia', es: 'Exclusión ficticia' },
       evidenceIds: ['e1'],
+      translation: 'ca',
     },
   ],
   claims: [
@@ -42,6 +52,7 @@ const guide = {
       kind: 'obligation',
       text: { ca: 'Obligació fictícia', es: 'Obligación ficticia' },
       evidenceIds: ['e1'],
+      translation: 'ca',
       conditionIds: ['c1'],
     },
   ],
@@ -50,12 +61,14 @@ const guide = {
       id: 's1',
       text: { ca: 'Primer pas fictici', es: 'Primer paso ficticio' },
       evidenceIds: ['e1'],
+      translation: 'ca',
       dependsOn: [],
     },
     {
       id: 's2',
       text: { ca: 'Segon pas fictici', es: 'Segundo paso ficticio' },
       evidenceIds: ['e1'],
+      translation: 'ca',
       dependsOn: ['s1'],
     },
   ],
@@ -140,6 +153,18 @@ describe('contrato de guía bilingüe sintética', () => {
       }).success,
     ).toBe(false);
     expect(guideSchema.safeParse({ ...guide, title: { ca: 'Alta fictícia' } }).success).toBe(false);
+    expect(
+      guideSchema.safeParse({
+        ...guide,
+        evidence: [{ ...guide.evidence[0], version: '' }],
+      }).success,
+    ).toBe(false);
+    expect(
+      guideSchema.safeParse({
+        ...guide,
+        claims: [{ ...guide.claims[0], translation: 'es' }],
+      }).success,
+    ).toBe(false);
   });
 
   it('rechaza campos inesperados que podrían introducir datos personales', () => {

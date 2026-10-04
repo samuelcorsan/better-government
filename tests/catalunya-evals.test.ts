@@ -1,12 +1,19 @@
 import { expect, it } from 'vitest';
+import { guideSchema } from '../packages/core/src/index';
+import {
+  digestPendingGuide,
+  type GenerationReport,
+} from '../packages/government/src/guide-generation';
 import {
   catalunyaCaseSchema,
   catalunyaGate,
   catalunyaPublicationGate,
   compareCatalunya,
   evaluateCatalunya,
+  promoteGeneratedGuide,
   scoreCatalunya,
   type CatalunyaOutcome,
+  type CatalunyaDataset,
 } from '../packages/evals/src/catalunya';
 import { loadCatalunyaDataset } from '../packages/evals/src/index';
 
@@ -205,4 +212,165 @@ it('loads the controlled corpus and keeps the publication gate closed', async ()
   );
   expect(catalunyaPublicationGate(dataset, rows)).toContain('Sin caso D-01/ca/respuesta');
   expect(catalunyaPublicationGate(dataset, rows)).toContain('Sin caso municipal Girona/es');
+});
+
+it('promotes only a guide covered by an official run and matching public evidence', async () => {
+  // Synthetic gate-shape fixture: only a trusted CI runner may label a real corpus official.
+  const cities = ['Barcelona', 'Lleida', 'Girona', 'Tarragona'] as const;
+  const cases = Array.from(
+    { length: 18 },
+    (_, index) => `D-${String(index + 1).padStart(2, '0')}`,
+  ).flatMap((domain, index) =>
+    (['ca', 'es'] as const).flatMap((language) =>
+      [true, false].map((shouldAnswer) => {
+        const city = index < 4 ? cities[index]! : null;
+        const jurisdiction = city ? `ES-CT-${city.toUpperCase()}` : 'ES-CT';
+        return catalunyaCaseSchema.parse({
+          ...testCase,
+          id: `${domain}-${language}-${shouldAnswer}`,
+          domain,
+          language,
+          city,
+          expected: { shouldAnswer, jurisdiction, requiredFacts: [], forbiddenFacts: [] },
+          sources: shouldAnswer ? [{ ...testCase.sources[0]!, jurisdiction }] : [],
+        });
+      }),
+    ),
+  );
+  const dataset: CatalunyaDataset = {
+    version: 'synthetic-ci-fixture',
+    stage: 'official',
+    description: 'Solo prueba sintética',
+    cases,
+  };
+  const run = {
+    gitCommit: 'fixture-commit',
+    rows: cases.map((item) => ({
+      id: item.id,
+      failures: [],
+      latencyMs: 1,
+      costUsd: 0,
+    })),
+  };
+  const quote = testCase.sources[0]!.excerpt;
+  const guide = guideSchema.parse({
+    id: 'synthetic-guide',
+    revision: 1,
+    title: { ca: 'Guia fictícia', es: 'Guía ficticia' },
+    domain: 'D-03',
+    subtopic: 'alta-fiscal',
+    profiles: ['general'],
+    jurisdiction: 'ES-CT-GIRONA',
+    consultedAt: '2026-06-01',
+    period: { from: '2026-01-01', evidenceIds: ['e1'] },
+    validation: { status: 'pending' },
+    evidence: [
+      {
+        id: 'e1',
+        sourceId: 'synthetic-office',
+        url: 'https://example.test/fixture',
+        originalUrl: 'https://example.test/fixture',
+        version: 'synthetic@2026-01-01#fixture',
+        language: 'ca',
+        attribution: 'Fuente sintética',
+        sourceUpdatedAt: '2026-02-01',
+        applicableFrom: '2026-01-01',
+        applicableUntil: null,
+        informative: false,
+        jurisdiction: 'ES-CT-GIRONA',
+        quote,
+      },
+    ],
+    conditions: [],
+    exclusions: [],
+    claims: [],
+    steps: [
+      {
+        id: 'step',
+        text: { ca: quote, es: 'El plazo ficticio acaba el 2026-12-31.' },
+        evidenceIds: ['e1'],
+        translation: 'es',
+        dependsOn: [],
+      },
+    ],
+  });
+  const report: GenerationReport = {
+    reasons: [],
+    guideDigest: await digestPendingGuide(guide),
+    discrepancies: [],
+    retainedStepIds: ['step'],
+    sources: [
+      {
+        id: 'e1',
+        originalUrl: 'https://example.test/fixture',
+        version: 'synthetic@2026-01-01#fixture',
+      },
+    ],
+  };
+  const promote = (corpus = dataset, result = run, generation = report) =>
+    promoteGeneratedGuide(guide, generation, corpus, result, 'fixture-commit', '2026-06-02');
+  expect((await promote()).reasons).toEqual([]);
+  expect((await promote()).guide?.validation.status).toBe('verified');
+  expect((await promote({ ...dataset, stage: 'controlled' })).guide?.validation.status).toBe(
+    'pending',
+  );
+  expect((await promote(dataset, { ...run, gitCommit: 'otro' })).guide?.validation.status).toBe(
+    'pending',
+  );
+  expect(
+    (await promote(dataset, run, { ...report, reasons: [{ code: 'conflict', ids: ['e1'] }] })).guide
+      ?.validation.status,
+  ).toBe('pending');
+  expect(
+    (
+      await promoteGeneratedGuide(
+        { ...guide, profiles: ['general', 'missing'] },
+        report,
+        dataset,
+        run,
+        'fixture-commit',
+        '2026-06-02',
+      )
+    ).guide?.validation.status,
+  ).toBe('pending');
+  expect(
+    (
+      await promoteGeneratedGuide(
+        { ...guide, evidence: [{ ...guide.evidence[0]!, applicableUntil: '2026-06-01' }] },
+        report,
+        dataset,
+        run,
+        'fixture-commit',
+        '2026-06-02',
+      )
+    ).guide?.validation.status,
+  ).toBe('pending');
+  const wrongSource = {
+    ...dataset,
+    cases: dataset.cases.map((item) =>
+      item.id === 'D-03-ca-true'
+        ? { ...item, sources: [{ ...item.sources[0]!, version: '2025-01-01' }] }
+        : item,
+    ),
+  };
+  expect((await promote(wrongSource)).guide?.validation.status).toBe('pending');
+  const changedTranslation = {
+    ...guide,
+    steps: [
+      {
+        ...guide.steps[0]!,
+        text: { ...guide.steps[0]!.text, es: 'Un plazo distinto sin verificar.' },
+      },
+    ],
+  };
+  const altered = await promoteGeneratedGuide(
+    changedTranslation,
+    report,
+    dataset,
+    run,
+    'fixture-commit',
+    '2026-06-02',
+  );
+  expect(altered.guide?.validation.status).toBe('pending');
+  expect(altered.reasons).toContain('Guía modificada desde la generación');
 });

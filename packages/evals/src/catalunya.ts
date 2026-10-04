@@ -1,9 +1,15 @@
 import {
   compatibleJurisdiction,
+  guideSchema,
   normalizeText,
   quoteSupported,
+  type Guide,
   type SearchResult,
 } from '@reforma-digital/core';
+import {
+  digestPendingGuide,
+  type GenerationReport,
+} from '@reforma-digital/government/guide-generation';
 import { z } from 'zod';
 
 const id = z.string().min(1);
@@ -213,6 +219,99 @@ export function catalunyaPublicationGate(
       if (!dataset.cases.some((item) => item.city === city && item.language === language))
         reasons.push(`Sin caso municipal ${city}/${language}`);
   return reasons;
+}
+
+/** The CI runner supplies its actual commit and independently checked official dataset. */
+export async function promoteGeneratedGuide(
+  guide: Guide | null,
+  report: GenerationReport,
+  dataset: CatalunyaDataset,
+  run: CatalunyaRun,
+  runnerCommit: string,
+  runnerCheckedAt: string,
+): Promise<{ guide: Guide | null; reasons: string[] }> {
+  const reasons = catalunyaPublicationGate(dataset, run.rows);
+  if (
+    !guide ||
+    guide.validation.status !== 'pending' ||
+    report.reasons.length ||
+    report.discrepancies.length
+  )
+    reasons.push('Guía o generación pendiente');
+  if (!runnerCommit || run.gitCommit !== runnerCommit) reasons.push('Evaluación de otro commit');
+  if (
+    !z.iso.date().safeParse(runnerCheckedAt).success ||
+    (guide && runnerCheckedAt < guide.consultedAt)
+  )
+    reasons.push('Fecha de evaluación inválida');
+  if (!guide) return { guide: null, reasons };
+  try {
+    if (!report.guideDigest || (await digestPendingGuide(guide)) !== report.guideDigest)
+      reasons.push('Guía modificada desde la generación');
+  } catch {
+    reasons.push('No se pudo comprobar la integridad de la guía');
+  }
+  if (
+    !guide.period.from ||
+    guide.period.from > runnerCheckedAt ||
+    (guide.period.until && guide.period.until < runnerCheckedAt) ||
+    guide.evidence.some(
+      (item) =>
+        item.applicableFrom > runnerCheckedAt ||
+        (item.applicableUntil && item.applicableUntil < runnerCheckedAt),
+    )
+  )
+    reasons.push('Vigencia no confirmada en la evaluación');
+  const evidenceMatches = guide.evidence.every((item) =>
+    report.sources.some(
+      (source) =>
+        source.id === item.id &&
+        source.originalUrl === item.originalUrl &&
+        source.version === item.version,
+    ),
+  );
+  if (!evidenceMatches) reasons.push('Procedencia de guía sin aprobación');
+  const year = Number(guide.consultedAt.slice(0, 4));
+  for (const profile of guide.profiles)
+    for (const language of ['ca', 'es'] as const)
+      for (const shouldAnswer of [true, false]) {
+        const covered = dataset.cases.filter(
+          (testCase) =>
+            testCase.domain === guide.domain &&
+            testCase.subtopic === guide.subtopic &&
+            testCase.profile === profile &&
+            testCase.language === language &&
+            testCase.expected.shouldAnswer === shouldAnswer &&
+            testCase.expected.jurisdiction === guide.jurisdiction &&
+            testCase.year === year &&
+            (!guide.jurisdiction.startsWith('ES-CT-') ||
+              testCase.city?.toUpperCase() === guide.jurisdiction.slice(6)),
+        );
+        const sourceCovered =
+          !shouldAnswer ||
+          guide.evidence.every((item) =>
+            covered.some((testCase) =>
+              testCase.sources.some(
+                (source) =>
+                  source.sourceId === item.sourceId &&
+                  source.url === item.url &&
+                  (item.version === source.version ||
+                    item.version.includes(`@${source.version}#`)) &&
+                  quoteSupported(source.excerpt, item.quote),
+              ),
+            ),
+          );
+        if (!covered.length || !sourceCovered)
+          reasons.push(`Sin cobertura de guía ${profile}/${language}/${shouldAnswer}`);
+      }
+  if (reasons.length) return { guide, reasons };
+  const parsed = guideSchema.safeParse({
+    ...guide,
+    validation: { status: 'verified', checkedAt: runnerCheckedAt, method: 'automatic' },
+  });
+  return parsed.success
+    ? { guide: parsed.data, reasons: [] }
+    : { guide, reasons: ['Guía inválida para publicación'] };
 }
 
 /** Both backends must run the identical case set; this comparison never approves publication. */

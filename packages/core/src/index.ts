@@ -173,6 +173,12 @@ const citedText = z.strictObject({
   id: guideId,
   text: bilingual,
   evidenceIds: z.array(guideId).min(1),
+  /** Language written by the product; null means both languages have original-source evidence. */
+  translation: z.enum(['ca', 'es']).nullable(),
+});
+const publicGuideUrl = z.url().refine((url) => {
+  const parsed = new URL(url);
+  return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
 });
 
 /** Structural checks only: citations are internal references and ISO dates are matched literally. Source authenticity and applicability need separate automatic gates before `verified`; parsing alone is insufficient. */
@@ -204,10 +210,15 @@ export const guideSchema = z
         z.strictObject({
           id: guideId,
           sourceId: guideId,
-          url: z.url().refine((url) => {
-            const parsed = new URL(url);
-            return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
-          }),
+          url: publicGuideUrl,
+          originalUrl: publicGuideUrl,
+          version: guideId,
+          language: z.enum(['ca', 'es']),
+          attribution: z.string().trim().min(1),
+          sourceUpdatedAt: guideDate.nullable(),
+          applicableFrom: guideDate,
+          applicableUntil: guideDate.nullable(),
+          informative: z.boolean(),
           jurisdiction: guideJurisdiction,
           quote: z.string().trim().min(8),
         }),
@@ -215,32 +226,42 @@ export const guideSchema = z
       .min(1),
     conditions: z.array(citedText),
     exclusions: z.array(citedText),
-    claims: z
-      .array(
-        citedText.extend({
-          kind: z.enum(['fact', 'obligation']),
-          conditionIds: z.array(guideId),
-        }),
-      )
-      .min(1),
+    claims: z.array(
+      citedText.extend({
+        kind: z.enum(['fact', 'obligation']),
+        conditionIds: z.array(guideId),
+      }),
+    ),
     steps: z.array(citedText.extend({ dependsOn: z.array(guideId) })),
   })
   .superRefine((guide, context) => {
     const issue = (message: string) => context.addIssue({ code: 'custom', message });
     const evidence = new Map(guide.evidence.map((item) => [item.id, item]));
     const hasDateCitation = (ids: string[], date: string) =>
-      ids.some((id) => evidence.get(id)?.quote.includes(date));
+      ids.some(
+        (id) =>
+          evidence.get(id)?.quote.includes(date) ||
+          evidence.get(id)?.applicableFrom === date ||
+          evidence.get(id)?.applicableUntil === date,
+      );
     if (evidence.size !== guide.evidence.length) issue('Evidencia duplicada');
     for (const item of guide.evidence)
       if (!compatibleJurisdiction(item.jurisdiction, guide.jurisdiction))
         issue(`Ámbito incompatible en evidencia ${item.id}`);
 
     const statements = [...guide.conditions, ...guide.exclusions, ...guide.claims, ...guide.steps];
+    if (!guide.claims.length && !guide.steps.length) issue('Guía sin afirmaciones ni pasos');
     if (new Set(statements.map((item) => item.id)).size !== statements.length)
       issue('Identificador de afirmación duplicado');
     for (const statement of statements) {
       for (const id of statement.evidenceIds)
         if (!evidence.has(id)) issue(`Cita inexistente ${id}`);
+      const languages = new Set(statement.evidenceIds.map((id) => evidence.get(id)?.language));
+      if (statement.translation) {
+        if (!languages.has(statement.translation === 'ca' ? 'es' : 'ca'))
+          issue(`Traducción sin cita en idioma original ${statement.id}`);
+      } else if (!languages.has('ca') || !languages.has('es'))
+        issue(`Texto bilingüe sin citas originales en ambos idiomas ${statement.id}`);
       for (const date of [
         ...statement.text.ca.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
         ...statement.text.es.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
