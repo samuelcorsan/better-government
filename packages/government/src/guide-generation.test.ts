@@ -354,6 +354,32 @@ describe('generación pública bilingüe', () => {
     });
   });
 
+  it('descarta items incompletos del generador sin perder un paso independiente', async () => {
+    const proposal = structuredClone(draft);
+    Reflect.set(proposal.conditions, 1, null);
+    Reflect.set(proposal.exclusions, 0, null);
+    Reflect.deleteProperty(proposal.claims[0]!, 'conditionIds');
+    const brokenStep = { ...proposal.steps[0]!, id: 'broken-step' };
+    Reflect.deleteProperty(brokenStep, 'dependsOn');
+    proposal.steps = [brokenStep, proposal.steps[0]!];
+    const result = await generatePublicGuide(
+      seed,
+      taxonomy,
+      [passage('condition'), passage('rule'), passage('step')],
+      approval,
+      async () => proposal,
+      verify,
+    );
+    expect(result.guide?.conditions.map((item) => item.id)).toEqual(['condition']);
+    expect(result.guide?.claims).toEqual([]);
+    expect(result.guide?.steps.map((item) => item.id)).toEqual(['step']);
+    expect(result.report.retainedStepIds).toEqual(['step']);
+    expect(result.report.reasons).toContainEqual({
+      code: 'unsupported-statement',
+      ids: ['broken-step'],
+    });
+  });
+
   it('no promueve una traducción con instrucciones aunque el verificador responda sí', async () => {
     const malicious = {
       ...draft,

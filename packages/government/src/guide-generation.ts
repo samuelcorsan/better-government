@@ -402,6 +402,9 @@ export async function generatePublicGuide<Receipt>(
     let period = draft.period;
     if (
       !Array.isArray(period.evidenceIds) ||
+      (period.from !== undefined && (typeof period.from !== 'string' || !validDate(period.from))) ||
+      (period.until !== undefined &&
+        (typeof period.until !== 'string' || !validDate(period.until))) ||
       period.evidenceIds.some((id) => !eligible.has(id)) ||
       [period.from, period.until].some(
         (date) =>
@@ -425,6 +428,9 @@ export async function generatePublicGuide<Receipt>(
       kind: StatementKind,
     ): Promise<boolean> => {
       if (
+        !item ||
+        typeof item !== 'object' ||
+        typeof item.id !== 'string' ||
         !safeId.test(item.id) ||
         privateValue.test(item.id) ||
         !Array.isArray(item.evidenceIds) ||
@@ -487,6 +493,10 @@ export async function generatePublicGuide<Receipt>(
     const validConditions = new Set(conditions.map((item) => item.id));
     const claims: Guide['claims'] = [];
     for (const item of draft.claims) {
+      if (!item || typeof item !== 'object' || !Array.isArray(item.conditionIds)) {
+        note('unsupported-statement');
+        continue;
+      }
       if (!(await supported(item, item.kind))) continue;
       const valid = item.conditionIds.every((id) => validConditions.has(id));
       if (!valid) note('unsupported-statement', [item.id]);
@@ -494,7 +504,10 @@ export async function generatePublicGuide<Receipt>(
     }
     const steps: Guide['steps'] = [];
     for (const item of await keep(draft.steps, 'step')) {
-      if (!item.dependsOn.every((id) => steps.some((step) => step.id === id))) {
+      if (
+        !Array.isArray(item.dependsOn) ||
+        !item.dependsOn.every((id) => steps.some((step) => step.id === id))
+      ) {
         note('unsupported-statement', [item.id]);
         continue;
       }
