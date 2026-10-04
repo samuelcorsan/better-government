@@ -198,7 +198,7 @@ function CatalogueSearch() {
         </p>
       ) : null}
       {catalogue && !catalogue.fresh ? (
-        <p role="status" className="bg-callout bg-callout-warning">
+        <p aria-live="polite" className="bg-callout bg-callout-warning">
           {copy.stale}
         </p>
       ) : null}
