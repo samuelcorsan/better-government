@@ -109,6 +109,11 @@ incluida la segunda fuente cuando existe. Las expectativas proceden de
 extractos públicos, nunca de un paso generado. Las preguntas de varios perfiles
 reutilizan el hecho general aplicable: no prueban una resolución personalizada
 de cada combinación de circunstancias.
+Las abstenciones plantean decisiones individuales sin los datos decisivos;
+las negaciones universales respaldadas por una fuente pueden responderse y no
+se etiquetan como abstención.
+La fecha de un recurso sin acto notificado se marca como caso crítico de plazo;
+los métodos municipales sin trámite concreto son casos críticos de jurisdicción.
 Los hechos obligatorios del scorer usan fragmentos breves comunes al texto
 original y a su posible traducción ca/es para no exigir palabras castellanas en
 una respuesta catalana. Por ello, los casos controlados no validan la calidad

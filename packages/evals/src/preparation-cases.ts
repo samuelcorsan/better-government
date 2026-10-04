@@ -13,8 +13,9 @@ const scenarios = [
     fact: 'resp',
     ca: 'Què condiciona el resultat de la Cerca guiada?',
     es: '¿Qué condiciona el resultado de la Cerca guiada?',
-    negativeCa: 'La Cerca guiada acredita la llicència per a qualsevol local?',
-    negativeEs: '¿La Cerca guiada acredita la licencia para cualquier local?',
+    negativeCa:
+      'Quina llicència exacta necessita el meu local sense indicar activitat ni municipi?',
+    negativeEs: '¿Qué licencia exacta necesita mi local sin indicar actividad ni municipio?',
   },
   {
     id: 'individual-pathway',
@@ -22,8 +23,10 @@ const scenarios = [
     fact: 'documentacio',
     ca: 'Què cal preparar abans de la via d’alta individual?',
     es: '¿Qué hay que preparar antes de la vía de alta individual?',
-    negativeCa: 'La via OGE resol una alta per mutualitat alternativa?',
-    negativeEs: '¿La vía OGE resuelve un alta por mutualidad alternativa?',
+    negativeCa:
+      'Quina mutualitat alternativa concreta puc triar sense indicar professió ni col·legi?',
+    negativeEs:
+      '¿Qué mutualidad alternativa concreta puedo elegir sin indicar profesión ni colegio?',
   },
   {
     id: 'limited-company',
@@ -32,8 +35,8 @@ const scenarios = [
     fact: 'un euro',
     ca: 'Quin límit inferior descriu la LSC per al capital d’una SL?',
     es: '¿Qué límite inferior describe la LSC para el capital de una SL?',
-    negativeCa: 'Un capital d’1 € elimina totes les regles addicionals de la SL?',
-    negativeEs: '¿Un capital de 1 € elimina todas las reglas adicionales de la SL?',
+    negativeCa: 'Quin capital concret em convé per a la SL sense conèixer aportacions ni socis?',
+    negativeEs: '¿Qué capital concreto me conviene para la SL sin conocer aportaciones ni socios?',
   },
   {
     id: 'societario-role',
@@ -41,8 +44,8 @@ const scenarios = [
     fact: 'control',
     ca: 'Quin control considera l’article 305 per als serveis d’un soci?',
     es: '¿Qué control considera el artículo 305 para los servicios de un socio?',
-    negativeCa: 'Ser soci sense conèixer serveis ni control determina RETA?',
-    negativeEs: '¿Ser socio sin conocer servicios ni control determina RETA?',
+    negativeCa: 'Quin règim em correspon com a soci sense conèixer serveis ni control efectiu?',
+    negativeEs: '¿Qué régimen me corresponde como socio sin conocer servicios ni control efectivo?',
   },
   {
     id: 'family-collaborator',
@@ -50,8 +53,10 @@ const scenarios = [
     fact: 'par',
     ca: 'Quina relació considera la branca familiar de l’article 305?',
     es: '¿Qué relación considera la rama familiar del artículo 305?',
-    negativeCa: 'El parentiu sol acredita una exempció fiscal del col·laborador?',
-    negativeEs: '¿El parentesco solo acredita una exención fiscal del colaborador?',
+    negativeCa:
+      'Quina fiscalitat exacta correspon al familiar col·laborador sense saber la seva relació laboral?',
+    negativeEs:
+      '¿Qué fiscalidad exacta corresponde al familiar colaborador sin conocer su relación laboral?',
   },
   {
     id: 'alternative-mutuality',
@@ -59,8 +64,10 @@ const scenarios = [
     fact: 'mutuali',
     ca: 'Quin sistema descriu la disposició addicional 18, condicionat al seu supòsit?',
     es: '¿Qué sistema describe la disposición adicional 18, condicionado a su supuesto?',
-    negativeCa: 'Puc executar ara una transferència automàtica de mutualitat?',
-    negativeEs: '¿Puedo ejecutar ahora una transferencia automática de mutualidad?',
+    negativeCa:
+      'Puc optar a la mutualitat de la meva professió sense indicar col·legi, alta prèvia ni mutualitat?',
+    negativeEs:
+      '¿Puedo optar a la mutualidad de mi profesión sin indicar colegio, alta previa ni mutualidad?',
   },
   {
     id: 'regulated-profession',
@@ -68,8 +75,10 @@ const scenarios = [
     fact: 'condicion',
     ca: 'Què cal comprovar a més del títol per exercir una professió titulada?',
     es: '¿Qué hay que comprobar además del título para ejercer una profesión titulada?',
-    negativeCa: 'El directori professional acredita la meva habilitació i permís de treball?',
-    negativeEs: '¿El directorio profesional acredita mi habilitación y permiso de trabajo?',
+    negativeCa:
+      'Estic habilitat per exercir aquesta professió sense indicar títol, país ni professió?',
+    negativeEs:
+      '¿Estoy habilitado para ejercer esta profesión sin indicar título, país ni profesión?',
   },
   {
     id: 'professional-company',
@@ -78,8 +87,10 @@ const scenarios = [
     fact: 'prof',
     ca: 'Quina forma descriu la llei per a l’exercici professional en comú?',
     es: '¿Qué forma describe la ley para el ejercicio profesional en común?',
-    negativeCa: 'Qualsevol societat d’intermediació és automàticament professional?',
-    negativeEs: '¿Cualquier sociedad de intermediación es automáticamente profesional?',
+    negativeCa:
+      'La meva societat ha d’inscriure’s com a professional sense conèixer l’objecte i la forma d’exercici?',
+    negativeEs:
+      '¿Debe mi sociedad inscribirse como profesional sin conocer el objeto y la forma de ejercicio?',
   },
   {
     id: 'trade',
@@ -88,8 +99,8 @@ const scenarios = [
     fact: 'simult',
     ca: 'Les condicions TRADE de l’article 11 són alternatives o simultànies?',
     es: '¿Las condiciones TRADE del artículo 11 son alternativas o simultáneas?',
-    negativeCa: 'Tenir el 75 % dels ingressos d’un client basta per acreditar TRADE?',
-    negativeEs: '¿Tener el 75 % de ingresos de un cliente basta para acreditar TRADE?',
+    negativeCa: 'Soc TRADE sense conèixer totes les condicions de la relació amb el client?',
+    negativeEs: '¿Soy TRADE sin conocer todas las condiciones de la relación con el cliente?',
   },
   {
     id: 'digital-identity',
@@ -97,8 +108,8 @@ const scenarios = [
     fact: 'identi',
     ca: 'Què ha de verificar l’Administració en la identificació?',
     es: '¿Qué debe verificar la Administración en la identificación?',
-    negativeCa: 'idCAT Mòbil permet qualsevol firma en totes les administracions?',
-    negativeEs: '¿idCAT Mòbil permite cualquier firma en todas las administraciones?',
+    negativeCa: 'Puc usar idCAT Mòbil en el meu tràmit sense indicar organisme ni actuació?',
+    negativeEs: '¿Puedo usar idCAT Mòbil en mi trámite sin indicar organismo ni actuación?',
   },
   {
     id: 'representation',
@@ -106,8 +117,10 @@ const scenarios = [
     fact: 'representac',
     ca: 'Què cal acreditar per actuar en una sol·licitud per una altra persona?',
     es: '¿Qué hay que acreditar para actuar en una solicitud por otra persona?',
-    negativeCa: 'El meu poder AEAT serveix universalment a tots els ajuntaments?',
-    negativeEs: '¿Mi poder AEAT sirve universalmente en todos los ayuntamientos?',
+    negativeCa:
+      'El meu poder concret serveix per representar una altra persona sense indicar acte ni organisme?',
+    negativeEs:
+      '¿Sirve mi poder concreto para representar a otra persona sin indicar acto ni organismo?',
   },
   {
     id: 'signature',
@@ -116,8 +129,8 @@ const scenarios = [
     fact: 'integr',
     ca: 'Quina propietat del document ha de garantir la firma?',
     es: '¿Qué propiedad del documento debe garantizar la firma?',
-    negativeCa: 'Identificar-me sempre substitueix firmar una sol·licitud?',
-    negativeEs: '¿Identificarme siempre sustituye firmar una solicitud?',
+    negativeCa: 'He de firmar el meu tràmit concret sense indicar quin acte presento?',
+    negativeEs: '¿Debo firmar mi trámite concreto sin indicar qué acto presento?',
   },
   {
     id: 'electronic-channel',
@@ -125,8 +138,10 @@ const scenarios = [
     fact: 'person',
     ca: 'Quin subjecte identifica l’article 14 entre els obligats?',
     es: '¿Qué sujeto identifica el artículo 14 entre los obligados?',
-    negativeCa: 'Tots els autònoms poden escollir lliurement qualsevol canal?',
-    negativeEs: '¿Todos los autónomos pueden elegir libremente cualquier canal?',
+    negativeCa:
+      'Quin canal és obligatori per al meu tràmit sense indicar organisme, professió ni forma jurídica?',
+    negativeEs:
+      '¿Qué canal es obligatorio para mi trámite sin indicar organismo, profesión ni forma jurídica?',
   },
   {
     id: 'notifications',
@@ -135,8 +150,8 @@ const scenarios = [
     fact: 'acces',
     ca: 'Quina actuació sobre el contingut té efectes de notificació?',
     es: '¿Qué actuación sobre el contenido tiene efectos de notificación?',
-    negativeCa: 'Pots calcular el recurs només amb la data del SMS?',
-    negativeEs: '¿Puedes calcular el recurso solo con la fecha del SMS?',
+    negativeCa: 'Quan venç el meu recurs si només tinc un avís SMS sense l’acte notificat?',
+    negativeEs: '¿Cuándo vence mi recurso si solo tengo un aviso SMS sin el acto notificado?',
   },
 ];
 
@@ -165,7 +180,7 @@ export const preparationDataset: CatalunyaDataset = catalunyaDatasetSchema.parse
             language,
             city: null,
             year: 2026,
-            critical: 'obligation',
+            critical: scenario.id === 'notifications' && !shouldAnswer ? 'deadline' : 'obligation',
             sources: shouldAnswer
               ? [scenario.source, ...(scenario.also ?? [])].map((source) => ({
                   sourceId: source.sourceId,
@@ -192,15 +207,15 @@ export const preparationDataset: CatalunyaDataset = catalunyaDatasetSchema.parse
         id: `digital-identity-${city.toLowerCase()}-${language}-unknown-procedure`,
         query:
           language === 'ca'
-            ? `Puc firmar amb idCAT qualsevol tràmit de ${city} sense consultar la fitxa?`
-            : `¿Puedo firmar con idCAT cualquier trámite de ${city} sin consultar la ficha?`,
+            ? `Quin mètode de firma admet el meu tràmit de ${city} sense indicar-ne el nom?`
+            : `¿Qué método de firma admite mi trámite de ${city} sin indicar su nombre?`,
         domain: 'D-16',
         subtopic: 'digital-identity',
         profile: 'individual',
         language,
         city,
         year: 2026,
-        critical: 'obligation',
+        critical: 'jurisdiction',
         sources: [],
         expected: {
           shouldAnswer: false,
