@@ -2,7 +2,7 @@ import { catalunyaDatasetSchema } from './catalunya';
 
 const url = 'https://seu-e.cat/ca/web/girona/tramits-i-gestions/-/tramits/tramit/16092827';
 
-/** Controlled excerpts from the public Catalan page; Spanish expectations use its official term. */
+/** Controlled excerpts from the public Catalan page; both languages share normalized fact stems. */
 export const gironaMunicipalDataset = catalunyaDatasetSchema.parse({
   version: 'girona-municipal-controlled-2026-10-04',
   stage: 'controlled',
@@ -37,7 +37,7 @@ export const gironaMunicipalDataset = catalunyaDatasetSchema.parse({
       expected: {
         shouldAnswer: true,
         jurisdiction: 'ES-CT-GIRONA',
-        requiredFacts: ['certificat tècnic'],
+        requiredFacts: ['certific', 'tecnic'],
         forbiddenFacts: ['llicència concedida', 'licencia concedida'],
       },
     },
@@ -45,8 +45,8 @@ export const gironaMunicipalDataset = catalunyaDatasetSchema.parse({
       id: `girona-premises-${language}-unclassified`,
       query:
         language === 'ca'
-          ? 'Puc obrir el meu local a Girona amb aquesta comunicació sense saber l’activitat, la columna de l’annex ni si hi ha obres?'
-          : '¿Puedo abrir mi local en Girona con esta comunicación sin saber la actividad, la columna del anexo ni si hay obras?',
+          ? 'Quin tràmit municipal exacte he de presentar avui per al meu local a Girona? Encara no sé quina activitat hi faré, com es classifica ni si calen obres.'
+          : '¿Qué trámite municipal exacto debo presentar hoy para mi local en Girona? Aún no sé qué actividad realizaré, cómo se clasifica ni si requiere obras.',
       domain: 'D-06',
       subtopic: 'municipal-premises-girona',
       profile: 'with-premises',
@@ -66,8 +66,8 @@ export const gironaMunicipalDataset = catalunyaDatasetSchema.parse({
       id: `girona-premises-${language}-other-city`,
       query:
         language === 'ca'
-          ? 'Serveix la comunicació de Girona per obrir un local a Barcelona?'
-          : '¿Sirve la comunicación de Girona para abrir un local en Barcelona?',
+          ? 'Quin tràmit municipal exacte he de presentar avui per obrir el meu local a Barcelona? No he indicat l’activitat ni les característiques del local.'
+          : '¿Qué trámite municipal exacto debo presentar hoy para abrir mi local en Barcelona? No he indicado la actividad ni las características del local.',
       domain: 'D-06',
       subtopic: 'municipal-premises-girona',
       profile: 'with-premises',
