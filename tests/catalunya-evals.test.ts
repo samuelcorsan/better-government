@@ -163,6 +163,11 @@ it('compares exactly the same bilingual cases and reports quality, latency and c
   expect(comparison.local.quality).toBe(1);
   expect(comparison.webSearch.quality).toBe(0);
   expect(comparison.local.segments['language:ca']?.latencyMs).toBe(12);
+  expect(comparison.local.segments['domain:D-03']?.quality).toBe(1);
+  expect(comparison.local.segments['subtopic:alta-fiscal']?.quality).toBe(1);
+  expect(comparison.local.segments['profile:general']?.quality).toBe(1);
+  expect(comparison.local.segments['city:Girona']?.quality).toBe(1);
+  expect(comparison.local.segments['year:2026']?.quality).toBe(1);
   expect(comparison.webSearch.costUsd).toBe(0.004);
   expect(() =>
     compareCatalunya([testCase], { gitCommit: 'a', rows: [row] }, { gitCommit: 'a', rows: [] }),
