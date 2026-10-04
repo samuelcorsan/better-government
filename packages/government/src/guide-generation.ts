@@ -415,6 +415,7 @@ export async function generatePublicGuide<Receipt>(
       (period.from !== undefined && (typeof period.from !== 'string' || !validDate(period.from))) ||
       (period.until !== undefined &&
         (typeof period.until !== 'string' || !validDate(period.until))) ||
+      (period.from && period.until && period.from > period.until) ||
       period.evidenceIds.some((id) => !eligible.has(id)) ||
       [period.from, period.until].some(
         (date) =>
@@ -486,6 +487,15 @@ export async function generatePublicGuide<Receipt>(
         !item.text.es.trim() ||
         item.translation !== to ||
         evidenceText(item.text[from]) !== evidenceText(source.quote) ||
+        [
+          ...item.text.ca.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
+          ...item.text.es.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
+        ].some(
+          ([date]) =>
+            !source.quote.includes(date) &&
+            date !== approved.approval.applicableFrom &&
+            date !== approved.approval.applicableUntil,
+        ) ||
         promptInstruction.test(item.text[to]) ||
         privateValue.test(item.text[to])
       ) {
@@ -533,7 +543,8 @@ export async function generatePublicGuide<Receipt>(
         !item ||
         typeof item !== 'object' ||
         !Array.isArray(item.conditionIds) ||
-        (item.kind !== 'fact' && item.kind !== 'obligation')
+        (item.kind !== 'fact' && item.kind !== 'obligation') ||
+        (item.kind === 'obligation' && item.conditionIds.length === 0)
       ) {
         note('unsupported-statement', typeof item?.id === 'string' ? [item.id] : []);
         continue;

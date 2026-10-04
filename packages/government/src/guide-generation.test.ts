@@ -392,6 +392,81 @@ describe('generación pública bilingüe', () => {
     });
   });
 
+  it('descarta cada claim inválido sin perder el paso independiente', async () => {
+    type Claim = (typeof draft.claims)[number];
+    const cases: [string, (claim: Claim) => void][] = [
+      [
+        'tipo',
+        (claim) => {
+          Reflect.set(claim, 'kind', 'step');
+        },
+      ],
+      [
+        'condiciones',
+        (claim) => {
+          claim.conditionIds = [];
+        },
+      ],
+      [
+        'fecha añadida',
+        (claim) => {
+          claim.text.ca += ' 2027-01-01';
+        },
+      ],
+      [
+        'cita',
+        (claim) => {
+          claim.evidenceIds = ['missing'];
+        },
+      ],
+      [
+        'traducción',
+        (claim) => {
+          Reflect.set(claim, 'translation', 'es');
+        },
+      ],
+      [
+        'id duplicado',
+        (claim) => {
+          claim.id = 'condition';
+        },
+      ],
+      [
+        'clave extra',
+        (claim) => {
+          Reflect.set(claim, 'unexpected', 'x');
+        },
+      ],
+      [
+        'texto vacío',
+        (claim) => {
+          claim.text.ca = ' ';
+        },
+      ],
+    ];
+    for (const [label, change] of cases) {
+      const proposal = structuredClone(draft);
+      change(proposal.claims[0]!);
+      const result = await generatePublicGuide(
+        seed,
+        taxonomy,
+        [passage('condition'), passage('rule'), passage('step')],
+        approval,
+        async () => proposal,
+        verify,
+      );
+      expect(result.guide?.claims, label).toEqual([]);
+      expect(
+        result.guide?.steps.map((item) => item.id),
+        label,
+      ).toEqual(['step']);
+      expect(
+        result.report.reasons.some((item) => item.code === 'unsupported-statement'),
+        label,
+      ).toBe(true);
+    }
+  });
+
   it('no promueve una traducción con instrucciones aunque el verificador responda sí', async () => {
     const malicious = {
       ...draft,
@@ -460,6 +535,28 @@ describe('generación pública bilingüe', () => {
     expect(result.guide?.period).toEqual({ from: '2026-01-01', evidenceIds: ['condition'] });
     expect(result.guide?.evidence[0]).toMatchObject({ applicableFrom: '2026-01-01' });
     expect(result.report.reasons).toEqual([]);
+  });
+
+  it('se abstiene ante un periodo invertido aunque ambas fechas aparezcan en la fuente', async () => {
+    const condition = {
+      ...passage('condition'),
+      quote: 'Condición ficticia desde 2026-01-01 hasta 2026-12-31.',
+      content: 'Condición ficticia desde 2026-01-01 hasta 2026-12-31.',
+    };
+    const proposal = {
+      ...draft,
+      period: { from: '2026-12-31', until: '2026-01-01', evidenceIds: ['condition'] },
+    };
+    const result = await generatePublicGuide(
+      seed,
+      taxonomy,
+      [condition, passage('rule'), passage('step')],
+      approval,
+      async () => proposal,
+      verify,
+    );
+    expect(result.guide).toBeNull();
+    expect(result.report.reasons).toContainEqual({ code: 'unsupported-period', ids: [] });
   });
 
   it('no eleva una versión anterior ni acepta un original BOE sin comprobar reutilización', async () => {
