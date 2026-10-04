@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { LocalSearchResult } from '@reforma-digital/government/public-index';
 import type { PublicCatalogue } from '@reforma-digital/government/public-release';
@@ -33,6 +33,7 @@ function CatalogueSearch() {
   const [searched, setSearched] = useState<{ key: string; value: LocalSearchResult } | null>(null);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const refreshed = useRef(false);
   const copy =
     language === 'ca'
       ? {
@@ -90,7 +91,7 @@ function CatalogueSearch() {
           sources: 'Fuentes oficiales',
         };
   useEffect(() => {
-    void catalogueMessage({ type: 'catalog:refresh' })
+    void catalogueMessage({ type: 'catalog:read' })
       .then((value) => setCatalogue(value as PublicCatalogue))
       .catch(() => setError(true));
   }, []);
@@ -104,6 +105,10 @@ function CatalogueSearch() {
     setBusy(true);
     setError(false);
     try {
+      if (!refreshed.current) {
+        refreshed.current = true;
+        setCatalogue((await catalogueMessage({ type: 'catalog:refresh' })) as PublicCatalogue);
+      }
       setSearched({
         key,
         value: (await catalogueMessage({
