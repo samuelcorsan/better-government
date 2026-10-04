@@ -1,52 +1,41 @@
 import { tarragonaMunicipalGuide } from '@reforma-digital/government/tarragona-municipal-guide';
 import { catalunyaDatasetSchema } from './catalunya';
 
-/** Controlled cases; T-004 must independently acquire the current municipal page. */
+/** Only abstentions are scorable until the municipal page has a verified source version. */
 export const tarragonaMunicipalDataset = catalunyaDatasetSchema.parse({
   version: 'tarragona-municipal-v1',
   stage: 'controlled',
-  description: 'Ruta municipal de Annex III condicionada; abstención para otro municipio.',
+  description:
+    'Abstenciones por clasificación y municipio sin atribuir fecha de versión a la sede.',
   cases: (['ca', 'es'] as const).flatMap((language) => {
-    const evidence = tarragonaMunicipalGuide.evidence.find((item) => item.id === 'annex');
-    if (!evidence) throw new Error('Missing Tarragona source');
     return [
       {
-        id: `tarragona-annex-iii-${language}-answer`,
+        id: `tarragona-annex-iii-${language}-unclassified`,
         query:
           language === 'ca'
-            ? 'Si la meva activitat amb local a Tarragona consta a l’Annex III, quina fitxa municipal he de consultar?'
-            : 'Si mi actividad con local en Tarragona consta en el Anexo III, ¿qué ficha municipal debo consultar?',
+            ? 'Quina comunicació municipal concreta correspon al meu local de Tarragona si encara no he identificat l’activitat ni comprovat si consta a l’Annex III?'
+            : '¿Qué comunicación municipal concreta corresponde a mi local de Tarragona si aún no he identificado la actividad ni comprobado si figura en el Anexo III?',
         domain: 'D-06',
         subtopic: tarragonaMunicipalGuide.subtopic,
         profile: 'with-premises',
         language,
         city: 'Tarragona',
         year: 2026,
-        critical: 'jurisdiction',
-        sources: [
-          {
-            sourceId: evidence.sourceId,
-            documentId: evidence.id,
-            version: '2026-10-04',
-            url: evidence.url,
-            jurisdiction: evidence.jurisdiction,
-            consultedAt: tarragonaMunicipalGuide.consultedAt,
-            excerpt: evidence.quote,
-          },
-        ],
+        critical: 'obligation',
+        sources: [],
         expected: {
-          shouldAnswer: true,
+          shouldAnswer: false,
           jurisdiction: 'ES-CT-TARRAGONA',
-          requiredFacts: ['ambiental'],
-          forbiddenFacts: ['llicència concedida', 'licencia concedida'],
+          requiredFacts: [],
+          forbiddenFacts: [],
         },
       },
       {
-        id: `lleida-annex-iii-${language}-abstain`,
+        id: `lleida-premises-${language}-unclassified`,
         query:
           language === 'ca'
-            ? 'Puc usar aquesta fitxa de Tarragona per obrir un local a Lleida?'
-            : '¿Puedo usar esta ficha de Tarragona para abrir un local en Lleida?',
+            ? 'Quin tràmit municipal exacte he de presentar per obrir un local a Lleida si no he identificat l’activitat ni les condicions del local?'
+            : '¿Qué trámite municipal exacto debo presentar para abrir un local en Lleida si no he identificado la actividad ni las condiciones del local?',
         domain: 'D-06',
         subtopic: tarragonaMunicipalGuide.subtopic,
         profile: 'with-premises',
@@ -59,7 +48,7 @@ export const tarragonaMunicipalDataset = catalunyaDatasetSchema.parse({
           shouldAnswer: false,
           jurisdiction: 'ES-CT-LLEIDA',
           requiredFacts: [],
-          forbiddenFacts: ['Tarragona'],
+          forbiddenFacts: [],
         },
       },
     ];
