@@ -230,6 +230,27 @@ export const sources: Source[] = [
       'https://serveiocupacio.gencat.cat/es/soc/ocupacio-juvenil/emprenedoria/ajuts-per-a-persones-emprenedores-i-treballadores-autonomes/',
     ],
   ),
+  publicSource(
+    'aepd',
+    'Agencia Española de Protección de Datos',
+    'ES',
+    ['es'],
+    [
+      'https://www.aepd.es/guias-y-herramientas/herramientas/facilita-rgpd',
+      'https://www.aepd.es/recurso-multimedia/guia-sobre-el-uso-de-las-cookies',
+    ],
+  ),
+  publicSource(
+    'consum',
+    'Agència Catalana del Consum',
+    'ES-CT',
+    ['ca'],
+    [
+      'https://consum.gencat.cat/ca/empreses/requisits-obligatoris/obligacions-generals-per-a-les-empreses/',
+      'https://consum.gencat.cat/ca/lagencia/codi-de-consum-de-catalunya/preguntes-frequeents/',
+      'https://consum.gencat.cat/ca/lagencia/codi-de-consum-de-catalunya/sintesi-de-les-obligacions-de-les-empreses/obligacions-en-la-prestacio-de-serveis/',
+    ],
+  ),
 ];
 export function approvedSource(url: string, sourceId?: string): Source | undefined {
   try {
