@@ -150,6 +150,7 @@ export const sources: Source[] = [
       'https://canalempresa.gencat.cat/ca/fue/',
       'https://canalempresa.gencat.cat/es/fue/',
       'https://canalempresa.gencat.cat/ca/01_que_voleu_fer/02_comencar_un_negoci/crear-empresa-constitucio-tramits/vull_ser_autonom',
+      'https://canalempresa.gencat.cat/ca/01_que_voleu_fer/04_canvis_i_tancament/proces-de-tancament/',
     ],
   ),
   publicSource(
