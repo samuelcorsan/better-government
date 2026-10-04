@@ -88,6 +88,8 @@ type Reason =
   | 'invalid-draft';
 export type GenerationReport = {
   reasons: { code: Reason; ids: string[] }[];
+  /** SHA-256 of the exact pending Guide returned by generation; integrity check, not a signature. */
+  guideDigest: string | null;
   sources: { id: string; originalUrl: string; version: string }[];
   discrepancies: {
     topic: string;
@@ -102,6 +104,16 @@ const promptInstruction =
   /<\|(?:system|developer|assistant)\|>|(?:ignore|ignora|desatiende).{0,60}(?:instructions|instrucciones|instruccions)|(?:system|developer)\s*:/i;
 const privateValue =
   /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:[XYZ]\d{7}[A-Z]|\d{8}[A-Z])\b/i;
+
+async function digestText(value: string): Promise<string> {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/** Exact JSON integrity of the structurally parsed pending Guide; caller must trust the report producer. */
+export function digestPendingGuide(guide: Guide): Promise<string> {
+  return digestText(JSON.stringify(guide));
+}
 
 function publicUrl(url: URL): boolean {
   try {
@@ -155,10 +167,7 @@ export async function approveBoePassage(
     passage.jurisdiction === 'ES'
   ))
     return { status: 'rejected' };
-  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(passage.content));
-  const digest = Array.from(new Uint8Array(bytes), (byte) =>
-    byte.toString(16).padStart(2, '0'),
-  ).join('');
+  const digest = await digestText(passage.content);
   if (digest !== source.materialDigest) return { status: 'rejected' };
   const reusable = await mayReuse(
     source.originalUrl,
@@ -192,6 +201,7 @@ export async function generatePublicGuide<Receipt>(
 ): Promise<{ guide: Guide | null; report: GenerationReport }> {
   const report: GenerationReport = {
     reasons: [],
+    guideDigest: null,
     sources: [],
     discrepancies: [],
     retainedStepIds: [],
@@ -434,9 +444,23 @@ export async function generatePublicGuide<Receipt>(
         !safeId.test(item.id) ||
         privateValue.test(item.id) ||
         !Array.isArray(item.evidenceIds) ||
-        item.evidenceIds.length !== 1
+        item.evidenceIds.length !== 1 ||
+        Object.keys(item).some(
+          (key) =>
+            ![
+              'id',
+              'text',
+              'evidenceIds',
+              'translation',
+              ...(kind === 'step'
+                ? ['dependsOn']
+                : kind === 'fact' || kind === 'obligation'
+                  ? ['kind', 'conditionIds']
+                  : []),
+            ].includes(key),
+        )
       ) {
-        note('unsupported-statement');
+        note('unsupported-statement', typeof item?.id === 'string' ? [item.id] : []);
         return false;
       }
       const approved = eligible.get(item.evidenceIds[0]!);
@@ -454,8 +478,12 @@ export async function generatePublicGuide<Receipt>(
         (approved.approval.applicableUntil &&
           (!period.until || period.until > approved.approval.applicableUntil)) ||
         !item.text ||
+        typeof item.text !== 'object' ||
+        Object.keys(item.text).some((key) => key !== 'ca' && key !== 'es') ||
         typeof item.text.ca !== 'string' ||
         typeof item.text.es !== 'string' ||
+        !item.text.ca.trim() ||
+        !item.text.es.trim() ||
         item.translation !== to ||
         evidenceText(item.text[from]) !== evidenceText(source.quote) ||
         promptInstruction.test(item.text[to]) ||
@@ -480,12 +508,20 @@ export async function generatePublicGuide<Receipt>(
       note('translation-unverified', [item.id]);
       return false;
     };
+    const seenStatementIds = new Set<string>();
     const keep = async <T extends Guide['conditions'][number]>(
       items: T[],
       kind: StatementKind,
     ): Promise<T[]> => {
       const result: T[] = [];
-      for (const item of items) if (await supported(item, kind)) result.push(item);
+      for (const item of items) {
+        if (!(await supported(item, kind))) continue;
+        if (seenStatementIds.has(item.id)) note('unsupported-statement', [item.id]);
+        else {
+          seenStatementIds.add(item.id);
+          result.push(item);
+        }
+      }
       return result;
     };
     const conditions = await keep(draft.conditions, 'condition');
@@ -493,24 +529,35 @@ export async function generatePublicGuide<Receipt>(
     const validConditions = new Set(conditions.map((item) => item.id));
     const claims: Guide['claims'] = [];
     for (const item of draft.claims) {
-      if (!item || typeof item !== 'object' || !Array.isArray(item.conditionIds)) {
-        note('unsupported-statement');
+      if (
+        !item ||
+        typeof item !== 'object' ||
+        !Array.isArray(item.conditionIds) ||
+        (item.kind !== 'fact' && item.kind !== 'obligation')
+      ) {
+        note('unsupported-statement', typeof item?.id === 'string' ? [item.id] : []);
         continue;
       }
       if (!(await supported(item, item.kind))) continue;
       const valid = item.conditionIds.every((id) => validConditions.has(id));
-      if (!valid) note('unsupported-statement', [item.id]);
-      else claims.push(item);
+      if (!valid || seenStatementIds.has(item.id)) note('unsupported-statement', [item.id]);
+      else {
+        seenStatementIds.add(item.id);
+        claims.push(item);
+      }
     }
     const steps: Guide['steps'] = [];
-    for (const item of await keep(draft.steps, 'step')) {
+    for (const item of draft.steps) {
+      if (!(await supported(item, 'step'))) continue;
       if (
+        seenStatementIds.has(item.id) ||
         !Array.isArray(item.dependsOn) ||
         !item.dependsOn.every((id) => steps.some((step) => step.id === id))
       ) {
         note('unsupported-statement', [item.id]);
         continue;
       }
+      seenStatementIds.add(item.id);
       steps.push(item);
     }
     const used = new Set(
@@ -535,6 +582,7 @@ export async function generatePublicGuide<Receipt>(
       note('invalid-draft');
       return { guide: null, report };
     }
+    report.guideDigest = await digestPendingGuide(parsed.data);
     report.retainedStepIds = steps.map((item) => item.id);
     return { guide: parsed.data, report };
   } catch {

@@ -6,7 +6,10 @@ import {
   type Guide,
   type SearchResult,
 } from '@reforma-digital/core';
-import type { GenerationReport } from '@reforma-digital/government/guide-generation';
+import {
+  digestPendingGuide,
+  type GenerationReport,
+} from '@reforma-digital/government/guide-generation';
 import { z } from 'zod';
 
 const id = z.string().min(1);
@@ -219,14 +222,14 @@ export function catalunyaPublicationGate(
 }
 
 /** The CI runner supplies its actual commit and independently checked official dataset. */
-export function promoteGeneratedGuide(
+export async function promoteGeneratedGuide(
   guide: Guide | null,
   report: GenerationReport,
   dataset: CatalunyaDataset,
   run: CatalunyaRun,
   runnerCommit: string,
   runnerCheckedAt: string,
-): { guide: Guide | null; reasons: string[] } {
+): Promise<{ guide: Guide | null; reasons: string[] }> {
   const reasons = catalunyaPublicationGate(dataset, run.rows);
   if (
     !guide ||
@@ -242,6 +245,12 @@ export function promoteGeneratedGuide(
   )
     reasons.push('Fecha de evaluación inválida');
   if (!guide) return { guide: null, reasons };
+  try {
+    if (!report.guideDigest || (await digestPendingGuide(guide)) !== report.guideDigest)
+      reasons.push('Guía modificada desde la generación');
+  } catch {
+    reasons.push('No se pudo comprobar la integridad de la guía');
+  }
   if (
     !guide.period.from ||
     guide.period.from > runnerCheckedAt ||

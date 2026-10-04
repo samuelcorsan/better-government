@@ -1,6 +1,9 @@
 import { expect, it } from 'vitest';
 import { guideSchema } from '../packages/core/src/index';
-import type { GenerationReport } from '../packages/government/src/guide-generation';
+import {
+  digestPendingGuide,
+  type GenerationReport,
+} from '../packages/government/src/guide-generation';
 import {
   catalunyaCaseSchema,
   catalunyaGate,
@@ -211,7 +214,7 @@ it('loads the controlled corpus and keeps the publication gate closed', async ()
   expect(catalunyaPublicationGate(dataset, rows)).toContain('Sin caso municipal Girona/es');
 });
 
-it('promotes only a guide covered by an official run and matching public evidence', () => {
+it('promotes only a guide covered by an official run and matching public evidence', async () => {
   // Synthetic gate-shape fixture: only a trusted CI runner may label a real corpus official.
   const cities = ['Barcelona', 'Lleida', 'Girona', 'Tarragona'] as const;
   const cases = Array.from(
@@ -293,6 +296,7 @@ it('promotes only a guide covered by an official run and matching public evidenc
   });
   const report: GenerationReport = {
     reasons: [],
+    guideDigest: await digestPendingGuide(guide),
     discrepancies: [],
     retainedStepIds: ['step'],
     sources: [
@@ -305,32 +309,40 @@ it('promotes only a guide covered by an official run and matching public evidenc
   };
   const promote = (corpus = dataset, result = run, generation = report) =>
     promoteGeneratedGuide(guide, generation, corpus, result, 'fixture-commit', '2026-06-02');
-  expect(promote().reasons).toEqual([]);
-  expect(promote().guide?.validation.status).toBe('verified');
-  expect(promote({ ...dataset, stage: 'controlled' }).guide?.validation.status).toBe('pending');
-  expect(promote(dataset, { ...run, gitCommit: 'otro' }).guide?.validation.status).toBe('pending');
+  expect((await promote()).reasons).toEqual([]);
+  expect((await promote()).guide?.validation.status).toBe('verified');
+  expect((await promote({ ...dataset, stage: 'controlled' })).guide?.validation.status).toBe(
+    'pending',
+  );
+  expect((await promote(dataset, { ...run, gitCommit: 'otro' })).guide?.validation.status).toBe(
+    'pending',
+  );
   expect(
-    promote(dataset, run, { ...report, reasons: [{ code: 'conflict', ids: ['e1'] }] }).guide
+    (await promote(dataset, run, { ...report, reasons: [{ code: 'conflict', ids: ['e1'] }] })).guide
       ?.validation.status,
   ).toBe('pending');
   expect(
-    promoteGeneratedGuide(
-      { ...guide, profiles: ['general', 'missing'] },
-      report,
-      dataset,
-      run,
-      'fixture-commit',
-      '2026-06-02',
+    (
+      await promoteGeneratedGuide(
+        { ...guide, profiles: ['general', 'missing'] },
+        report,
+        dataset,
+        run,
+        'fixture-commit',
+        '2026-06-02',
+      )
     ).guide?.validation.status,
   ).toBe('pending');
   expect(
-    promoteGeneratedGuide(
-      { ...guide, evidence: [{ ...guide.evidence[0]!, applicableUntil: '2026-06-01' }] },
-      report,
-      dataset,
-      run,
-      'fixture-commit',
-      '2026-06-02',
+    (
+      await promoteGeneratedGuide(
+        { ...guide, evidence: [{ ...guide.evidence[0]!, applicableUntil: '2026-06-01' }] },
+        report,
+        dataset,
+        run,
+        'fixture-commit',
+        '2026-06-02',
+      )
     ).guide?.validation.status,
   ).toBe('pending');
   const wrongSource = {
@@ -341,5 +353,24 @@ it('promotes only a guide covered by an official run and matching public evidenc
         : item,
     ),
   };
-  expect(promote(wrongSource).guide?.validation.status).toBe('pending');
+  expect((await promote(wrongSource)).guide?.validation.status).toBe('pending');
+  const changedTranslation = {
+    ...guide,
+    steps: [
+      {
+        ...guide.steps[0]!,
+        text: { ...guide.steps[0]!.text, es: 'Un plazo distinto sin verificar.' },
+      },
+    ],
+  };
+  const altered = await promoteGeneratedGuide(
+    changedTranslation,
+    report,
+    dataset,
+    run,
+    'fixture-commit',
+    '2026-06-02',
+  );
+  expect(altered.guide?.validation.status).toBe('pending');
+  expect(altered.reasons).toContain('Guía modificada desde la generación');
 });

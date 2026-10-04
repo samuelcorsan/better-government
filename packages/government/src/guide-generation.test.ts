@@ -359,9 +359,13 @@ describe('generación pública bilingüe', () => {
     Reflect.set(proposal.conditions, 1, null);
     Reflect.set(proposal.exclusions, 0, null);
     Reflect.deleteProperty(proposal.claims[0]!, 'conditionIds');
+    const wrongKind = { ...draft.claims[0]!, id: 'bad-kind' };
+    Reflect.set(wrongKind, 'kind', 'step');
+    proposal.claims.push(wrongKind);
+    proposal.claims.push({ ...draft.claims[0]!, id: 'condition' });
     const brokenStep = { ...proposal.steps[0]!, id: 'broken-step' };
     Reflect.deleteProperty(brokenStep, 'dependsOn');
-    proposal.steps = [brokenStep, proposal.steps[0]!];
+    proposal.steps = [brokenStep, { ...proposal.steps[0]!, id: 'condition' }, proposal.steps[0]!];
     const result = await generatePublicGuide(
       seed,
       taxonomy,
@@ -377,6 +381,14 @@ describe('generación pública bilingüe', () => {
     expect(result.report.reasons).toContainEqual({
       code: 'unsupported-statement',
       ids: ['broken-step'],
+    });
+    expect(result.report.reasons).toContainEqual({
+      code: 'unsupported-statement',
+      ids: ['bad-kind'],
+    });
+    expect(result.report.reasons).toContainEqual({
+      code: 'unsupported-statement',
+      ids: ['condition'],
     });
   });
 
