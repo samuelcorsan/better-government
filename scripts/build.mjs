@@ -96,6 +96,7 @@ await writeFile(
         'Interfaces comunitarias para trámites públicos. Procesamiento local, sin telemetría.',
       minimum_chrome_version: '120',
       permissions: ['storage'],
+      host_permissions: ['https://raw.githubusercontent.com/*'],
       action: { default_popup: 'popup.html', default_title: 'Reforma Digital' },
       background: { service_worker: 'background.js', type: 'module' },
       content_scripts: sites.map((site) => ({
@@ -107,7 +108,7 @@ await writeFile(
       })),
       content_security_policy: {
         extension_pages:
-          "script-src 'self'; object-src 'none'; connect-src 'none'; base-uri 'none'",
+          "script-src 'self'; object-src 'none'; connect-src https://raw.githubusercontent.com; base-uri 'none'",
       },
     },
     null,

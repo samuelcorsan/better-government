@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@reforma-digital/design": "workspace:*",
+    "@reforma-digital/government": "workspace:*",
     "@reforma-digital/registry": "workspace:*",
     "@reforma-digital/runtime": "workspace:*"
   }

@@ -8,8 +8,8 @@ Esto no hace inocua cualquier modificación del DOM. Una extensión tiene acceso
 
 - Scripts empaquetados en Manifest V3, en el mundo aislado de Chrome.
 - Coincidencia de dominios HTTPS exactos y prefijos de ruta por portal.
-- Un único permiso de API, `storage`, utilizado para preferencias de activación. Los datos de los formularios no se guardan.
-- Sin servidor propio, código remoto, analítica, lectura de cookies ni APIs de peticiones en el código de la extensión.
+- Un único permiso de API, `storage`, utilizado para preferencias de activación y estado de sesión. El contexto personal y la última versión íntegra del catálogo público permanecen en `chrome.storage.session`, en memoria y sin persistir en disco.
+- Permiso de host limitado a `raw.githubusercontent.com` para dos GET de un catálogo público versionado en una ruta fija del repositorio. No se añaden perfiles, consultas, credenciales, cuerpo ni cabeceras de usuario; no hay servidor propio, código remoto ejecutable, analítica ni lectura de cookies.
 - Los controles originales conservan sus formularios, campos ocultos y listeners. Las acciones se delegan al elemento original.
 - Los controles de seguridad se conservan originales. No se falsifica `isTrusted`.
 - Restauración manual, ante cambios de identidad o desaparición de controles, navegación y validación nativa.
@@ -22,7 +22,7 @@ El Shadow DOM aísla estilos; no es una barrera de seguridad frente a la página
 
 ## Qué se comprueba
 
-Las pruebas automatizadas usan datos ficticios. El chequeo del bundle detecta APIs de red y persistencia prohibidas y revisa el manifest. Es un control estático limitado, no una auditoría de seguridad.
+Las pruebas automatizadas usan datos ficticios. El chequeo del bundle permite el único punto de descarga pública en el worker, detecta otras APIs de red y persistencia prohibidas y revisa el manifest. Es un control estático limitado, no una auditoría de seguridad.
 
 La compatibilidad con validaciones personalizadas, restricciones del navegador, certificados, firmas, iframes y estados autenticados requiere pruebas del portal concreto. Los cambios programáticos no tienen idéntico comportamiento a la escritura física para todas las restricciones nativas o frameworks. Mantén el control original cuando no puedas demostrar equivalencia.
 
