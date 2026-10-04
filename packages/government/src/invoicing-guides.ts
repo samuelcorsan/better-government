@@ -178,6 +178,51 @@ const sources = {
   ),
 } satisfies Record<string, Evidence>;
 
+const catalanSources: Partial<Record<keyof typeof sources, Evidence>> = {
+  investmentRetention: {
+    ...aeat(
+      'aeat-investment-retention-ca',
+      'ca_es/iva/facturacion-registro/facturacion-iva/obligacion-conservar-facturas.html',
+      'període de regularització i els quatre anys següents',
+    ),
+    language: 'ca',
+  },
+  mercantileBooks: {
+    ...aeat(
+      'aeat-irpf-mercantile-books-ca',
+      'ca_es/irpf/empresarios-individuales-profesionales/obligaciones-contables-registrales/actividades-empresariales-caracter-mercantil-estimacion-normal.html',
+      'comptabilitat ajustada al Codi de Comerç i al Pla General de Comptabilitat',
+    ),
+    language: 'ca',
+  },
+  mercantileRetention: {
+    ...aeat(
+      'aeat-mercantile-retention-ca',
+      'ca_es/impuesto-sobre-sociedades/gestion-impuesto-sobre-sociedades/obligaciones-contables-registrales/conservacion-libros.html',
+      "durant sis anys, a partir de l'últim assentament realitzat en els llibres",
+    ),
+    language: 'ca',
+  },
+  b2b: {
+    ...official(
+      'boe-b2b-electronic-ca',
+      'boe',
+      'https://www.boe.es/boe_catalan/dias/2026/03/31/pdfs/BOE-A-2026-7295-C.pdf',
+      'Vint-i-quatre mesos després, per a la resta dels empresaris i dels professionals.',
+    ),
+    language: 'ca',
+  },
+  b2bLarge: {
+    ...official(
+      'boe-b2b-large-ca',
+      'boe',
+      'https://www.boe.es/boe_catalan/dias/2026/03/31/pdfs/BOE-A-2026-7295-C.pdf',
+      'Dotze mesos després, per als empresaris i per als professionals',
+    ),
+    language: 'ca',
+  },
+};
+
 type SourceKey = keyof typeof sources;
 type Entry = {
   id: string;
@@ -827,8 +872,8 @@ const entries: Entry[] = [
       'La entrada en vigor del real decreto no inicia por sí sola el plazo; B2B no es e-FACT B2G ni VERI*FACTU.',
     ),
     fact: pair(
-      'Per a la resta d’empresaris, l’efecte arriba 24 mesos després de l’entrada en vigor de l’ordre tècnica.',
-      'Para el resto de empresarios, el efecto llega 24 meses después de entrar en vigor la orden técnica.',
+      'Per a la resta d’empresaris, l’efecte arriba vint-i-quatre mesos després de l’entrada en vigor de l’ordre tècnica.',
+      'Para el resto de empresarios, el efecto llega veinticuatro meses después de entrar en vigor la orden técnica.',
     ),
     step: pair(
       'Consulta al BOE la disposició final quarta i verifica si s’ha publicat l’ordre.',
@@ -900,10 +945,11 @@ const entries: Entry[] = [
 /** Controlled public candidates: source authenticity, semantic translation and applicability are still pending. */
 export const invoicingGuides: Guide[] = entries.map((entry) => {
   const evidence = sources[entry.source];
+  const localized = catalanSources[entry.source];
   const cited = (id: string, value: Pair) => ({
     id,
     text: value,
-    evidenceIds: [evidence.id],
+    evidenceIds: localized ? [evidence.id, localized.id] : [evidence.id],
     translation: 'ca' as const,
   });
   return guideSchema.parse({
@@ -922,7 +968,12 @@ export const invoicingGuides: Guide[] = entries.map((entry) => {
           ? { until: '2027-06-30', evidenceIds: [evidence.id] }
           : { evidenceIds: [] },
     validation: { status: 'pending' },
-    evidence: entry.id === 'invoice-simplified' ? [evidence, sources.simpleSector] : [evidence],
+    evidence:
+      entry.id === 'invoice-simplified'
+        ? [evidence, sources.simpleSector]
+        : localized
+          ? [evidence, localized]
+          : [evidence],
     conditions: [cited('condition', entry.condition)],
     exclusions: [
       entry.id === 'invoice-simplified'

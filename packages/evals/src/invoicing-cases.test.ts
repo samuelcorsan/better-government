@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { normalizeText } from '@reforma-digital/core';
+import { invoicingGuides } from '@reforma-digital/government/invoicing-guides';
 import { invoicingCases, invoicingDataset } from './invoicing-cases';
 
 describe('controlled invoicing cases', () => {
@@ -33,5 +35,13 @@ describe('controlled invoicing cases', () => {
         .filter((item) => item.expected.shouldAnswer)
         .every((item) => item.expected.requiredFacts.length > 0),
     ).toBe(true);
+    for (const item of invoicingCases.filter((item) => item.expected.shouldAnswer)) {
+      const guide = invoicingGuides.find((candidate) => candidate.id === item.subtopic)!;
+      const claims = normalizeText(
+        guide.claims.map((claim) => claim.text[item.language]).join(' '),
+      );
+      for (const fact of item.expected.requiredFacts)
+        expect(claims, item.id).toContain(normalizeText(fact));
+    }
   });
 });

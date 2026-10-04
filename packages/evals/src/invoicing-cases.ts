@@ -1,31 +1,31 @@
 import { invoicingGuides, invoicingQuestions } from '@reforma-digital/government/invoicing-guides';
 import { catalunyaCaseSchema, type CatalunyaCase } from './catalunya';
 
-const requiredFact = new Map([
-  ['invoice-obligation', 'profesional'],
-  ['invoice-exceptions', 'profesional'],
-  ['invoice-simplified', '400'],
-  ['invoice-simplified-sector', '3.000'],
-  ['irpf-professional-books', 'provisio'],
-  ['vat-books', 'factur'],
-  ['vat-entry-deadlines', 'liquidacio'],
-  ['invoice-retention', '4'],
-  ['investment-invoice-retention', 'cuatro anos'],
-  ['tax-calendar-2026', '2026'],
-  ['irpf-mercantile-books', 'Codigo de Comercio'],
-  ['irpf-business-registers', 'ventas e ingresos'],
-  ['irpf-modules-books', 'bienes de inversion'],
-  ['invoice-issuance-deadline', '16'],
-  ['invoice-consumer-deadline', 'momento de realizarse la operacion'],
-  ['invoice-required-fields', 'Numero y, en su caso, serie'],
-  ['mercantile-record-retention', 'seis anos'],
-  ['sif-verifactu', '2027'],
-  ['sif-manual-exception', 'manual'],
-  ['sif-sii-exception', 'SII'],
-  ['b2b-electronic-invoice', 'Veinticuatro meses'],
-  ['b2b-large-electronic-invoice', 'Doce meses'],
-  ['b2g-efact', 'e-FACT'],
-]);
+const requiredFact: Record<string, { ca: string; es: string }> = {
+  'invoice-obligation': { ca: 'empresar', es: 'empresario' },
+  'invoice-exceptions': { ca: 'empresar', es: 'empresario' },
+  'invoice-simplified': { ca: '400', es: '400' },
+  'invoice-simplified-sector': { ca: '3.000', es: '3.000' },
+  'irpf-professional-books': { ca: 'provisio', es: 'provisio' },
+  'vat-books': { ca: 'factur', es: 'factur' },
+  'vat-entry-deadlines': { ca: 'liquidacio', es: 'liquidacio' },
+  'invoice-retention': { ca: '4', es: '4' },
+  'investment-invoice-retention': { ca: 'quatre anys', es: 'cuatro años' },
+  'tax-calendar-2026': { ca: '2026', es: '2026' },
+  'irpf-mercantile-books': { ca: 'Codi de Comerç', es: 'Código de Comercio' },
+  'irpf-business-registers': { ca: 'ingres', es: 'ingres' },
+  'irpf-modules-books': { ca: 'inversio', es: 'inversio' },
+  'invoice-issuance-deadline': { ca: '16', es: '16' },
+  'invoice-consumer-deadline': { ca: 'operacio', es: 'operacio' },
+  'invoice-required-fields': { ca: 'serie', es: 'serie' },
+  'mercantile-record-retention': { ca: 'sis anys', es: 'seis años' },
+  'sif-verifactu': { ca: '2027', es: '2027' },
+  'sif-manual-exception': { ca: 'manual', es: 'manual' },
+  'sif-sii-exception': { ca: 'SII', es: 'SII' },
+  'b2b-electronic-invoice': { ca: 'vint-i-quatre mesos', es: 'Veinticuatro meses' },
+  'b2b-large-electronic-invoice': { ca: 'dotze mesos', es: 'Doce meses' },
+  'b2g-efact': { ca: 'e-FACT', es: 'e-FACT' },
+};
 
 /** Public-source controls, not an evaluated answer from retrieval or a model. */
 export const invoicingCases: CatalunyaCase[] = invoicingGuides.flatMap((guide) => {
@@ -54,7 +54,7 @@ export const invoicingCases: CatalunyaCase[] = invoicingGuides.flatMap((guide) =
         expected: {
           shouldAnswer: true,
           jurisdiction: 'ES-CT',
-          requiredFacts: [requiredFact.get(guide.id) ?? ''],
+          requiredFacts: [requiredFact[guide.id]?.[language] ?? ''],
           forbiddenFacts: [],
         },
       }),
