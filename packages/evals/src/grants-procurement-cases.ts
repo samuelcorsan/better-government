@@ -2,12 +2,6 @@ import { catalunyaDatasetSchema } from './catalunya';
 
 const youth = (language: 'ca' | 'es') =>
   `https://tramits.gencat.cat/${language}/tramits/tramits-temes/Subvencions-per-afavorir-lautoocupacio-de-joves-en-el-marc-del-Programa-FSE-00001?moda=1`;
-const icf = (language: 'ca' | 'es') =>
-  `https://www.icf.cat/${language}/prestecs/pimes/icf-autonoms`;
-const soc = (language: 'ca' | 'es') =>
-  `https://serveiocupacio.gencat.cat/${language}/entitats/subvencions-fpo/programa-forma-i-contracta-2026/preguntes-frequents/index.html`;
-const tender =
-  'https://contractaciopublica.cat/ca/detall-publicacio/3bb0e137-3dda-4d30-94de-e7aba5e01dd0/300740349';
 const source = (sourceId: string, version: string, url: string, excerpt: string) => ({
   sourceId,
   documentId: sourceId,
@@ -18,12 +12,12 @@ const source = (sourceId: string, version: string, url: string, excerpt: string)
   excerpt,
 });
 
-/** Public, controlled excerpts only; no applicant, credit, supplier or session data. */
+/** Public, controlled excerpts only. Positive ICF/SOC/PSCP cases await an official source version. */
 export const grantsProcurementDataset = catalunyaDatasetSchema.parse({
   version: 'grants-procurement-controlled-2026-10-04',
   stage: 'controlled',
   description:
-    'D-13/D-15: plazo cerrado, préstamo frente a subvención, programa SOC distinto y aptitud contractual individual desconocida.',
+    'D-13/D-15: plazo juvenil cerrado y abstención sobre compatibilidad, aprobación crediticia y solvencia individual.',
   cases: (['ca', 'es'] as const).flatMap((language) => [
     {
       id: `youth-2026-deadline-${language}`,
@@ -80,11 +74,11 @@ export const grantsProcurementDataset = catalunyaDatasetSchema.parse({
       },
     },
     {
-      id: `bdns-920886-open-${language}`,
+      id: `youth-2026-catalogue-open-${language}`,
       query:
         language === 'ca'
-          ? 'Veig el codi BDNS 920886 en un catàleg: això vol dir que avui puc presentar una sol·licitud nova?'
-          : 'Veo el código BDNS 920886 en un catálogo: ¿eso significa que hoy puedo presentar una solicitud nueva?',
+          ? 'Veig la convocatòria juvenil FSE+ 2026 en un catàleg: això vol dir que avui puc presentar una sol·licitud nova?'
+          : 'Veo la convocatoria juvenil FSE+ 2026 en un catálogo: ¿eso significa que hoy puedo presentar una solicitud nueva?',
       domain: 'D-13',
       subtopic: 'youth-self-employment-grant',
       profile: 'young-self-employed',
@@ -110,36 +104,6 @@ export const grantsProcurementDataset = catalunyaDatasetSchema.parse({
       },
     },
     {
-      id: `icf-loan-${language}`,
-      query:
-        language === 'ca'
-          ? 'ICF Autònoms i Pimes és una subvenció a fons perdut o un préstec?'
-          : '¿ICF Autónomos y Pymes es una subvención a fondo perdido o un préstamo?',
-      domain: 'D-13',
-      subtopic: 'public-financing-loan',
-      profile: 'self-employed-financing',
-      language,
-      city: null,
-      year: 2026,
-      critical: 'obligation',
-      sources: [
-        source(
-          'icf-autonoms-pimes',
-          '2026-10-04',
-          icf(language),
-          language === 'ca'
-            ? "Finança el teu projecte amb els préstecs de l'ICF per autònoms i pimes!"
-            : '¡Financia tu proyecto con los préstamos del ICF para autónomos y pymes!',
-        ),
-      ],
-      expected: {
-        shouldAnswer: true,
-        jurisdiction: 'ES-CT',
-        requiredFacts: [language === 'ca' ? 'préstec' : 'préstamo'],
-        forbiddenFacts: ['subvenció concedida', 'subvención concedida'],
-      },
-    },
-    {
       id: `icf-personal-approval-${language}`,
       query:
         language === 'ca'
@@ -158,64 +122,6 @@ export const grantsProcurementDataset = catalunyaDatasetSchema.parse({
         jurisdiction: 'ES-CT',
         requiredFacts: [],
         forbiddenFacts: ['aprovat', 'aprobado'],
-      },
-    },
-    {
-      id: `soc-forma-contracta-${language}`,
-      query:
-        language === 'ca'
-          ? 'Forma i Contracta 2026 és un ajut per donar-me d’alta com a autònom?'
-          : '¿Forma y Contrata 2026 es una ayuda para darme de alta como autónomo?',
-      domain: 'D-13',
-      subtopic: 'soc-training-grant',
-      profile: 'new-self-employed',
-      language,
-      city: null,
-      year: 2026,
-      critical: 'obligation',
-      sources: [
-        source(
-          'soc-forma-contracta-2026',
-          '2026-10-04',
-          soc(language),
-          language === 'ca'
-            ? 'Se sol·licita una subvenció per a la formació de treballadors que requereixin una formació professional per a l’ocupació'
-            : 'Se solicita una subvención para la formación de trabajadores que requieran una formación profesional para el empleo',
-        ),
-      ],
-      expected: {
-        shouldAnswer: true,
-        jurisdiction: 'ES-CT',
-        requiredFacts: [language === 'ca' ? 'formació' : 'formación'],
-        forbiddenFacts: ['ajut per alta autònoma', 'ayuda por alta autónoma'],
-      },
-    },
-    {
-      id: `tender-2026-deadline-${language}`,
-      query:
-        language === 'ca'
-          ? 'En format dd/mm/aaaa, quan acabava el termini d’ofertes de PR-2026-359? Continua obert per licitar?'
-          : 'En formato dd/mm/aaaa, ¿cuándo terminaba el plazo de ofertas de PR-2026-359? ¿Sigue abierto para licitar?',
-      domain: 'D-15',
-      subtopic: 'public-tender-participation',
-      profile: 'self-employed-public-supplier',
-      language,
-      city: null,
-      year: 2026,
-      critical: 'deadline',
-      sources: [
-        source(
-          'pscp-pr-2026-359',
-          '2026-10-04',
-          tender,
-          "Codi de l'expedient: PR-2026-359. Termini de presentació d'ofertes: 04/05/2026 12:00:00",
-        ),
-      ],
-      expected: {
-        shouldAnswer: true,
-        jurisdiction: 'ES-CT',
-        requiredFacts: ['PR-2026-359', '04/05/2026'],
-        forbiddenFacts: ['obert per presentar', 'abierto para presentar'],
       },
     },
     {
