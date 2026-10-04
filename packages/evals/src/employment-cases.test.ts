@@ -27,4 +27,17 @@ describe('employment controlled cases', () => {
       ),
     ).toBe(true);
   });
+
+  it('checks both conditions of the solo worker case against the cited excerpt', () => {
+    for (const language of ['ca', 'es']) {
+      const testCase = employmentCases.find(
+        (item) =>
+          item.subtopic === 'self-employed-own-risk' &&
+          item.language === language &&
+          item.expected.shouldAnswer,
+      );
+      expect(testCase?.expected.requiredFacts).toEqual(['alariad', 'concurr']);
+      expect(testCase?.sources[0]?.excerpt).toContain('ni concurren');
+    }
+  });
 });

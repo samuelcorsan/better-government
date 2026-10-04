@@ -25,8 +25,8 @@ function source(
         ? 'Basado en datos de la Agencia Estatal Boletín Oficial del Estado'
         : `Fuente oficial: ${new URL(url).hostname}; adaptación y traducción propias, sin aval administrativo`,
     sourceUpdatedAt,
-    // For undated pages this is the first observed edition, not the law's commencement.
-    applicableFrom: sourceUpdatedAt ?? consultedAt,
+    // First observed here; page edition dates are not legal commencement dates.
+    applicableFrom: consultedAt,
     applicableUntil: null,
     informative: true,
     jurisdiction: sourceId === 'gencat-tramits' || sourceId === 'gencat-treball' ? 'ES-CT' : 'ES',
@@ -43,12 +43,12 @@ export const employmentSources = {
     'es',
     'El empresario que por primera vez vaya a contratar trabajadores, deberá solicitar su INSCRIPCIÓN como empresa antes del inicio de actividad',
   ),
-  affiliation: source(
-    'tgss-worker-affiliation',
+  alta: source(
+    'tgss-worker-alta',
     'seg-social',
-    'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/Afiliacion/7332/7330',
+    'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/Afiliacion/32765/32772?changeLanguage=es',
     'es',
-    'Las solicitudes de afiliación deben formularse con carácter previo al inicio de la prestación de servicios del trabajador por cuenta ajena.',
+    'Previo al incio de la relación laboral hasta 60 días naturales antes',
   ),
   contract: source(
     'boe-employment-contract',
@@ -56,7 +56,7 @@ export const employmentSources = {
     'https://www.boe.es/buscar/act.php?id=BOE-A-2015-11430',
     'es',
     'El empresario está obligado a comunicar a la oficina pública de empleo, en el plazo de los diez días siguientes a su concertación',
-    null,
+    '2025-12-04',
     'https://www.boe.es/buscar/doc.php?id=BOE-A-2015-11430',
   ),
   contrat: source(
@@ -141,7 +141,7 @@ const entries: Entry[] = [
     id: 'employer-registration',
     domain: 'D-09',
     source: 'registration',
-    extra: 'affiliation',
+    extra: 'alta',
     extraOn: ['fact', 'step'],
     profiles: ['with-employees'],
     title: bilingual(
@@ -149,8 +149,8 @@ const entries: Entry[] = [
       'Inscripción empresarial y alta de plantilla',
     ),
     question: bilingual(
-      'Contractaràs personal per compte d’altri i és la primera contractació?',
-      '¿Contratarás personal por cuenta ajena y es la primera contratación?',
+      'Contractaràs personal per compte d’altri per primera vegada? Quin règim correspon?',
+      '¿Contratarás personal por cuenta ajena por primera vez? ¿Qué régimen corresponde?',
     ),
     condition: bilingual(
       'S’aplica si es contracta personal per compte d’altri.',
@@ -161,12 +161,12 @@ const entries: Entry[] = [
       'La actividad sin personal contratado no activa esta inscripción empresarial.',
     ),
     fact: bilingual(
-      'La primera inscripció empresarial precedeix l’inici; l’afiliació de la persona treballadora precedeix la prestació de serveis.',
-      'La primera inscripción empresarial precede al inicio; la afiliación de la persona trabajadora precede a la prestación de servicios.',
+      'La primera inscripció empresarial precedeix l’inici; en règim general, l’alta de la persona treballadora també és prèvia a la relació laboral.',
+      'La primera inscripción empresarial precede al inicio; en régimen general, el alta de la persona trabajadora también es previa a la relación laboral.',
     ),
     step: bilingual(
-      'Comprova inscripció i codi de cotització a TGSS, i l’afiliació i alta de cada persona abans de començar.',
-      'Comprueba inscripción y código de cotización en TGSS, y afiliación y alta de cada persona antes de empezar.',
+      'Comprova inscripció, codi de cotització i règim a TGSS, i presenta l’alta en règim general abans de començar si correspon.',
+      'Comprueba inscripción, código de cotización y régimen en TGSS, y presenta el alta en régimen general antes de empezar si corresponde.',
     ),
   },
   {

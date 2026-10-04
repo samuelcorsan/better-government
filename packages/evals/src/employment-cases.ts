@@ -75,8 +75,9 @@ const scenarios = [
     id: 'self-employed-own-risk',
     source: employmentSources.independent,
     fact: 'alariad',
-    ca: 'Quins dos supòsits separa l’INSST abans de parlar de treball propi sense plantilla?',
-    es: '¿Qué dos supuestos separa el INSST antes de hablar de trabajo propio sin plantilla?',
+    extraFact: 'concurr',
+    ca: 'Quines dues condicions descriu l’INSST per al treball propi sense plantilla ni concurrència?',
+    es: '¿Qué dos condiciones describe el INSST para el trabajo propio sin plantilla ni concurrencia?',
     negativeCa: 'Quines obligacions preventives sectorials concretes té la meva activitat?',
     negativeEs: '¿Qué obligaciones preventivas sectoriales concretas tiene mi actividad?',
   },
@@ -122,7 +123,9 @@ export const employmentDataset = catalunyaDatasetSchema.parse({
           expected: {
             shouldAnswer,
             jurisdiction: 'ES-CT',
-            requiredFacts: shouldAnswer ? [scenario.fact] : [],
+            requiredFacts: shouldAnswer
+              ? [scenario.fact, ...('extraFact' in scenario ? [scenario.extraFact] : [])]
+              : [],
             forbiddenFacts: [],
           },
         })),
