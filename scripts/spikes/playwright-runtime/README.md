@@ -58,19 +58,20 @@ primer caso. No se recarga la pestaña existente para hacer pasar su prueba.
 
 ## Evidencia ejecutada
 
-| Comprobación                                                      | Página ya cargada                                | Conexión antes de navegar         |
-| ----------------------------------------------------------------- | ------------------------------------------------ | --------------------------------- |
-| Carga del módulo MV3 y acciones sobre campos/controles originales | Pasa                                             | Pasa                              |
-| Frame del mismo origen                                            | Pasa                                             | Pasa                              |
-| Frame `127.0.0.1` → `localhost`                                   | Lectura y relleno pasan; click da `TimeoutError` | Pasa                              |
-| Navegación mediante el enlace original                            | Pasa                                             | Pasa                              |
-| Dos pestañas y error por control inexistente                      | Pasa                                             | Pasa                              |
-| Cancelación por detach y acción tras reattach                     | Pasa                                             | Pasa                              |
-| Cierre de pestaña durante una operación                           | Rechaza la operación                             | Rechaza la operación              |
-| Cierre del motor y desconexión real del debugger                  | Pasa                                             | Pasa                              |
-| Eventos `Network`, `Fetch`, `Storage` o `Log`                     | 0 observados                                     | 0 observados                      |
-| Marcador en requests/logs, escrituras y comandos bloqueados       | 0 observados                                     | 0 observados                      |
-| Resultado del proceso                                             | Código 1                                         | Código 0; 13 comprobaciones pasan |
+| Comprobación                                                      | Página ya cargada                                | Conexión antes de navegar                           |
+| ----------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------- |
+| Carga del módulo MV3 y acciones sobre campos/controles originales | Pasa                                             | Pasa                                                |
+| Frame del mismo origen                                            | Pasa                                             | Pasa                                                |
+| Frame `127.0.0.1` → `localhost`                                   | Lectura y relleno pasan; click da `TimeoutError` | Pasa                                                |
+| Navegación mediante el enlace original                            | Pasa                                             | Pasa                                                |
+| Dos pestañas y error por control inexistente                      | Pasa                                             | Pasa                                                |
+| Cancelación por detach y acción tras reattach                     | Pasa                                             | Pasa                                                |
+| Cierre de pestaña durante una operación                           | Rechaza la operación                             | Rechaza la operación                                |
+| Cierre del motor y desconexión real del debugger                  | Pasa                                             | Pasa                                                |
+| Eventos `Network`, `Fetch`, `Storage` o `Log`                     | 0 observados                                     | 0 observados                                        |
+| Marcador en requests/logs, escrituras y comandos bloqueados       | 0 observados                                     | 0 observados                                        |
+| Cookie HttpOnly sintética creada por la web en otra pestaña       | No probado en este modo                          | Recibida por `/main`, sin leerla desde la extensión |
+| Resultado del proceso                                             | Código 1                                         | Código 0; 13 comprobaciones pasan                   |
 
 En ambos modos `fixtureResponses.crossSiteFrame` vale **1**: el servidor entregó
 el frame. El runner lo exige para evitar confundir un fallo de conectividad con
@@ -159,6 +160,48 @@ en disco. Este laboratorio con datos sintéticos los elimina al finalizar;
 traces ni capturas. El heap de unos 2,7 MB corresponde a una pestaña sintética,
 no al worker; `extensionHeap: null` impide estimar consumo de la extensión.
 
+El 4 de octubre se añadió una comprobación de continuidad del perfil en el modo
+`--before-navigation`: una pestaña de la propia web recibe una cookie HttpOnly
+sintética, se cierra, y el servidor verifica solo si llega en la petición a
+`/main` desde la pestaña nueva de la extensión. Pasó **1/1** junto a las trece
+comprobaciones anteriores (`authenticatedMain: 1`). La extensión no consulta la
+cookie; el informe contiene únicamente un contador. Esto demuestra la sesión
+compartida en el perfil sintético probado, no un login real ni los límites de
+persistencia del navegador.
+
+## Compilación desde fuente y límite del transporte
+
+Se clonó el tag público `v0.15.0` de `playwright-crx` (commit `aafff2c`) en
+`/tmp`, sin modificar esta dependencia en el repositorio, y se ejecutó
+`npm ci --ignore-scripts --workspaces=false` y `npm run build:crx`. La
+compilación pasó, transformó 1.950 módulos y generó un módulo ESM principal de
+**5.381.767 bytes**. Sigue incluyendo `fetch`, `XMLHttpRequest`, `WebSocket`,
+`eval`, `new Function`, `Network.getCookies`, recorder y tracing: no pasa el
+contrato estático de `scripts/audit-bundle.mjs` y no debe empaquetarse en
+producción mediante una excepción.
+
+El problema no es solo el formato del paquete publicado. `CrxPlaywright`
+hereda de `Playwright`, cuyo constructor importa Chromium, BiDi, Firefox,
+WebKit, Electron, Android y DebugController; su dispatcher también construye
+los canales de esos backends y la API de peticiones. `Crx` importa recorder y
+player. Retirar esos módulos exige cambiar conjuntamente el protocolo cliente,
+el dispatcher y la biblioteca fuente, no una opción de Vite.
+El transporte de fuente reenvía cualquier comando no reconocido a
+`chrome.debugger.sendCommand` y cualquier evento del target a Playwright antes
+de comprobar una ruta. Implementa además `Storage.getCookies` mediante
+`Network.getCookies` y se adjunta automáticamente a popups de una pestaña
+controlada. La ejecución sintética observada usó 15 `Runtime.evaluate` y 104
+`Runtime.callFunctionOn`; permitir solo los nombres de esos métodos no acota
+sus expresiones ni sus resultados. Un filtro de métodos añadido al paquete
+actual sería insuficiente, aunque pasara las acciones positivas.
+
+La siguiente prueba de código tendría que empezar por una variante de fuente
+que elimine las capacidades ajenas al recorrido y delimite tab, sesión hija,
+host/ruta, comando, parámetros y evento **antes** de entregarlos a Playwright,
+incluidos los popups y cambios de origen. Después debe compilar, pasar la
+auditoría sin excepciones y probar rechazos adversos. El prototipo presente no
+cumple esas condiciones; no se cambió manifest ni bundle productivos.
+
 No se verificaron portales reales, firmas, CAPTCHA, certificados, archivos,
 contraseñas, suspensión/reinicio del worker, pérdida de integridad/versiones de
 mapas ni otras versiones de Chrome/Edge. Ningún control oficial se reemplazó.
@@ -176,14 +219,16 @@ bloqueadores de seguridad, empaquetado y auditoría siguientes.
 Antes de hacerlo hacen falta:
 
 1. Resolver el click y la geometría del iframe de distinto origen tras
-   adjuntarse a una página ya cargada, sin recargarla ni omitir la comprobación
-   de visibilidad de Playwright.
+   adjuntarse a una página ya cargada, o declarar expresamente ese modo no
+   soportado y conservar intacta la pestaña existente. El modo de pestaña nueva
+   debe adjuntarse antes de navegar.
 2. Consumir mapas validados de `@reforma-digital/registry/flow-map`, sin API de
    selectores/acciones arbitrarias ni rutas ajenas al trámite iniciado.
 3. Acotar targets, sesiones, comandos y payloads de eventos CDP, detener y
    desconectar ante pérdida de autorización/integridad y preservar controles.
 4. Empaquetar solo capacidades autorizadas y satisfacer una auditoría explícita
-   sin excepciones para admitir la biblioteca completa.
+   sin excepciones para admitir la biblioteca completa. La compilación directa
+   desde fuente del tag fijado tampoco satisface este punto.
 5. Validar pausa/retirada/restauración, ciclo de vida MV3 y frontera de memoria.
 
 La [API chrome.debugger](https://developer.chrome.com/docs/extensions/reference/api/debugger)
@@ -194,7 +239,12 @@ también exige tratar reinicios del worker, todavía sin comprobar aquí.
 
 ## Verificación del cambio
 
-- En esta iteración, tres ejecuciones por modo con espera explícita de selector
+- En esta iteración, compilación limpia desde fuente `v0.15.0`:
+  `npm run build:crx` pasa, pero el módulo resultante conserva las capacidades
+  prohibidas por la auditoría. El recorrido `--before-navigation` pasa con
+  `authenticatedMain: 1`; la cookie sintética HttpOnly la entrega y recibe la
+  web, sin usar `chrome.cookies` ni CDP `Network` desde la extensión.
+- En la iteración anterior, tres ejecuciones por modo con espera explícita de selector
   visible: `existing-loaded` falló 3/3 en el click cross-origin y
   `--before-navigation` pasó 3/3. Con el sondeo retirado, la ejecución final
   volvió a fallar/pasar respectivamente. Se conservó el código de salida 1.

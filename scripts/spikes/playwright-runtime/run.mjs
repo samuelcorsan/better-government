@@ -18,7 +18,7 @@ let contextRequests = 0;
 let contextLogs = 0;
 let controlErrors = 0;
 let externalRequests = 0;
-const fixtureResponses = { main: 0, frame: 0, crossSiteFrame: 0 };
+const fixtureResponses = { main: 0, frame: 0, crossSiteFrame: 0, authenticatedMain: 0 };
 const fixture = `<!doctype html><html lang="en"><meta charset="utf-8">
 <title>Synthetic fixture, no personal data</title>
 <form><label>Original synthetic value<input id="original" type="text"></label>
@@ -39,6 +39,13 @@ document.querySelector('form').addEventListener('submit', event => {
 const server = createServer((request, response) => {
   if (request.url === '/main') fixtureResponses.main++;
   if (request.url === '/frame') fixtureResponses.frame++;
+  if (request.url === '/session-start')
+    response.setHeader('Set-Cookie', 'rd_synthetic_session=active; HttpOnly; SameSite=Lax; Path=/');
+  if (
+    request.url === '/main' &&
+    request.headers.cookie?.split('; ').includes('rd_synthetic_session=active')
+  )
+    fixtureResponses.authenticatedMain++;
   if (request.headers.host?.startsWith('localhost:') && request.url === '/frame')
     fixtureResponses.crossSiteFrame++;
   if (request.url?.includes('RD-SYNTHETIC-CONTEXT-')) contextRequests++;
@@ -165,6 +172,11 @@ try {
     )
       externalRequests++;
   });
+  if (mode === 'before-navigation') {
+    const signedInTab = await browser.newPage();
+    await signedInTab.goto(origin + '/session-start');
+    await signedInTab.close();
+  }
   const worker = browser.serviceWorkers()[0] ?? (await browser.waitForEvent('serviceworker'));
   const id = new URL(worker.url()).host;
   const control = await browser.newPage();
@@ -230,6 +242,8 @@ try {
   assert.equal(externalRequests, 0, 'Unexpected external request');
   assert.equal(storage, true, 'Extension storage is not empty');
   assert.ok(fixtureResponses.crossSiteFrame > 0, 'Cross-origin fixture was not served');
+  if (mode === 'before-navigation')
+    assert.ok(fixtureResponses.authenticatedMain > 0, 'Synthetic session was not shared');
   for (const name of [
     'inputAndOfficialAction',
     'same-origin',
