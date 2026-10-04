@@ -77,6 +77,9 @@ importers:
       '@reforma-digital/design':
         specifier: workspace:*
         version: link:../../packages/design
+      '@reforma-digital/government':
+        specifier: workspace:*
+        version: link:../../packages/government
       '@reforma-digital/registry':
         specifier: workspace:*
         version: link:../../packages/registry

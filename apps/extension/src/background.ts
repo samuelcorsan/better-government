@@ -9,8 +9,23 @@ import {
   type ContextSelection,
   type ObjectiveContext,
 } from './session-context';
+import {
+  readPublicRelease,
+  refreshPublicRelease,
+} from '@reforma-digital/government/public-release';
 
 const ready = chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
+const catalogueKey = 'public-catalogue';
+
+async function catalogue(refresh: boolean) {
+  const stored: unknown = (await chrome.storage.session.get(catalogueKey))[catalogueKey];
+  const today = new Date().toISOString().slice(0, 10);
+  if (!refresh) return readPublicRelease(stored, today);
+  const result = await refreshPublicRelease(stored, today);
+  if (result.stored && (!record(stored) || stored.sha256 !== result.stored.sha256))
+    await chrome.storage.session.set({ [catalogueKey]: result.stored });
+  return result.catalogue;
+}
 
 // ponytail: one queue serializes the small session workload; split by objective if it becomes busy.
 let pending: Promise<unknown> = Promise.resolve();
@@ -66,6 +81,10 @@ function selection(value: unknown): ContextSelection {
 async function handle(message: unknown): Promise<unknown> {
   if (!record(message)) throw new Error('Invalid request');
   switch (message.type) {
+    case 'catalog:read':
+      return catalogue(false);
+    case 'catalog:refresh':
+      return catalogue(true);
     case 'session:save':
       return saveObjective(string(message.objective), context(message.context));
     case 'session:read':
