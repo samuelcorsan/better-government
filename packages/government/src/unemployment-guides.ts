@@ -1,5 +1,39 @@
 import { guideSchema, type Guide } from '@reforma-digital/core';
 
+const sepeSuspensionEvidence = (id: string, quote: string): Guide['evidence'][number] => ({
+  id,
+  sourceId: 'SEPE-suspension-reanudacion',
+  url: 'https://sepe.es/HomeSepe/prestaciones-desempleo/quiero-cobrar-el-paro/Suspension_reanudacion_extincion.html',
+  originalUrl:
+    'https://sepe.es/HomeSepe/prestaciones-desempleo/quiero-cobrar-el-paro/Suspension_reanudacion_extincion.html',
+  version: 'undated-observed-2026-10-04',
+  language: 'es',
+  attribution: 'SEPE, Suspensión, reanudación, extinción; fecha de actualización no publicada',
+  sourceUpdatedAt: null,
+  applicableFrom: '2026-10-04',
+  applicableUntil: null,
+  informative: true,
+  jurisdiction: 'ES',
+  quote,
+});
+
+const socEvidence = (id: string, quote: string): Guide['evidence'][number] => ({
+  id,
+  sourceId: 'SOC-orientacio-professional',
+  url: 'https://serveiocupacio.gencat.cat/ca/soc/ambits-actuacio/orientacio-professional/index.html',
+  originalUrl:
+    'https://serveiocupacio.gencat.cat/ca/soc/ambits-actuacio/orientacio-professional/index.html',
+  version: 'undated-observed-2026-10-04',
+  language: 'ca',
+  attribution: 'Servei Públic d’Ocupació de Catalunya, Orientació professional',
+  sourceUpdatedAt: null,
+  applicableFrom: '2026-10-04',
+  applicableUntil: null,
+  informative: true,
+  jurisdiction: 'ES-CT',
+  quote,
+});
+
 /** Public-source candidates. They stay pending until the source and publication gates approve them. */
 export const unemploymentGuides: Guide[] = [
   guideSchema.parse({
@@ -11,7 +45,7 @@ export const unemploymentGuides: Guide[] = [
     },
     domain: 'D-05',
     subtopic: 'unemployment-self-employment',
-    profiles: ['contributory', 'subsidy', 'self-employed'],
+    profiles: ['contributory', 'self-employed', 'mutuality-alternative'],
     jurisdiction: 'ES-CT',
     consultedAt: '2026-10-04',
     period: { evidenceIds: [] },
@@ -94,6 +128,23 @@ export const unemploymentGuides: Guide[] = [
         quote: 'La fecha de la solicitud debe ser anterior a la fecha de incorporación',
       },
       {
+        id: 'sepe-compatibility',
+        sourceId: 'SEPE-incompatibilidad-compatibilidad',
+        url: 'https://www.sepe.es/HomeSepe/prestaciones-desempleo/quiero-cobrar-el-paro/incompatibilidad_compatibilidades.html',
+        originalUrl:
+          'https://www.sepe.es/HomeSepe/prestaciones-desempleo/quiero-cobrar-el-paro/incompatibilidad_compatibilidades.html',
+        version: 'undated-observed-2026-10-04',
+        language: 'es',
+        attribution: 'SEPE, Incompatibilidad/compatibilidad; fecha de actualización no publicada',
+        sourceUpdatedAt: null,
+        applicableFrom: '2026-10-04',
+        applicableUntil: null,
+        informative: true,
+        jurisdiction: 'ES',
+        quote:
+          'siempre que lo solicites al SEPE en el plazo de 15 días a contar desde la fecha de inicio de la actividad por cuenta propia',
+      },
+      {
         id: 'soc-capitalization',
         sourceId: 'SOC-capitalitzacio-atur',
         url: 'https://serveiocupacio.gencat.cat/ca/detall/article/Capitalitzacio-de-latur',
@@ -141,6 +192,14 @@ export const unemploymentGuides: Guide[] = [
         jurisdiction: 'ES',
         quote: 'El derecho a la reanudación nacerá a partir del término de la causa de suspensión',
       },
+      sepeSuspensionEvidence(
+        'sepe-resumption',
+        'Si eres persona trabajadora por cuenta propia debes acreditarse la inscripción como demandante de empleo',
+      ),
+      sepeSuspensionEvidence(
+        'sepe-mutuality',
+        'De duración inferior a veinticuatro meses, en el caso de actividades con alta en alguna mutualidad de previsión social alternativa',
+      ),
       {
         id: 'boe-330',
         sourceId: 'BOE-A-2015-11724',
@@ -191,6 +250,22 @@ export const unemploymentGuides: Guide[] = [
         quote:
           'al menos, doce meses deben estar comprendidos en los veinticuatro meses inmediatamente anteriores',
       },
+      {
+        id: 'sepe-cessation',
+        sourceId: 'SEPE-cese-actividad',
+        url: 'https://www.sepe.es/HomeSepe/autonomos/cese-actividad',
+        originalUrl: 'https://www.sepe.es/HomeSepe/autonomos/cese-actividad',
+        version: 'undated-observed-2026-10-04',
+        language: 'es',
+        attribution: 'SEPE, Cese de la actividad; fecha de actualización no publicada',
+        sourceUpdatedAt: null,
+        applicableFrom: '2026-10-04',
+        applicableUntil: null,
+        informative: true,
+        jurisdiction: 'ES',
+        quote:
+          'es gestionada por una mutua colaboradora de la Seguridad Social y por el Instituto Social de la Marina (ISM)',
+      },
     ],
     conditions: [
       {
@@ -218,6 +293,15 @@ export const unemploymentGuides: Guide[] = [
           es: 'Si cesas una actividad autónoma, identifica la causa, la cobertura y las cotizaciones antes de valorar la prestación por cese.',
         },
         evidenceIds: ['boe-330', 'boe-337', 'boe-338'],
+        translation: 'ca',
+      },
+      {
+        id: 'mutuality-alternative',
+        text: {
+          ca: 'Si l’activitat autònoma es va exercir amb mutualitat alternativa al RETA, cal comprovar el límit específic de suspensió i represa.',
+          es: 'Si la actividad autónoma se ejerció con mutualidad alternativa al RETA, hay que comprobar el límite específico de suspensión y reanudación.',
+        },
+        evidenceIds: ['sepe-mutuality'],
         translation: 'ca',
       },
     ],
@@ -278,7 +362,207 @@ export const unemploymentGuides: Guide[] = [
         conditionIds: ['cessation'],
       },
     ],
-    steps: [],
+    steps: [
+      {
+        id: 'check-benefit-and-start-date',
+        text: {
+          ca: 'Confirma si cobres una prestació contributiva o un subsidi, si ja has iniciat l’activitat i si la prestació està activa o suspesa abans d’escollir cap via.',
+          es: 'Confirma si cobras una prestación contributiva o un subsidio, si ya has iniciado la actividad y si la prestación está activa o suspendida antes de elegir una vía.',
+        },
+        evidenceIds: ['boe-33', 'boe-34', 'boe-271'],
+        translation: 'ca',
+        dependsOn: [],
+      },
+      {
+        id: 'check-compatibility',
+        text: {
+          ca: 'Si tens prestació contributiva activa i vols compatibilitzar-la, comprova exclusions i data d’inici a la fitxa de compatibilitat del SEPE i tramita la sol·licitud davant el SEPE dins el termini que aquesta indiqui.',
+          es: 'Si tienes prestación contributiva activa y quieres compatibilizarla, comprueba exclusiones y fecha de inicio en la ficha de compatibilidad del SEPE y tramita la solicitud ante el SEPE dentro del plazo que esta indique.',
+        },
+        evidenceIds: ['boe-33', 'boe-33-exclusions', 'sepe-compatibility'],
+        translation: 'ca',
+        dependsOn: ['check-benefit-and-start-date'],
+      },
+      {
+        id: 'check-capitalization',
+        text: {
+          ca: 'Si tens prestació contributiva i encara no has iniciat l’activitat, revisa els requisits del pagament únic i presenta la sol·licitud davant el SEPE abans de l’inici si aquesta és la via escollida.',
+          es: 'Si tienes prestación contributiva y aún no has iniciado la actividad, revisa los requisitos del pago único y presenta la solicitud ante el SEPE antes del inicio si esta es la vía elegida.',
+        },
+        evidenceIds: ['boe-34', 'sepe-capitalization', 'soc-capitalization'],
+        translation: null,
+        dependsOn: ['check-benefit-and-start-date'],
+      },
+      {
+        id: 'check-resumption',
+        text: {
+          ca: 'Si la prestació està suspesa després del treball autònom, consulta la fitxa de represa del SEPE i comprova finalització de la causa, inscripció com a demandant i termini segons el teu supòsit.',
+          es: 'Si la prestación está suspendida tras el trabajo autónomo, consulta la ficha de reanudación del SEPE y comprueba finalización de la causa, inscripción como demandante y plazo según tu supuesto.',
+        },
+        evidenceIds: ['boe-271-resumption', 'sepe-resumption'],
+        translation: 'ca',
+        dependsOn: ['check-benefit-and-start-date'],
+      },
+      {
+        id: 'check-cessation',
+        text: {
+          ca: 'Si cesses l’activitat autònoma, comprova causa legal, cotitzacions i entitat gestora abans de presentar la protecció per cessament a la mútua corresponent o a l’ISM.',
+          es: 'Si cesas la actividad autónoma, comprueba causa legal, cotizaciones y entidad gestora antes de presentar la protección por cese ante la mutua correspondiente o el ISM.',
+        },
+        evidenceIds: ['boe-330', 'boe-337', 'boe-338', 'sepe-cessation'],
+        translation: 'ca',
+        dependsOn: ['check-benefit-and-start-date'],
+      },
+      {
+        id: 'check-mutuality-resumption',
+        text: {
+          ca: 'Si la prestació contributiva estava suspesa per activitat amb mutualitat alternativa, comprova a la fitxa del SEPE el límit de durada diferent del RETA abans de sol·licitar la represa.',
+          es: 'Si la prestación contributiva estaba suspendida por actividad con mutualidad alternativa, comprueba en la ficha del SEPE el límite de duración distinto del RETA antes de solicitar la reanudación.',
+        },
+        evidenceIds: ['sepe-mutuality', 'sepe-resumption'],
+        translation: 'ca',
+        dependsOn: ['check-benefit-and-start-date'],
+      },
+    ],
+  }),
+  guideSchema.parse({
+    id: 'catalunya-subsidy-resumption-after-self-employment',
+    revision: 1,
+    title: {
+      ca: 'Subsidi suspès després de treball autònom: possible represa',
+      es: 'Subsidio suspendido tras trabajo autónomo: posible reanudación',
+    },
+    domain: 'D-05',
+    subtopic: 'subsidy-resumption',
+    profiles: ['subsidy-suspended-after-self-employment'],
+    jurisdiction: 'ES-CT',
+    consultedAt: '2026-10-04',
+    period: { evidenceIds: [] },
+    validation: { status: 'pending' },
+    evidence: [
+      sepeSuspensionEvidence(
+        'sepe-subsidy-suspension',
+        'Mientras realices un trabajo por cuenta propia',
+      ),
+      sepeSuspensionEvidence(
+        'sepe-subsidy-resumption',
+        'Si eres persona trabajadora por cuenta propia debes acreditarse la inscripción como demandante de empleo',
+      ),
+      sepeSuspensionEvidence(
+        'sepe-subsidy-conditions',
+        'que cumples el requisito de carencia de rentas o de responsabilidades familiares',
+      ),
+      sepeSuspensionEvidence(
+        'sepe-subsidy-choice',
+        'podrás optar entre percibir esta o reabrir el derecho a la protección por desempleo suspendida',
+      ),
+    ],
+    conditions: [
+      {
+        id: 'subsidy-suspended-and-activity-ended',
+        text: {
+          ca: 'El subsidi per desocupació estava suspès durant el treball autònom, l’activitat ja ha acabat i cal verificar que continua existint dret a represa.',
+          es: 'El subsidio por desempleo estaba suspendido durante el trabajo autónomo, la actividad ya terminó y hay que verificar que subsiste el derecho a reanudación.',
+        },
+        evidenceIds: [
+          'sepe-subsidy-suspension',
+          'sepe-subsidy-resumption',
+          'sepe-subsidy-conditions',
+        ],
+        translation: 'ca',
+      },
+    ],
+    exclusions: [
+      {
+        id: 'not-active-subsidy-compatibility',
+        text: {
+          ca: 'Aquesta ruta no afirma que es pugui cobrar un subsidi actiu mentre es treballa per compte propi ni determina el termini sense la data de cessament.',
+          es: 'Esta ruta no afirma que se pueda cobrar un subsidio activo mientras se trabaja por cuenta propia ni determina el plazo sin la fecha de cese.',
+        },
+        evidenceIds: ['sepe-subsidy-resumption', 'sepe-subsidy-conditions'],
+        translation: 'ca',
+      },
+    ],
+    claims: [],
+    steps: [
+      {
+        id: 'check-subsidy-resumption',
+        text: {
+          ca: 'Obre la fitxa del SEPE de suspensió i represa. Comprova el tipus de subsidi, la data de cessament, la inscripció com a demandant, les rendes i les responsabilitats familiars aplicables abans de sol·licitar la represa.',
+          es: 'Abre la ficha del SEPE de suspensión y reanudación. Comprueba el tipo de subsidio, la fecha de cese, la inscripción como demandante, las rentas y las responsabilidades familiares aplicables antes de solicitar la reanudación.',
+        },
+        evidenceIds: ['sepe-subsidy-resumption', 'sepe-subsidy-conditions'],
+        translation: 'ca',
+        dependsOn: [],
+      },
+      {
+        id: 'choose-if-cessation-entitlement',
+        text: {
+          ca: 'Si també tens dret a protecció per cessament d’activitat, revisa amb les entitats gestores l’opció entre aquesta i reobrir la protecció per desocupació suspesa.',
+          es: 'Si también tienes derecho a protección por cese de actividad, revisa con las entidades gestoras la opción entre esta y reabrir la protección por desempleo suspendida.',
+        },
+        evidenceIds: ['sepe-subsidy-choice'],
+        translation: 'ca',
+        dependsOn: ['check-subsidy-resumption'],
+      },
+    ],
+  }),
+  guideSchema.parse({
+    id: 'catalunya-soc-professional-guidance',
+    revision: 1,
+    title: {
+      ca: 'Orientació professional del SOC abans d’emprendre',
+      es: 'Orientación profesional del SOC antes de emprender',
+    },
+    domain: 'D-05',
+    subtopic: 'soc-services',
+    profiles: ['unemployed-planning-self-employment'],
+    jurisdiction: 'ES-CT',
+    consultedAt: '2026-10-04',
+    period: { evidenceIds: [] },
+    validation: { status: 'pending' },
+    evidence: [
+      socEvidence('soc-guidance-startup', 'la posada en marxa d’iniciatives empresarials'),
+      socEvidence(
+        'soc-guidance-contact',
+        'Si vols sol·licitar el servei d’orientació professional, truca al telèfon del SOC: 930 886 200',
+      ),
+    ],
+    conditions: [
+      {
+        id: 'wants-soc-guidance',
+        text: {
+          ca: 'La persona vol orientació professional a Catalunya per preparar una iniciativa de treball per compte propi.',
+          es: 'La persona quiere orientación profesional en Catalunya para preparar una iniciativa de trabajo por cuenta propia.',
+        },
+        evidenceIds: ['soc-guidance-startup'],
+        translation: 'es',
+      },
+    ],
+    exclusions: [
+      {
+        id: 'service-not-grant',
+        text: {
+          ca: 'El servei d’orientació no acredita una subvenció monetària vigent ni resol una prestació del SEPE.',
+          es: 'El servicio de orientación no acredita una subvención monetaria vigente ni resuelve una prestación del SEPE.',
+        },
+        evidenceIds: ['soc-guidance-startup', 'soc-guidance-contact'],
+        translation: 'es',
+      },
+    ],
+    claims: [],
+    steps: [
+      {
+        id: 'request-soc-guidance',
+        text: {
+          ca: 'Consulta la fitxa d’orientació professional del SOC i sol·licita el servei pel canal que indica; l’Oficina de Treball acordarà si l’atenció és presencial o telemàtica.',
+          es: 'Consulta la ficha de orientación profesional del SOC y solicita el servicio por el canal que indica; la Oficina de Trabajo acordará si la atención es presencial o telemática.',
+        },
+        evidenceIds: ['soc-guidance-startup', 'soc-guidance-contact'],
+        translation: 'es',
+        dependsOn: [],
+      },
+    ],
   }),
   guideSchema.parse({
     id: 'catalunya-youth-self-employment-2026-history',
@@ -341,6 +625,6 @@ export const unemploymentCoverage = {
   unresolved: [
     'El artículo 33 dice 15 días; un resumen SEPE dice 15 días hábiles: no calcular vencimiento.',
     'Un resumen TGSS contradice el artículo 338 sobre continuidad de cotizaciones: no decidir elegibilidad desde ese resumen.',
-    'Subsidios, capitalización por tipo de autónomo y nuevas convocatorias requieren fichas y versiones propias.',
+    'La compatibilidad de cada tipo de subsidio, la capitalización por tipo de autónomo y nuevas convocatorias requieren fichas y versiones propias.',
   ],
 } as const;

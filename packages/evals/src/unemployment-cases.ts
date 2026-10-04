@@ -1,7 +1,7 @@
-import { catalunyaCaseSchema } from './catalunya';
+import { catalunyaCaseSchema, catalunyaDatasetSchema } from './catalunya';
 
 /** Controlled public-source cases; these do not count as an official publication corpus. */
-export const unemploymentCases = [
+const baseCases = [
   catalunyaCaseSchema.parse({
     id: 'd05-compatibility-ca',
     query: 'Cobro una prestació contributiva i començaré com a autònom: puc compatibilitzar-la?',
@@ -166,3 +166,154 @@ export const unemploymentCases = [
     },
   }),
 ];
+
+const counterpart = (originalId: string, language: 'ca' | 'es', query: string) => {
+  const original = baseCases.find((item) => item.id === originalId);
+  if (!original) throw new Error(`Missing D-05 case ${originalId}`);
+  return catalunyaCaseSchema.parse({
+    ...original,
+    id: original.id.replace(/-(ca|es)(?=-|$)/, `-${language}`),
+    language,
+    query,
+  });
+};
+
+export const unemploymentDataset = catalunyaDatasetSchema.parse({
+  version: 'unemployment-v2',
+  stage: 'controlled',
+  description:
+    'Rutas de desempleo y servicios SOC condicionadas, con convocatoria juvenil cerrada.',
+  cases: [
+    ...baseCases,
+    counterpart(
+      'd05-compatibility-ca',
+      'es',
+      'Cobro prestación contributiva y voy a empezar como autónomo: ¿qué compatibilidad debo consultar?',
+    ),
+    counterpart(
+      'd05-capitalization-es',
+      'ca',
+      'Encara no he començat l’activitat i cobro prestació contributiva: on consulto el pagament únic?',
+    ),
+    counterpart(
+      'd05-suspension-es',
+      'ca',
+      'Tenia la prestació contributiva suspesa pel treball autònom; quina via he de revisar en cessar?',
+    ),
+    counterpart(
+      'd05-cessation-ca',
+      'es',
+      'He cesado como autónomo: ¿quién gestiona la protección por cese de actividad?',
+    ),
+    counterpart(
+      'd05-subsidy-ca-abstain',
+      'es',
+      'Cobro un subsidio, pero desconozco cuál; ¿puedo mantenerlo al empezar a trabajar como autónomo?',
+    ),
+    counterpart(
+      'd05-youth-grant-es-abstain',
+      'ca',
+      'Quin ajut català d’autoocupació juvenil està obert avui per al meu cas?',
+    ),
+    ...(['ca', 'es'] as const).flatMap((language) => [
+      catalunyaCaseSchema.parse({
+        id: `d05-subsidy-resumption-${language}`,
+        query:
+          language === 'ca'
+            ? 'El meu subsidi estava suspès mentre treballava per compte propi i ara he cessat. Quina fitxa del SEPE he de revisar?'
+            : 'Mi subsidio estaba suspendido mientras trabajaba por cuenta propia y ahora he cesado. ¿Qué ficha del SEPE debo revisar?',
+        domain: 'D-05',
+        subtopic: 'subsidy-resumption',
+        profile: 'subsidy-suspended-after-self-employment',
+        language,
+        city: null,
+        year: 2026,
+        critical: 'obligation',
+        sources: [
+          {
+            sourceId: 'SEPE-suspension-reanudacion',
+            documentId: 'sepe-subsidy-resumption',
+            version: '2026-10-04',
+            url: 'https://sepe.es/HomeSepe/prestaciones-desempleo/quiero-cobrar-el-paro/Suspension_reanudacion_extincion.html',
+            jurisdiction: 'ES',
+            consultedAt: '2026-10-04',
+            excerpt:
+              'En el caso de ser persona perceptora del subsidio por desempleo, que cumples el requisito de carencia de rentas o de responsabilidades familiares',
+          },
+        ],
+        expected: {
+          shouldAnswer: true,
+          jurisdiction: 'ES-CT',
+          requiredFacts: ['subsidio'],
+          forbiddenFacts: ['270 días', '270 dies', 'reanudación automática', 'represa automàtica'],
+        },
+      }),
+      catalunyaCaseSchema.parse({
+        id: `d05-soc-guidance-${language}`,
+        query:
+          language === 'ca'
+            ? 'Estic preparant un negoci a Catalunya: com demano orientació professional al SOC?'
+            : 'Estoy preparando un negocio en Catalunya: ¿cómo pido orientación profesional al SOC?',
+        domain: 'D-05',
+        subtopic: 'soc-services',
+        profile: 'unemployed-planning-self-employment',
+        language,
+        city: null,
+        year: 2026,
+        critical: 'jurisdiction',
+        sources: [
+          {
+            sourceId: 'SOC-orientacio-professional',
+            documentId: 'soc-orientation-service',
+            version: '2026-10-04',
+            url: 'https://serveiocupacio.gencat.cat/ca/soc/ambits-actuacio/orientacio-professional/index.html',
+            jurisdiction: 'ES-CT',
+            consultedAt: '2026-10-04',
+            excerpt:
+              'Si vols sol·licitar el servei d’orientació professional, truca al telèfon del SOC: 930 886 200',
+          },
+        ],
+        expected: {
+          shouldAnswer: true,
+          jurisdiction: 'ES-CT',
+          requiredFacts: ['SOC'],
+          forbiddenFacts: ['ayuda concedida', 'ajut concedit', 'SEPE decideix'],
+        },
+      }),
+      catalunyaCaseSchema.parse({
+        id: `d05-mutuality-resumption-${language}`,
+        query:
+          language === 'ca'
+            ? 'Tenia la prestació contributiva suspesa i treballava amb mutualitat alternativa al RETA. Quin límit he de comprovar al SEPE abans de demanar la represa?'
+            : 'Tenía la prestación contributiva suspendida y trabajaba con mutualidad alternativa al RETA. ¿Qué límite debo comprobar en el SEPE antes de pedir la reanudación?',
+        domain: 'D-05',
+        subtopic: 'suspension-resumption',
+        profile: 'mutuality-alternative',
+        language,
+        city: null,
+        year: 2026,
+        critical: 'obligation',
+        sources: [
+          {
+            sourceId: 'SEPE-suspension-reanudacion',
+            documentId: 'sepe-mutuality-suspension',
+            version: '2026-10-04',
+            url: 'https://sepe.es/HomeSepe/prestaciones-desempleo/quiero-cobrar-el-paro/Suspension_reanudacion_extincion.html',
+            jurisdiction: 'ES',
+            consultedAt: '2026-10-04',
+            excerpt:
+              'De duración inferior a veinticuatro meses, en el caso de actividades con alta en alguna mutualidad de previsión social alternativa',
+          },
+        ],
+        expected: {
+          shouldAnswer: true,
+          jurisdiction: 'ES-CT',
+          requiredFacts: ['veinticuatro meses'],
+          forbiddenFacts: ['sesenta meses', 'seixanta mesos'],
+        },
+      }),
+    ]),
+  ],
+});
+
+export const unemploymentCases = unemploymentDataset.cases;
