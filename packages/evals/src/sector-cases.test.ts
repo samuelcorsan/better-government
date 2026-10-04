@@ -36,4 +36,19 @@ describe('D-07 sectorial controlado', () => {
       }
     }
   });
+
+  it('incluye las dos autorizaciones previas del HUT y la fecha propia de espectáculos es', () => {
+    const hut = sectorGuides.find((guide) => guide.subtopic === 'tourism-hut')!;
+    expect(hut.conditions[0]?.text.ca).toContain('autorització turística');
+    expect(hut.conditions[0]?.text.es).toContain('autorización turística');
+    expect(hut.steps[0]?.text.es).toContain('antes de la comunicación');
+    const shows = sectorGuides.find((guide) => guide.subtopic === 'shows-extraordinary')!;
+    expect(shows.evidence.find((item) => item.language === 'es')?.sourceUpdatedAt).toBe(
+      '2016-01-19',
+    );
+    expect(
+      sectorDataset.cases.find((item) => item.id === 'shows-extraordinary-es-fact')?.sources[0]
+        ?.version,
+    ).toBe('2016-01-19');
+  });
 });

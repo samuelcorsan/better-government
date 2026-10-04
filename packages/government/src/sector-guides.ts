@@ -67,24 +67,25 @@ const sectors: Sector[] = [
       'https://canalempresa.gencat.cat/es/03_sectors_d_activitat/06_hostaleria_i_turisme/establiments_turistics/habitatges_d_us_turistic/DL3_2023/',
     source: 'Canal Empresa',
     updated: '2023-11-09',
-    quote: 'llicència urbanística municipal prèviament a l’obertura',
+    quote:
+      'una llicència urbanística municipal i una autorització turística prèviament a l’obertura',
     quoteEs:
       'una licencia urbanística municipal y una autorización turística previamente a la apertura',
     condition: {
-      ca: 'Un HUT nou en un municipi afectat requereix revisar primer la llicència urbanística municipal.',
-      es: 'Un HUT nuevo en un municipio afectado requiere revisar primero la licencia urbanística municipal.',
+      ca: 'Un HUT nou en un municipi afectat requereix llicència urbanística municipal i autorització turística prèvies a l’obertura.',
+      es: 'Un HUT nuevo en un municipio afectado requiere licencia urbanística municipal y autorización turística previas a la apertura.',
     },
     exclusion: {
       ca: 'Aquesta branca no classifica hotels, càmpings ni llars compartides.',
       es: 'Esta rama no clasifica hoteles, campings ni hogares compartidos.',
     },
     action: {
-      ca: 'Consulta el planejament i la llicència municipal abans de la comunicació turística.',
-      es: 'Consulta el planeamiento y la licencia municipal antes de la comunicación turística.',
+      ca: 'Consulta el planejament i tramita la llicència municipal i l’autorització turística abans de la comunicació d’inici.',
+      es: 'Consulta el planeamiento y tramita la licencia municipal y la autorización turística antes de la comunicación de inicio.',
     },
     authority: {
-      ca: 'Ajuntament per a urbanisme; Canal Empresa per a la comunicació turística',
-      es: 'Ayuntamiento para urbanismo; Canal Empresa para la comunicación turística',
+      ca: 'Ajuntament per a urbanisme; autoritat turística per a l’autorització; Canal Empresa per a la comunicació',
+      es: 'Ayuntamiento para urbanismo; autoridad turística para la autorización; Canal Empresa para la comunicación',
     },
     questions: [
       {
@@ -255,6 +256,7 @@ const sectors: Sector[] = [
       'https://interior.gencat.cat/es/arees_dactuacio/espectacles/espectacles_i_activitats_caracter_extraordinari/index.html',
     source: 'Departament d’Interior',
     updated: '2026-06-19',
+    updatedEs: '2016-01-19',
     quote:
       'en espais oberts, de caràcter públic o privat, supòsits en els quals estan sotmesos a llicència municipal',
     quoteEs:

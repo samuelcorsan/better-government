@@ -27,13 +27,14 @@ const observations = [
     urlEs:
       'https://canalempresa.gencat.cat/es/03_sectors_d_activitat/06_hostaleria_i_turisme/establiments_turistics/habitatges_d_us_turistic/DL3_2023/',
     version: '2023-11-09',
-    excerpt: 'llicència urbanística municipal prèviament a l’obertura',
+    excerpt:
+      'una llicència urbanística municipal i una autorització turística prèviament a l’obertura',
     excerptEs:
       'una licencia urbanística municipal y una autorización turística previamente a la apertura',
-    fact: 'llicència urbanística municipal',
-    factEs: 'licencia urbanística municipal',
-    ca: 'Quina llicència prèvia es descriu per a un HUT nou en un municipi afectat?',
-    es: '¿Qué licencia previa se describe para un HUT nuevo en un municipio afectado?',
+    fact: 'autorització turística',
+    factEs: 'autorización turística',
+    ca: 'Quines autoritzacions prèvies es descriuen per a un HUT nou en un municipi afectat?',
+    es: '¿Qué autorizaciones previas se describen para un HUT nuevo en un municipio afectado?',
     missingCa:
       'Puc obrir ara un HUT en aquest immoble sense conèixer el planejament i les suspensions municipals?',
     missingEs:
@@ -117,6 +118,7 @@ const observations = [
     urlEs:
       'https://interior.gencat.cat/es/arees_dactuacio/espectacles/espectacles_i_activitats_caracter_extraordinari/index.html',
     version: '2026-06-19',
+    versionEs: '2016-01-19',
     excerpt:
       'en espais oberts, de caràcter públic o privat, supòsits en els quals estan sotmesos a llicència municipal',
     excerptEs:
