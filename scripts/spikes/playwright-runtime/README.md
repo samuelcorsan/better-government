@@ -2,9 +2,10 @@
 
 **T-015 sigue bloqueado.** Una adaptación experimental de
 `playwright-crx@0.15.0` ejecuta Playwright dentro de MV3 y funciona al conectarse
-antes de navegar. No supera el caso de una pestaña previamente cargada con
-iframe de distinto origen. Tampoco demuestra el firewall de mapas, rutas,
-acciones y eventos requerido para producción.
+antes de navegar. En una pestaña previamente cargada, la sesión del iframe de
+distinto origen ya se puede inicializar, leer y rellenar, pero el click original
+agota el timeout al comprobar visibilidad. Tampoco se ha demostrado el firewall
+de mapas, rutas, acciones y eventos requerido para producción.
 
 Este laboratorio continúa [el spike de #50](../playwright-crx/README.md),
 conservando su dependencia fijada y su prueba original para comparar resultados.
@@ -57,29 +58,41 @@ primer caso. No se recarga la pestaña existente para hacer pasar su prueba.
 
 ## Evidencia ejecutada
 
-| Comprobación                                                      | Página ya cargada               | Conexión antes de navegar         |
-| ----------------------------------------------------------------- | ------------------------------- | --------------------------------- |
-| Carga del módulo MV3 y acciones sobre campos/controles originales | Pasa                            | Pasa                              |
-| Frame del mismo origen                                            | Pasa o `TimeoutError` observado | Pasa                              |
-| Frame `127.0.0.1` → `localhost`                                   | `TimeoutError`                  | Pasa                              |
-| Navegación mediante el enlace original                            | Pasa o `TimeoutError` observado | Pasa                              |
-| Dos pestañas y error por control inexistente                      | Pasa                            | Pasa                              |
-| Cancelación por detach y acción tras reattach                     | Pasa                            | Pasa                              |
-| Cierre de pestaña durante una operación                           | Rechaza la operación            | Rechaza la operación              |
-| Cierre del motor y desconexión real del debugger                  | Pasa                            | Pasa                              |
-| Eventos `Network`, `Fetch`, `Storage` o `Log`                     | 0 observados                    | 0 observados                      |
-| Marcador en requests/logs, escrituras y comandos bloqueados       | 0 observados                    | 0 observados                      |
-| Resultado del proceso                                             | Código 1                        | Código 0; 13 comprobaciones pasan |
+| Comprobación                                                      | Página ya cargada                                | Conexión antes de navegar         |
+| ----------------------------------------------------------------- | ------------------------------------------------ | --------------------------------- |
+| Carga del módulo MV3 y acciones sobre campos/controles originales | Pasa                                             | Pasa                              |
+| Frame del mismo origen                                            | Pasa                                             | Pasa                              |
+| Frame `127.0.0.1` → `localhost`                                   | Lectura y relleno pasan; click da `TimeoutError` | Pasa                              |
+| Navegación mediante el enlace original                            | Pasa                                             | Pasa                              |
+| Dos pestañas y error por control inexistente                      | Pasa                                             | Pasa                              |
+| Cancelación por detach y acción tras reattach                     | Pasa                                             | Pasa                              |
+| Cierre de pestaña durante una operación                           | Rechaza la operación                             | Rechaza la operación              |
+| Cierre del motor y desconexión real del debugger                  | Pasa                                             | Pasa                              |
+| Eventos `Network`, `Fetch`, `Storage` o `Log`                     | 0 observados                                     | 0 observados                      |
+| Marcador en requests/logs, escrituras y comandos bloqueados       | 0 observados                                     | 0 observados                      |
+| Resultado del proceso                                             | Código 1                                         | Código 0; 13 comprobaciones pasan |
 
 En ambos modos `fixtureResponses.crossSiteFrame` vale **1**: el servidor entregó
 el frame. El runner lo exige para evitar confundir un fallo de conectividad con
-un fallo del runtime. La conexión previa recibe eventos de la sesión hija;
-en el caso negativo `childEvents` está vacío aunque aparece un
-`Target.attachedToTarget`. La causa precisa de esa falta de inicialización de la
-sesión hija queda **sin demostrar**; no se infiere imposibilidad general de MV3.
-Entre las ejecuciones negativas varía qué otras acciones alcanzan el timeout:
-el frame del mismo origen pasó en una y falló en otra; la navegación mostró el
-resultado inverso. No se atribuye esa variación a una causa no comprobada.
+un fallo del runtime. El experimento inicial recibía `Target.attachedToTarget`
+pero no eventos de sesión hija. Un contador temporal dentro de `FrameSession`
+mostró `frameManager.frame(targetId) === null` una vez y
+`targetInfo.parentFrameId` presente: `_onAttachedToTarget` salía sin iniciar la
+sesión. La adaptación actual registra el frame solo si su padre ya existe. Así
+llegan `Page.lifecycleEvent` y `Runtime.executionContextCreated` desde la sesión
+hija, y la lectura y el relleno funcionan. El contador temporal se retiró.
+
+El siguiente fallo es distinto: el click de Playwright agota su timeout con la
+frase fija «waiting for element to be visible». Después del fallo,
+`button.isVisible()` y la visibilidad del iframe padre dan `true`. Esperar antes
+con `button.waitFor({ state: 'visible' })` tampoco lo resuelve. En tres ejecuciones
+con pestaña ya cargada el click falló **3/3**; con conexión antes de navegar
+pasó **3/3**. Una prueba aislada con sondeos extra de visibilidad y geometría
+pasó **1/1**, insuficiente para atribuirle una solución; esos sondeos se
+retiraron. No se cambiaron los timeouts ni se oculta la fase fallida. La
+incoherencia exacta entre acción y visibilidad queda por diagnosticar. En las
+ejecuciones iniciales también variaron fallos del frame del mismo origen o de
+la navegación; la matriz 3/3 anterior solo corresponde a la adaptación actual.
 
 Los timeouts pertenecen al laboratorio: 2 segundos por acción ordinaria,
 100 ms para el error intencionado y 5 segundos para acciones pendientes.
@@ -94,6 +107,9 @@ fase no se ejecuta, falta su resultado exigido o se informa un error de arranque
 Solo en el directorio temporal se modifica el `FrameSession` distribuido:
 
 - Esperar a que se consuma `Page.getFrameTree` antes de `Target.setAutoAttach`.
+- Si `Target.attachedToTarget` entrega un iframe aún ausente del árbol de
+  Playwright, registrar `targetId` bajo `targetInfo.parentFrameId` solo cuando
+  ese padre ya está registrado. No se crea un frame raíz ni se recarga la pestaña.
 - Retirar la habilitación de `Log` y del gestor de sesiones de red.
 - Desactivar `grantUniveralAccess` al crear el mundo aislado.
 
@@ -152,9 +168,16 @@ La fixture intercepta su submit local; no reproduce peticiones de un portal.
 
 Mantener producción deshabilitada y #51 abierto. La evidencia permite seguir
 investigando una adaptación de Playwright real, pero no entregar el motor seguro.
+El ticket no exige expresamente adjuntarse a una pestaña ya cargada: un flujo
+que abra una pestaña del mismo perfil, conecte antes de navegar y preserve los
+controles originales podría declararlo no soportado y dejar intacta una pestaña
+preexistente. Eso requiere un contrato explícito de producto y no elimina los
+bloqueadores de seguridad, empaquetado y auditoría siguientes.
 Antes de hacerlo hacen falta:
 
-1. Adjuntarse a páginas ya cargadas con frames de distinto origen sin recargarlas.
+1. Resolver el click y la geometría del iframe de distinto origen tras
+   adjuntarse a una página ya cargada, sin recargarla ni omitir la comprobación
+   de visibilidad de Playwright.
 2. Consumir mapas validados de `@reforma-digital/registry/flow-map`, sin API de
    selectores/acciones arbitrarias ni rutas ajenas al trámite iniciado.
 3. Acotar targets, sesiones, comandos y payloads de eventos CDP, detener y
@@ -171,6 +194,13 @@ también exige tratar reinicios del worker, todavía sin comprobar aquí.
 
 ## Verificación del cambio
 
+- En esta iteración, tres ejecuciones por modo con espera explícita de selector
+  visible: `existing-loaded` falló 3/3 en el click cross-origin y
+  `--before-navigation` pasó 3/3. Con el sondeo retirado, la ejecución final
+  volvió a fallar/pasar respectivamente. Se conservó el código de salida 1.
+- `node --check` de `run.mjs` y `worker.js`, Oxlint focalizado, Prettier y
+  `git diff --check`: pasan. No se repitió `pnpm check` ni la auditoría del
+  bundle productivo en esta iteración; no se modificó producción.
 - `pnpm check`: no aprobado en dos ejecuciones. Lint, contratos de workspaces
   y typecheck pasan; la última ejecución termina con 196/199 tests aprobados y
   tres timeouts de 5 segundos en archivos no modificados: Extranjería

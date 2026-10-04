@@ -6,6 +6,8 @@ const privacy = { network: 0, storage: 0, files: 0, contextLogs: 0, blockedProto
 const commands = {};
 const events = {};
 const childEvents = {};
+const frameSteps = {};
+const frameVisibilityAfterFailure = {};
 chrome.debugger.onEvent.addListener((source, method) => {
   events[method] = (events[method] ?? 0) + 1;
   if (source.sessionId) childEvents[method] = (childEvents[method] ?? 0) + 1;
@@ -48,6 +50,7 @@ async function run(origin, mode) {
   globalThis.spikeStage = 'starting-candidate';
   const checks = {};
   const failures = {};
+  const failureHints = {};
   const attached = new Set();
   const tabIds = new Map();
   let app;
@@ -61,6 +64,10 @@ async function run(origin, mode) {
       checks[name] = false;
       // Return error class only: messages/stacks can contain field values.
       failures[name] = error instanceof Error ? error.name : 'UnknownError';
+      if (name === 'cross-origin' && error instanceof Error)
+        failureHints[name] = {
+          waitingForVisibility: error.message.includes('waiting for element to be visible'),
+        };
     }
   }
   try {
@@ -97,9 +104,25 @@ async function run(origin, mode) {
     for (const frameId of ['same-origin', 'cross-origin']) {
       await check(frameId, async () => {
         const frame = page.frameLocator('#' + frameId);
+        frameSteps[frameId] = 'read';
         const value = await frame.getByLabel('Original synthetic value').inputValue();
+        frameSteps[frameId] = 'fill';
         await frame.getByLabel('Connected synthetic value').fill(value);
-        await frame.getByRole('button', { name: 'Apply locally' }).click();
+        const button = frame.getByRole('button', { name: 'Apply locally' });
+        frameSteps[frameId] = 'click';
+        try {
+          await button.click();
+        } catch (error) {
+          frameVisibilityAfterFailure[frameId] = {
+            button: await button.isVisible().catch(() => false),
+            owner: await page
+              .locator('#' + frameId)
+              .isVisible()
+              .catch(() => false),
+          };
+          throw error;
+        }
+        frameSteps[frameId] = 'verify';
         return frame
           .locator('html')
           .getAttribute('data-applied')
@@ -189,10 +212,13 @@ async function run(origin, mode) {
     mode,
     checks,
     failures,
+    failureHints,
     privacy,
     commands,
     events,
     childEvents,
+    frameSteps,
+    frameVisibilityAfterFailure,
     productionEnabled: false,
     fixturePageHeap: heap,
   };

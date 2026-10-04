@@ -87,6 +87,12 @@ try {
         ['this._client.send("Log.enable", {}),', ''],
         ['this._crPage._networkManager.addSession(this._client, void 0, this._isMainFrame()),', ''],
         ['grantUniveralAccess: true,', 'grantUniveralAccess: false,'],
+        [
+          'const frame = this._page.frameManager.frame(targetId);',
+          `let frame = this._page.frameManager.frame(targetId);
+          if (!frame && event.targetInfo.parentFrameId && this._page.frameManager.frame(event.targetInfo.parentFrameId))
+            frame = this._page.frameManager.frameAttached(targetId, event.targetInfo.parentFrameId);`,
+        ],
       ];
       for (const [before, after] of replacements) {
         assert.equal(frame.split(before).length, 2, 'Candidate shape changed');
