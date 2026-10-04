@@ -1,7 +1,7 @@
 import {
   compatibleJurisdiction,
+  evidenceText,
   guideSchema,
-  normalizeText,
   quoteSupported,
   type Guide,
 } from '@reforma-digital/core';
@@ -12,6 +12,13 @@ type Seed = Pick<
   'id' | 'revision' | 'title' | 'domain' | 'subtopic' | 'profiles' | 'jurisdiction' | 'consultedAt'
 >;
 type Draft = Pick<Guide, 'period' | 'conditions' | 'exclusions' | 'claims' | 'steps'>;
+/** Must be compiled from, or acquired with, an approved public taxonomy; never built from a query. */
+export type PublicTaxonomy = {
+  guideIds: readonly string[];
+  subtopics: readonly string[];
+  profiles: readonly string[];
+  topics: readonly string[];
+};
 export type PublicPassage<Receipt = unknown> = {
   id: string;
   /** Same topic means competing wording for one material assertion, not a broad subject category. */
@@ -54,6 +61,7 @@ type ModelInput = Pick<Seed, 'domain' | 'subtopic' | 'profiles' | 'jurisdiction'
     quote: string;
     language: 'ca' | 'es';
     version: string;
+    applicableFrom: string;
   }[];
 };
 type TranslatorInput = {
@@ -62,19 +70,29 @@ type TranslatorInput = {
   from: 'ca' | 'es';
   to: 'ca' | 'es';
 };
+type CompareInput = {
+  topic: string;
+  left: Pick<PublicPassage, 'id' | 'quote' | 'language'>;
+  right: Pick<PublicPassage, 'id' | 'quote' | 'language'>;
+};
 type Reason =
   | 'source-unconfirmed'
   | 'quote-unmatched'
   | 'unsafe-material'
   | 'conflict'
+  | 'unresolved-comparison'
   | 'unsupported-statement'
   | 'translation-unverified'
   | 'unsupported-period'
   | 'omitted-source'
   | 'invalid-draft';
-type Report = {
+export type GenerationReport = {
   reasons: { code: Reason; ids: string[] }[];
   sources: { id: string; originalUrl: string; version: string }[];
+  discrepancies: {
+    topic: string;
+    passages: { id: string; quote: string; originalUrl: string; version: string }[];
+  }[];
   retainedStepIds: string[];
 };
 
@@ -164,12 +182,20 @@ export async function approveBoePassage(
 /** Builds a pending Guide from public excerpts. The separate corpus publication gate still applies. */
 export async function generatePublicGuide<Receipt>(
   seed: Seed,
+  taxonomy: PublicTaxonomy,
   passages: PublicPassage<Receipt>[],
   approve: ApproveDocument<Receipt>,
   propose: (input: ModelInput) => Promise<Draft>,
   verifyTranslation: (input: TranslatorInput) => Promise<boolean>,
-): Promise<{ guide: Guide | null; report: Report }> {
-  const report: Report = { reasons: [], sources: [], retainedStepIds: [] };
+  compare: (input: CompareInput) => Promise<'equivalent' | 'conflict' | 'unknown'> = async () =>
+    'unknown',
+): Promise<{ guide: Guide | null; report: GenerationReport }> {
+  const report: GenerationReport = {
+    reasons: [],
+    sources: [],
+    discrepancies: [],
+    retainedStepIds: [],
+  };
   const note = (code: Reason, ids: string[] = []) =>
     report.reasons.push({
       code,
@@ -178,14 +204,19 @@ export async function generatePublicGuide<Receipt>(
   if (
     !safeId.test(seed.id) ||
     privateValue.test(seed.id) ||
+    !taxonomy.guideIds.includes(seed.id) ||
     !safeId.test(seed.subtopic) ||
     privateValue.test(seed.subtopic) ||
+    !taxonomy.subtopics.includes(seed.subtopic) ||
     !/^D-(0[1-9]|1[0-8])$/.test(seed.domain) ||
     !/^ES(?:-[A-Z]{2}(?:-[A-Z0-9]+)*)?$/.test(seed.jurisdiction) ||
     !validDate(seed.consultedAt) ||
     !Array.isArray(seed.profiles) ||
     !seed.profiles.length ||
-    seed.profiles.some((profile) => !safeId.test(profile) || privateValue.test(profile)) ||
+    seed.profiles.some(
+      (profile) =>
+        !safeId.test(profile) || privateValue.test(profile) || !taxonomy.profiles.includes(profile),
+    ) ||
     !seed.title ||
     privateValue.test(`${seed.title.ca} ${seed.title.es}`) ||
     promptInstruction.test(`${seed.title.ca} ${seed.title.es}`)
@@ -205,6 +236,7 @@ export async function generatePublicGuide<Receipt>(
       privateValue.test(passage.id) ||
       !safeId.test(passage.topic) ||
       privateValue.test(passage.topic) ||
+      !taxonomy.topics.includes(passage.topic) ||
       counts.get(passage.id) !== 1
     ) {
       note('source-unconfirmed', [passage.id]);
@@ -232,6 +264,16 @@ export async function generatePublicGuide<Receipt>(
       note('source-unconfirmed', [passage.id]);
       continue;
     }
+    if (
+      promptInstruction.test(passage.quote) ||
+      privateValue.test(passage.quote) ||
+      passage.quote.length > 500 ||
+      passage.content.length > 5_000_000 ||
+      privateValue.test(passage.content)
+    ) {
+      note('unsafe-material', [passage.id]);
+      continue;
+    }
     let approval: DocumentApproval;
     try {
       approval = await approve(passage, seed);
@@ -255,15 +297,6 @@ export async function generatePublicGuide<Receipt>(
       note('source-unconfirmed', [passage.id]);
       continue;
     }
-    if (
-      promptInstruction.test(passage.quote) ||
-      privateValue.test(passage.quote) ||
-      passage.quote.length > 500 ||
-      passage.content.length > 5_000_000
-    ) {
-      note('unsafe-material', [passage.id]);
-      continue;
-    }
     if (!quoteSupported(passage.content, passage.quote)) {
       note('quote-unmatched', [passage.id]);
       continue;
@@ -280,11 +313,42 @@ export async function generatePublicGuide<Receipt>(
   for (const { passage } of eligible.values())
     byTopic.set(passage.topic, [...(byTopic.get(passage.topic) ?? []), passage]);
   for (const group of byTopic.values()) {
-    if (new Set(group.map((item) => normalizeText(item.quote))).size < 2) continue;
+    let verdict: 'equivalent' | 'conflict' | 'unknown' = 'equivalent';
+    for (let i = 0; i < group.length; i++)
+      for (let j = i + 1; j < group.length; j++) {
+        const left = group[i]!;
+        const right = group[j]!;
+        if (
+          left.language === right.language &&
+          evidenceText(left.quote) === evidenceText(right.quote)
+        )
+          continue;
+        try {
+          const compared = await compare({
+            topic: left.topic,
+            left: { id: left.id, quote: left.quote, language: left.language },
+            right: { id: right.id, quote: right.quote, language: right.language },
+          });
+          if (compared === 'conflict') verdict = 'conflict';
+          else if (compared !== 'equivalent' && verdict !== 'conflict') verdict = 'unknown';
+        } catch {
+          if (verdict !== 'conflict') verdict = 'unknown';
+        }
+      }
+    if (verdict === 'equivalent') continue;
     note(
-      'conflict',
+      verdict === 'conflict' ? 'conflict' : 'unresolved-comparison',
       group.map((item) => item.id),
     );
+    report.discrepancies.push({
+      topic: group[0]!.topic,
+      passages: group.map((item) => ({
+        id: item.id,
+        quote: item.quote,
+        originalUrl: item.originalUrl,
+        version: item.version,
+      })),
+    });
     for (const item of group) eligible.delete(item.id);
   }
   if (!eligible.size) return { guide: null, report };
@@ -298,6 +362,8 @@ export async function generatePublicGuide<Receipt>(
     language: passage.language,
     attribution: approval.attribution,
     sourceUpdatedAt: approval.sourceUpdatedAt,
+    applicableFrom: approval.applicableFrom,
+    applicableUntil: approval.applicableUntil,
     informative: approval.informative,
     jurisdiction: passage.jurisdiction,
     quote: passage.quote,
@@ -309,12 +375,13 @@ export async function generatePublicGuide<Receipt>(
       subtopic: seed.subtopic,
       profiles: [...seed.profiles],
       jurisdiction: seed.jurisdiction,
-      passages: [...eligible.values()].map(({ passage }) => ({
+      passages: [...eligible.values()].map(({ passage, approval }) => ({
         id: passage.id,
         topic: passage.topic,
         quote: passage.quote,
         language: passage.language,
         version: passage.version,
+        applicableFrom: approval.applicableFrom,
       })),
     });
     if (
@@ -338,7 +405,15 @@ export async function generatePublicGuide<Receipt>(
       period.evidenceIds.some((id) => !eligible.has(id)) ||
       [period.from, period.until].some(
         (date) =>
-          date && !period.evidenceIds.some((id) => eligible.get(id)?.passage.quote.includes(date)),
+          date &&
+          !period.evidenceIds.some((id) => {
+            const source = eligible.get(id);
+            return (
+              source?.passage.quote.includes(date) ||
+              source?.approval.applicableFrom === date ||
+              source?.approval.applicableUntil === date
+            );
+          }),
       )
     ) {
       note('unsupported-period');
@@ -376,7 +451,7 @@ export async function generatePublicGuide<Receipt>(
         typeof item.text.ca !== 'string' ||
         typeof item.text.es !== 'string' ||
         item.translation !== to ||
-        normalizeText(item.text[from]) !== normalizeText(source.quote) ||
+        evidenceText(item.text[from]) !== evidenceText(source.quote) ||
         promptInstruction.test(item.text[to]) ||
         privateValue.test(item.text[to])
       ) {

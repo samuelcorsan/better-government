@@ -216,6 +216,8 @@ export const guideSchema = z
           language: z.enum(['ca', 'es']),
           attribution: z.string().trim().min(1),
           sourceUpdatedAt: guideDate.nullable(),
+          applicableFrom: guideDate,
+          applicableUntil: guideDate.nullable(),
           informative: z.boolean(),
           jurisdiction: guideJurisdiction,
           quote: z.string().trim().min(8),
@@ -224,27 +226,31 @@ export const guideSchema = z
       .min(1),
     conditions: z.array(citedText),
     exclusions: z.array(citedText),
-    claims: z
-      .array(
-        citedText.extend({
-          kind: z.enum(['fact', 'obligation']),
-          conditionIds: z.array(guideId),
-        }),
-      )
-      .min(1),
+    claims: z.array(
+      citedText.extend({
+        kind: z.enum(['fact', 'obligation']),
+        conditionIds: z.array(guideId),
+      }),
+    ),
     steps: z.array(citedText.extend({ dependsOn: z.array(guideId) })),
   })
   .superRefine((guide, context) => {
     const issue = (message: string) => context.addIssue({ code: 'custom', message });
     const evidence = new Map(guide.evidence.map((item) => [item.id, item]));
     const hasDateCitation = (ids: string[], date: string) =>
-      ids.some((id) => evidence.get(id)?.quote.includes(date));
+      ids.some(
+        (id) =>
+          evidence.get(id)?.quote.includes(date) ||
+          evidence.get(id)?.applicableFrom === date ||
+          evidence.get(id)?.applicableUntil === date,
+      );
     if (evidence.size !== guide.evidence.length) issue('Evidencia duplicada');
     for (const item of guide.evidence)
       if (!compatibleJurisdiction(item.jurisdiction, guide.jurisdiction))
         issue(`Ámbito incompatible en evidencia ${item.id}`);
 
     const statements = [...guide.conditions, ...guide.exclusions, ...guide.claims, ...guide.steps];
+    if (!guide.claims.length && !guide.steps.length) issue('Guía sin afirmaciones ni pasos');
     if (new Set(statements.map((item) => item.id)).size !== statements.length)
       issue('Identificador de afirmación duplicado');
     for (const statement of statements) {

@@ -23,6 +23,8 @@ const guide = {
       language: 'es',
       attribution: 'Fuente sintética',
       sourceUpdatedAt: '2026-05-31',
+      applicableFrom: '2026-01-01',
+      applicableUntil: null,
       informative: false,
       jurisdiction: 'ES-CT',
       quote: 'Regla sintética aplicable desde 2026-01-01 a perfiles ficticios.',
