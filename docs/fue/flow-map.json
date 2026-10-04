@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.0",
+  "origin": "https://paeelectronico.circe.es",
+  "screens": [
+    {
+      "id": "public-clave-login",
+      "path": "/Account/LoginVirtual",
+      "label": "Acceso público a PAE Virtual mediante Cl@ve",
+      "controls": [
+        {
+          "id": "clave-login",
+          "selector": "button#send",
+          "label": " Login Cl@ve",
+          "restrictions": { "tag": "button", "type": "submit" }
+        }
+      ],
+      "transitions": []
+    }
+  ]
+}
