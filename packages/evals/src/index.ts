@@ -7,6 +7,7 @@ import { search, trace } from '@reforma-digital/ai';
 import { defaultConfig, type SearchConfig } from '@reforma-digital/core';
 import { db, experiments } from '@reforma-digital/db';
 import { datasetSchema, type Dataset } from './schema';
+import { catalunyaDatasetSchema, type CatalunyaDataset } from './catalunya';
 import {
   retrievalMetrics,
   deterministicAnswerMetrics,
@@ -18,6 +19,7 @@ import { judgeAnswer } from './judges';
 import { sources } from '@reforma-digital/government';
 export * from './schema';
 export * from './metrics';
+export * from './catalunya';
 export const repoRoot = path.resolve(fileURLToPath(new URL('../../../', import.meta.url)));
 export const runsDir = path.join(repoRoot, 'artifacts/runs');
 export type { Report } from './reports';
@@ -40,6 +42,16 @@ export async function loadDataset(selection = 'full'): Promise<Dataset> {
   );
   if (selection === 'golden') data.cases = data.cases.filter((c) => c.golden);
   return data;
+}
+export async function loadCatalunyaDataset(): Promise<CatalunyaDataset> {
+  return catalunyaDatasetSchema.parse(
+    JSON.parse(
+      await readFile(
+        path.join(repoRoot, 'packages/evals/datasets/autonomos-catalunya-v1.json'),
+        'utf8',
+      ),
+    ),
+  );
 }
 export async function runExperiment(options: {
   dataset: Dataset;

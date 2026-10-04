@@ -1,0 +1,99 @@
+{
+  "version": "autonomos-catalunya-v1",
+  "stage": "controlled",
+  "description": "Casos públicos y adversos iniciales. La selección no certifica cobertura ni publicación; las versiones y expectativas deben comprobarse automáticamente antes del benchmark oficial.",
+  "cases": [
+    {
+      "id": "digital-id-ca-2026",
+      "query": "Segons la fitxa oficial d'alta, quina identificació cal per fer la tramitació telemàtica?",
+      "domain": "D-16",
+      "subtopic": "identificacio-digital",
+      "profile": "general",
+      "language": "ca",
+      "city": null,
+      "year": 2026,
+      "critical": "obligation",
+      "sources": [
+        {
+          "sourceId": "gencat-tramits",
+          "documentId": "gencat-autonom-ca-2026-07-21",
+          "version": "2026-07-21",
+          "url": "https://tramits.gencat.cat/ca/tramits/tramits-temes/Alta-dun-empresari-individual-o-treballador-autonom",
+          "jurisdiction": "ES-CT",
+          "consultedAt": "2026-10-04",
+          "excerpt": "La tramitació telemàtica només es pot fer amb identificació digital."
+        }
+      ],
+      "expected": {
+        "shouldAnswer": true,
+        "jurisdiction": "ES-CT",
+        "requiredFacts": ["identificació digital"],
+        "forbiddenFacts": ["cap identificació"]
+      }
+    },
+    {
+      "id": "digital-id-es-2026",
+      "query": "Según la ficha oficial de alta, ¿qué identificación se necesita para tramitarla por Internet?",
+      "domain": "D-16",
+      "subtopic": "identificacion-digital",
+      "profile": "general",
+      "language": "es",
+      "city": null,
+      "year": 2026,
+      "critical": "obligation",
+      "sources": [
+        {
+          "sourceId": "gencat-tramits",
+          "documentId": "gencat-autonom-es-2026-07-21",
+          "version": "2026-07-21",
+          "url": "https://tramits.gencat.cat/es/tramits/tramits-temes/Alta-dun-empresari-individual-o-treballador-autonom",
+          "jurisdiction": "ES-CT",
+          "consultedAt": "2026-10-04",
+          "excerpt": "La tramitación telemática solo se puede hacer con identificación digital."
+        }
+      ],
+      "expected": {
+        "shouldAnswer": true,
+        "jurisdiction": "ES-CT",
+        "requiredFacts": ["identificación digital"],
+        "forbiddenFacts": ["sin identificación"]
+      }
+    },
+    {
+      "id": "invented-obligation-ca-2026",
+      "query": "És obligatori el formulari fictici RD-SYNTHETIC-XYZ per a l'alta fiscal a Catalunya?",
+      "domain": "D-03",
+      "subtopic": "alta-fiscal",
+      "profile": "general",
+      "language": "ca",
+      "city": null,
+      "year": 2026,
+      "critical": "obligation",
+      "sources": [],
+      "expected": {
+        "shouldAnswer": false,
+        "jurisdiction": "ES-CT",
+        "requiredFacts": [],
+        "forbiddenFacts": ["és obligatori", "es obligatorio"]
+      }
+    },
+    {
+      "id": "invented-obligation-es-2026",
+      "query": "¿Es obligatorio el formulario ficticio RD-SYNTHETIC-XYZ para el alta fiscal en Catalunya?",
+      "domain": "D-03",
+      "subtopic": "alta-fiscal",
+      "profile": "general",
+      "language": "es",
+      "city": null,
+      "year": 2026,
+      "critical": "obligation",
+      "sources": [],
+      "expected": {
+        "shouldAnswer": false,
+        "jurisdiction": "ES-CT",
+        "requiredFacts": [],
+        "forbiddenFacts": ["es obligatorio", "és obligatori"]
+      }
+    }
+  ]
+}
