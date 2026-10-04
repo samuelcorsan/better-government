@@ -13,6 +13,7 @@ type Seed = {
   required: string;
   query: Pair;
   unsupported: Pair;
+  unsupportedYear?: number;
 };
 
 // Short excerpts transcribed from the listed public pages on 2026-10-04.
@@ -85,7 +86,7 @@ const seeds: Seed[] = [
     version: '2026-10-04',
     excerpt:
       'actividades económicas que desarrollen, así como, en su caso, la relación de los establecimientos o locales',
-    required: 'locales',
+    required: 'local',
     query: {
       ca: 'He de revisar totes les activitats i locals al cens?',
       es: '¿Debo revisar todas las actividades y locales en el censo?',
@@ -199,7 +200,7 @@ const seeds: Seed[] = [
     subtopic: 'cotizacion',
     profiles: ['persona-fisica', 'socio-administrador', 'familiar-colaborador'],
     sourceId: 'seg-social',
-    url: 'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322',
+    url: 'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322?changeLanguage=es',
     version: '2026-10-04',
     excerpt:
       'Durante el año 2026, la tabla general y la tabla reducida y las bases máximas y mínimas aplicables',
@@ -238,7 +239,7 @@ const seeds: Seed[] = [
     subtopic: 'pluriactividad',
     profiles: ['pluriactivo'],
     sourceId: 'seg-social',
-    url: 'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322',
+    url: 'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322?changeLanguage=es',
     version: '2026-10-04',
     excerpt:
       'durante el año 2026, teniendo en cuenta tanto las cotizaciones efectuadas en este régimen especial como las aportaciones empresariales',
@@ -251,6 +252,7 @@ const seeds: Seed[] = [
       ca: 'Quin serà el llindar del reintegrament per pluriactivitat el 2027?',
       es: '¿Cuál será el umbral de reintegro por pluriactividad en 2027?',
     },
+    unsupportedYear: 2027,
   },
   {
     id: 'social-beneficio-inicio',
@@ -258,7 +260,7 @@ const seeds: Seed[] = [
     subtopic: 'beneficios-cotizacion',
     profiles: ['persona-fisica', 'socio-administrador'],
     sourceId: 'seg-social',
-    url: 'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322',
+    url: 'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322?changeLanguage=es',
     version: '2026-10-04',
     excerpt:
       'alta inicial o que no hubieran estado en situación de alta en los dos años inmediatamente anteriores',
@@ -313,7 +315,7 @@ export const fiscalSocialCases: CatalunyaCase[] = seeds.flatMap((seed) =>
         profile,
         language,
         city: null,
-        year: 2026,
+        year: seed.unsupportedYear ?? 2026,
         critical: 'obligation',
         sources: [],
         expected: {

@@ -33,7 +33,7 @@ const aeatFaq =
 const tgssReta =
   'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/Afiliacion/10548/32825';
 const tgssRates =
-  'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322';
+  'https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/10721/10724/1320/1322?changeLanguage=es';
 const lgss = 'https://www.boe.es/buscar/act.php?id=BOE-A-2015-11724';
 const retaRules = 'https://www.boe.es/buscar/act.php?id=BOE-A-1996-4447';
 

@@ -21,7 +21,9 @@ describe('casos T-004 D-03 y D-04', () => {
           ] as const) {
             const testCase = byId.get(`${guide.id}-${profile}-${language}-${suffix}`);
             expect(testCase?.expected.shouldAnswer, guide.id).toBe(shouldAnswer);
-            expect(testCase?.year, guide.id).toBe(2026);
+            expect(testCase?.year, guide.id).toBe(
+              suffix === 'abstain' && guide.id === 'social-pluriactividad-2026' ? 2027 : 2026,
+            );
           }
   });
 
