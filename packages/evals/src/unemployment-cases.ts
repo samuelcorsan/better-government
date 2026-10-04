@@ -1,0 +1,168 @@
+import { catalunyaCaseSchema } from './catalunya';
+
+/** Controlled public-source cases; these do not count as an official publication corpus. */
+export const unemploymentCases = [
+  catalunyaCaseSchema.parse({
+    id: 'd05-compatibility-ca',
+    query: 'Cobro una prestació contributiva i començaré com a autònom: puc compatibilitzar-la?',
+    domain: 'D-05',
+    subtopic: 'compatibility',
+    profile: 'contributory',
+    language: 'ca',
+    city: null,
+    year: 2026,
+    critical: 'obligation',
+    sources: [
+      {
+        sourceId: 'BOE-A-2007-13409',
+        documentId: 'BOE-A-2007-13409-art33',
+        version: '2015-09-10',
+        url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2007-13409#a33',
+        jurisdiction: 'ES',
+        consultedAt: '2026-10-04',
+        excerpt: 'por un máximo de 270 días o por el tiempo inferior pendiente de percibir',
+      },
+    ],
+    expected: {
+      shouldAnswer: true,
+      jurisdiction: 'ES-CT',
+      requiredFacts: ['270'],
+      forbiddenFacts: ['subsidio compatible', '15 días hábiles'],
+    },
+  }),
+  catalunyaCaseSchema.parse({
+    id: 'd05-capitalization-es',
+    query:
+      'Voy a iniciar una actividad por cuenta propia: ¿existe el pago único del paro contributivo?',
+    domain: 'D-05',
+    subtopic: 'capitalization',
+    profile: 'contributory',
+    language: 'es',
+    city: null,
+    year: 2026,
+    critical: 'obligation',
+    sources: [
+      {
+        sourceId: 'BOE-A-2007-13409',
+        documentId: 'BOE-A-2007-13409-art34',
+        version: '2015-09-10',
+        url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2007-13409#a34',
+        jurisdiction: 'ES',
+        consultedAt: '2026-10-04',
+        excerpt:
+          'a los beneficiarios de prestaciones por desempleo de nivel contributivo hasta el 100 por cien',
+      },
+    ],
+    expected: {
+      shouldAnswer: true,
+      jurisdiction: 'ES-CT',
+      requiredFacts: ['nivel contributivo'],
+      forbiddenFacts: ['100 % en metálico para todos', 'subsidio'],
+    },
+  }),
+  catalunyaCaseSchema.parse({
+    id: 'd05-subsidy-ca-abstain',
+    query: 'Cobro un subsidi, no sé quin; puc mantenir-lo si em dono d’alta com a autònom?',
+    domain: 'D-05',
+    subtopic: 'subsidy',
+    profile: 'subsidy-unknown',
+    language: 'ca',
+    city: null,
+    year: 2026,
+    critical: 'obligation',
+    sources: [],
+    expected: {
+      shouldAnswer: false,
+      jurisdiction: 'ES-CT',
+      requiredFacts: [],
+      forbiddenFacts: ['270 dies', '270 días', 'compatible'],
+    },
+  }),
+  catalunyaCaseSchema.parse({
+    id: 'd05-youth-grant-es-abstain',
+    query: '¿Qué ayuda catalana de autoempleo juvenil está abierta hoy para mi caso?',
+    domain: 'D-05',
+    subtopic: 'youth-grant-2026',
+    profile: 'young-self-employed',
+    language: 'es',
+    city: null,
+    year: 2026,
+    critical: 'deadline',
+    sources: [
+      {
+        sourceId: 'EMT-2615-2026',
+        documentId: 'EMT-2615-2026-call',
+        version: '2026-07-27',
+        url: 'https://tramits.gencat.cat/ca/tramits/tramits-temes/Subvencions-per-afavorir-lautoocupacio-de-joves-en-el-marc-del-Programa-FSE-00001?moda=1',
+        jurisdiction: 'ES-CT',
+        consultedAt: '2026-10-04',
+        excerpt: 'fins al 22 de setembre de 2026, a les 14:00 h',
+      },
+    ],
+    expected: {
+      shouldAnswer: false,
+      jurisdiction: 'ES-CT',
+      requiredFacts: [],
+      forbiddenFacts: ['solicitud abierta', 'convocatoria abierta', '17.094'],
+    },
+  }),
+  catalunyaCaseSchema.parse({
+    id: 'd05-suspension-es',
+    query:
+      'Tenía prestación contributiva suspendida por trabajo autónomo; ¿qué vía debo revisar al cesar?',
+    domain: 'D-05',
+    subtopic: 'suspension-resumption',
+    profile: 'contributory-suspended',
+    language: 'es',
+    city: null,
+    year: 2026,
+    critical: 'obligation',
+    sources: [
+      {
+        sourceId: 'BOE-A-2015-11724',
+        documentId: 'BOE-A-2015-11724-art271',
+        version: '2026-02-04',
+        url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2015-11724#a271',
+        jurisdiction: 'ES',
+        consultedAt: '2026-10-04',
+        excerpt:
+          'mientras el titular del derecho realice un trabajo por cuenta propia de duración inferior a sesenta meses',
+      },
+    ],
+    expected: {
+      shouldAnswer: true,
+      jurisdiction: 'ES-CT',
+      requiredFacts: ['sesenta meses'],
+      forbiddenFacts: ['subsidio compatible', 'pago único automático'],
+    },
+  }),
+  catalunyaCaseSchema.parse({
+    id: 'd05-cessation-ca',
+    query: 'He cessat com a autònom: qui gestiona la prestació per cessament?',
+    domain: 'D-05',
+    subtopic: 'cessation-protection',
+    profile: 'self-employed-ceased',
+    language: 'ca',
+    city: null,
+    year: 2026,
+    critical: 'obligation',
+    sources: [
+      {
+        sourceId: 'BOE-A-2015-11724',
+        documentId: 'BOE-A-2015-11724-art337',
+        version: '2022-09-07',
+        url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2015-11724#a337',
+        jurisdiction: 'ES',
+        consultedAt: '2026-10-04',
+        excerpt:
+          'deberán solicitar a la mutua colaboradora con la Seguridad Social a la que se encuentren adheridos',
+      },
+    ],
+    expected: {
+      shouldAnswer: true,
+      jurisdiction: 'ES-CT',
+      requiredFacts: ['mutua'],
+      forbiddenFacts: ['SEPE gestiona el alta', 'baja voluntaria suficiente'],
+    },
+  }),
+];
