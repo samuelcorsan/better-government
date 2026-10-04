@@ -37,7 +37,7 @@ const forbidden = [
   /\bsessionStorage\b/,
 ];
 for (const file of await readdir('dist', { recursive: true })) {
-  if (!/\.(js|html|css)$/.test(file)) continue;
+  if (!/\.(m?js|html|css)$/.test(file)) continue;
   const code = await readFile(path.join('dist', file), 'utf8');
   if (file === 'background.js') {
     assert.ok(
