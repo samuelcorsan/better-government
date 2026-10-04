@@ -13,6 +13,10 @@ import {
   readPublicRelease,
   refreshPublicRelease,
 } from '@reforma-digital/government/public-release';
+import {
+  searchPublicCatalogue,
+  type LocalSearchInput,
+} from '@reforma-digital/government/public-index';
 
 const ready = chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
 const catalogueKey = 'public-catalogue';
@@ -47,6 +51,33 @@ function record(value: unknown): value is Record<string, unknown> {
 function string(value: unknown): string {
   if (typeof value !== 'string') throw new Error('Invalid request');
   return value;
+}
+
+function shortOptionalString(value: unknown): value is string | undefined {
+  return value === undefined || (typeof value === 'string' && value.length <= 80);
+}
+
+function searchInput(value: Record<string, unknown>): LocalSearchInput {
+  const { query, language, activity, profile, municipality } = value;
+  if (
+    Object.keys(value).some(
+      (key) => !['type', 'query', 'language', 'activity', 'profile', 'municipality'].includes(key),
+    ) ||
+    typeof query !== 'string' ||
+    query.length > 300 ||
+    (language !== 'ca' && language !== 'es') ||
+    !shortOptionalString(activity) ||
+    !shortOptionalString(profile) ||
+    !shortOptionalString(municipality)
+  )
+    throw new Error('Invalid catalogue search');
+  return {
+    query,
+    language,
+    ...(activity !== undefined ? { activity } : {}),
+    ...(profile !== undefined ? { profile } : {}),
+    ...(municipality !== undefined ? { municipality } : {}),
+  };
 }
 
 function context(value: unknown): ObjectiveContext {
@@ -90,6 +121,12 @@ async function handle(message: unknown): Promise<unknown> {
       return catalogue(false);
     case 'catalog:refresh':
       return catalogue(true);
+    case 'catalog:search':
+      return searchPublicCatalogue(
+        await catalogue(false),
+        searchInput(message),
+        new Date().toISOString().slice(0, 10),
+      );
     case 'session:save':
       return saveObjective(string(message.objective), context(message.context));
     case 'session:read':
