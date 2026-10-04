@@ -173,6 +173,12 @@ const citedText = z.strictObject({
   id: guideId,
   text: bilingual,
   evidenceIds: z.array(guideId).min(1),
+  /** Language written by the product; null means both languages have original-source evidence. */
+  translation: z.enum(['ca', 'es']).nullable(),
+});
+const publicGuideUrl = z.url().refine((url) => {
+  const parsed = new URL(url);
+  return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
 });
 
 /** Structural checks only: citations are internal references and ISO dates are matched literally. Source authenticity and applicability need separate automatic gates before `verified`; parsing alone is insufficient. */
@@ -204,10 +210,13 @@ export const guideSchema = z
         z.strictObject({
           id: guideId,
           sourceId: guideId,
-          url: z.url().refine((url) => {
-            const parsed = new URL(url);
-            return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
-          }),
+          url: publicGuideUrl,
+          originalUrl: publicGuideUrl,
+          version: guideId,
+          language: z.enum(['ca', 'es']),
+          attribution: z.string().trim().min(1),
+          sourceUpdatedAt: guideDate.nullable(),
+          informative: z.boolean(),
           jurisdiction: guideJurisdiction,
           quote: z.string().trim().min(8),
         }),
@@ -241,6 +250,12 @@ export const guideSchema = z
     for (const statement of statements) {
       for (const id of statement.evidenceIds)
         if (!evidence.has(id)) issue(`Cita inexistente ${id}`);
+      const languages = new Set(statement.evidenceIds.map((id) => evidence.get(id)?.language));
+      if (statement.translation) {
+        if (!languages.has(statement.translation === 'ca' ? 'es' : 'ca'))
+          issue(`Traducción sin cita en idioma original ${statement.id}`);
+      } else if (!languages.has('ca') || !languages.has('es'))
+        issue(`Texto bilingüe sin citas originales en ambos idiomas ${statement.id}`);
       for (const date of [
         ...statement.text.ca.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
         ...statement.text.es.matchAll(/\b\d{4}-\d{2}-\d{2}\b/g),
