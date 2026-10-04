@@ -19,8 +19,8 @@ export const foreignWorkDataset = catalunyaDatasetSchema.parse({
       id: `foreign-initial-${language}-answer`,
       query:
         language === 'ca'
-          ? 'Soc una persona no comunitària que viu fora d’Espanya i vull treballar pel meu compte a Catalunya. Quina ruta oficial he de mirar?'
-          : 'Soy una persona no comunitaria que vive fuera de España y quiero trabajar por cuenta propia en Catalunya. ¿Qué ruta oficial debo mirar?',
+          ? 'Soc una persona no comunitària que viu fora d’Espanya, no m’és aplicable el règim de familiar de ciutadania UE/EEE/Suïssa i vull treballar pel meu compte a Catalunya. Quina ruta oficial he de mirar?'
+          : 'Soy una persona no comunitaria que vive fuera de España, no me corresponde el régimen de familiar de ciudadanía UE/EEE/Suiza y quiero trabajar por cuenta propia en Catalunya. ¿Qué ruta oficial debo mirar?',
       domain: 'D-14',
       subtopic: initial.subtopic,
       profile: initial.profiles[0],
@@ -63,17 +63,20 @@ export const foreignWorkDataset = catalunyaDatasetSchema.parse({
         {
           sourceId: 'administracion',
           documentId: 'eu-residence',
-          version: '2026-10-01',
-          url: foreignWorkUrls.euResidence,
+          version: language === 'ca' ? '2026-07-01' : '2026-10-01',
+          url: language === 'ca' ? foreignWorkUrls.euResidenceCa : foreignWorkUrls.euResidence,
           jurisdiction: 'ES',
           consultedAt,
-          excerpt: 'Son trabajadores por cuenta ajena o por cuenta propia en España',
+          excerpt:
+            language === 'ca'
+              ? "Són treballadors per compte d'altri o per compte propi a Espanya"
+              : 'Son trabajadores por cuenta ajena o por cuenta propia en España',
         },
       ],
       expected: {
         shouldAnswer: true,
         jurisdiction: 'ES-CT',
-        requiredFacts: ['cuenta propia'],
+        requiredFacts: [language === 'ca' ? 'compte propi' : 'cuenta propia'],
         forbiddenFacts: ['AUT03a'],
       },
     },

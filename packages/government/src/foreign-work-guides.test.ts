@@ -17,4 +17,17 @@ describe('foreign work guidance', () => {
     expect(foreignWorkUrls.initialCa).toContain('/ca/');
     expect(foreignWorkUrls.initialEs).toContain('/es/');
   });
+
+  it('grounds the initial consular application in the regulation and excludes the EU family regime', () => {
+    const initial = foreignWorkGuides[0]!;
+    const step = initial.steps.find((item) => item.id === 'open-aut03a')!;
+    expect(step.text.ca).toContain('sol·licitud inicial de visat');
+    expect(step.evidenceIds).toContain('visa-request');
+    expect(initial.evidence.find((item) => item.id === 'visa-request')?.url).toBe(
+      foreignWorkUrls.regulation,
+    );
+    expect(initial.evidence.find((item) => item.id === 'ministry-scope')?.quote).toContain(
+      'familiar de ciudadanos',
+    );
+  });
 });
