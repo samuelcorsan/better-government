@@ -109,6 +109,10 @@ incluida la segunda fuente cuando existe. Las expectativas proceden de
 extractos públicos, nunca de un paso generado. Las preguntas de varios perfiles
 reutilizan el hecho general aplicable: no prueban una resolución personalizada
 de cada combinación de circunstancias.
+Los hechos obligatorios del scorer usan fragmentos breves comunes al texto
+original y a su posible traducción ca/es para no exigir palabras castellanas en
+una respuesta catalana. Por ello, los casos controlados no validan la calidad
+semántica de la traducción ni sustituyen la revisión automática del contenido.
 
 Los tests evalúan el scorer T-004 con resultados sintéticos que citan el idioma
 original y comprueban versiones y jurisdicciones incompatibles. Esto prueba el
