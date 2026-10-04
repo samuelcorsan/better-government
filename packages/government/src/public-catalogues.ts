@@ -3,7 +3,7 @@ import { sources } from './index';
 type Page = {
   id: string;
   sourceId: string;
-  url: string;
+  url: string | null;
   language: 'ca' | 'es';
   pathway: 'direct' | 'coordinated';
   competence: 'municipal' | 'multiadministration';
@@ -92,6 +92,14 @@ export const cataloguePages: readonly Page[] = [
     competence: 'municipal',
   },
   {
+    id: 'lleida-es',
+    sourceId: 'lleida-tramits',
+    url: null,
+    language: 'es',
+    pathway: 'direct',
+    competence: 'municipal',
+  },
+  {
     id: 'tarragona-es',
     sourceId: 'tarragona-tramits',
     url: 'https://seu.tarragona.cat/sta/CarpetaPublic/doEvent?APP_CODE=STA&PAGE_CODE=CATALOGO&lang=ES',
@@ -99,11 +107,19 @@ export const cataloguePages: readonly Page[] = [
     pathway: 'direct',
     competence: 'municipal',
   },
+  {
+    id: 'tarragona-ca',
+    sourceId: 'tarragona-tramits',
+    url: null,
+    language: 'ca',
+    pathway: 'direct',
+    competence: 'municipal',
+  },
 ];
 
 export type CatalogueResult = {
   sourceId: string;
-  url: string;
+  url: string | null;
   authority: string;
   jurisdiction: string;
   language: 'ca' | 'es';
@@ -112,7 +128,15 @@ export type CatalogueResult = {
   competence: 'municipal' | 'multiadministration';
   legalUrl?: string;
 } & (
-  | { status: 'gap'; reason: 'rights-unverified' | 'unavailable' | 'changed-url' | 'changed-dom' }
+  | {
+      status: 'gap';
+      reason:
+        | 'public-url-unverified'
+        | 'rights-unverified'
+        | 'unavailable'
+        | 'changed-url'
+        | 'changed-dom';
+    }
   | { status: 'acquired'; sourceUpdatedAt: string | null; items: { title: string; url: string }[] }
 );
 
@@ -129,8 +153,8 @@ function validDate(value: string): boolean {
 export function extractPublicCatalogue(
   pageId: string,
   input: {
-    status: number;
-    finalUrl: string;
+    status?: number;
+    finalUrl?: string;
     document?: Document;
     legalDocument?: Document;
     consultedAt: string;
@@ -140,7 +164,7 @@ export function extractPublicCatalogue(
   const page = cataloguePages.find((item) => item.id === pageId);
   if (!page || !validDate(consultedAt)) throw new Error('Invalid acquisition');
   const source = sources.find((item) => item.id === page.sourceId);
-  if (!source || source.enabled || !source.publicUrls?.includes(page.url))
+  if (!source || source.enabled || (page.url && !source.publicUrls?.includes(page.url)))
     throw new Error('Catalogue source is not registered as disabled and public');
   const base = {
     sourceId: page.sourceId,
@@ -153,7 +177,8 @@ export function extractPublicCatalogue(
     competence: page.competence,
     ...(page.legalUrl ? { legalUrl: page.legalUrl } : {}),
   };
-  if (status === 403 || status === 401 || status === 404 || status >= 500)
+  if (!page.url) return { ...base, status: 'gap', reason: 'public-url-unverified' };
+  if (status === 403 || status === 401 || status === 404 || (status !== undefined && status >= 500))
     return { ...base, status: 'gap', reason: 'unavailable' };
   if (status !== 200 || finalUrl !== page.url)
     return { ...base, status: 'gap', reason: 'changed-url' };
@@ -164,12 +189,24 @@ export function extractPublicCatalogue(
     ?.textContent?.normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
+  const grant = legalText && page.legalGrant?.exec(legalText);
+  const laterProhibitions = legalText
+    ?.slice(grant ? grant.index + grant[0].length : 0)
+    .match(
+      /(?:queda prohibid[ao]|es prohibeix|se prohibe|no es permet|no se permite)[^.!?]{0,150}reutili(?:tz|z)[^.!?]*/g,
+    );
   if (
     legalDocument?.URL !== page.legalUrl ||
     !legalText ||
-    !page.legalGrant?.test(legalText) ||
+    !grant ||
     !/(?:citar|esmentar|mencionar).{0,35}(?:font|fuente)/.test(legalText) ||
-    !/no desnaturaliz|no desnaturalitz/.test(legalText)
+    !/no desnaturaliz|no desnaturalitz/.test(legalText) ||
+    laterProhibitions?.some(
+      (clause) =>
+        !/reutili(?:tz|z)\w*\s+d(?:['’]|e)\s*(?:obres i prestacions|obras y prestaciones).{0,100}reserva/.test(
+          clause,
+        ),
+    )
   )
     return { ...base, status: 'gap', reason: 'rights-unverified' };
   if (document?.URL !== page.url) return { ...base, status: 'gap', reason: 'changed-url' };

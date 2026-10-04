@@ -12,9 +12,9 @@ const legalText =
 const fue = cataloguePages.find((item) => item.id === 'fue-ca')!;
 const fueInput = {
   status: 200,
-  finalUrl: fue.url,
+  finalUrl: fue.url!,
   document: page(
-    fue.url,
+    fue.url!,
     '<title>Finestreta única empresarial</title><h1>Finestreta única empresarial</h1><main>' +
       '<a href="/ca/integraciodepartamentaltramit/tramit/PerTemes/Alta-autonom">Alta d’autònom</a>' +
       '<a href="/ca/integraciodepartamentaltramit/tramit/PerTemes/Alta-autonom">Alta d’autònom</a>' +
@@ -69,14 +69,14 @@ it('frena 403, redirecciones, cambios de DOM y condiciones de uso no demostradas
   expect(
     extractPublicCatalogue(fue.id, {
       ...fueInput,
-      document: page(fue.url, '<title>Canvi</title><h1>Canvi</h1><main>No hi ha fitxes</main>'),
+      document: page(fue.url!, '<title>Canvi</title><h1>Canvi</h1><main>No hi ha fitxes</main>'),
     }),
   ).toMatchObject({ status: 'gap', reason: 'changed-dom' });
   expect(
     extractPublicCatalogue(fue.id, {
       ...fueInput,
       document: page(
-        fue.url,
+        fue.url!,
         '<title>Acceso restringido</title><main><a href="/ca/integraciodepartamentaltramit/tramit/PerTemes/Alta-autonom">Alta</a></main>',
       ),
     }),
@@ -100,20 +100,32 @@ it('frena 403, redirecciones, cambios de DOM y condiciones de uso no demostradas
       ),
     }),
   ).toMatchObject({ status: 'gap', reason: 'rights-unverified' });
+  expect(
+    extractPublicCatalogue(fue.id, {
+      ...fueInput,
+      legalDocument: page(
+        fue.legalUrl!,
+        legalText.replace(
+          '</main>',
+          ' Queda prohibida la reutilització de tots els continguts, incloses les obres i prestacions amb reserva.</main>',
+        ),
+      ),
+    }),
+  ).toMatchObject({ status: 'gap', reason: 'rights-unverified' });
 });
 
 it('distingue Barcelona directo de los tres municipios pendientes de condiciones', () => {
   const barcelona = cataloguePages.find((item) => item.id === 'barcelona-ca')!;
   const result = extractPublicCatalogue(barcelona.id, {
     status: 200,
-    finalUrl: barcelona.url,
+    finalUrl: barcelona.url!,
     document: page(
-      barcelona.url,
+      barcelona.url!,
       '<title>Trámites telemáticos</title><main><a href="/oficinavirtual/ca/tramit/1234">Activitats</a><small>Última actualització 23/09/2026</small></main>',
     ),
     legalDocument: page(
       barcelona.legalUrl!,
-      '<main>L’Ajuntament de Barcelona permet reutilitzar informació. Cal esmentar la font i no desnaturalitzar el sentit.</main>',
+      '<main>L’Ajuntament de Barcelona permet reutilitzar informació. Cal esmentar la font i no desnaturalitzar el sentit. Queda prohibida la reutilització d’obres i prestacions de les quals s’hagi indicat la reserva dels drets.</main>',
     ),
     consultedAt: day,
   });
@@ -129,21 +141,20 @@ it('distingue Barcelona directo de los tres municipios pendientes de condiciones
     ],
   });
   const spanish = cataloguePages.find((item) => item.id === 'barcelona-es')!;
-  expect(
-    extractPublicCatalogue(spanish.id, {
-      status: 200,
-      finalUrl: spanish.url,
-      document: page(
-        spanish.url,
-        '<title>Trámites telemáticos</title><main><a href="/oficinavirtual/ca/tramit/1234">Actividades</a></main>',
-      ),
-      legalDocument: page(
-        spanish.legalUrl!,
-        '<main>El Ayuntamiento de Barcelona permite reutilizar información. Hay que mencionar la fuente y no desnaturalizar el sentido.</main>',
-      ),
-      consultedAt: day,
-    }),
-  ).toMatchObject({
+  const spanishInput = {
+    status: 200,
+    finalUrl: spanish.url!,
+    document: page(
+      spanish.url!,
+      '<title>Trámites telemáticos</title><main><a href="/oficinavirtual/ca/tramit/1234">Actividades</a></main>',
+    ),
+    legalDocument: page(
+      spanish.legalUrl!,
+      '<main>El Ayuntamiento de Barcelona permite reutilizar información. Hay que mencionar la fuente y no desnaturalizar el sentido.</main>',
+    ),
+    consultedAt: day,
+  };
+  expect(extractPublicCatalogue(spanish.id, spanishInput)).toMatchObject({
     status: 'acquired',
     language: 'es',
     items: [
@@ -153,15 +164,52 @@ it('distingue Barcelona directo de los tres municipios pendientes de condiciones
       },
     ],
   });
+  expect(
+    extractPublicCatalogue(spanish.id, {
+      ...spanishInput,
+      legalDocument: page(
+        spanish.legalUrl!,
+        '<main>El Ayuntamiento de Barcelona permite reutilizar información. Hay que mencionar la fuente y no desnaturalizar el sentido. Queda prohibida la reutilización de todos los contenidos.</main>',
+      ),
+    }),
+  ).toMatchObject({ status: 'gap', reason: 'rights-unverified' });
   for (const city of ['girona', 'lleida', 'tarragona']) {
     const item = cataloguePages.find((candidate) => candidate.id.startsWith(city))!;
     expect(
       extractPublicCatalogue(item.id, {
         status: 200,
-        finalUrl: item.url,
-        document: page(item.url, '<h1>Tràmits</h1><main><a href="/public">Tràmit</a></main>'),
+        finalUrl: item.url!,
+        document: page(item.url!, '<h1>Tràmits</h1><main><a href="/public">Tràmit</a></main>'),
         consultedAt: day,
       }),
     ).toMatchObject({ status: 'gap', sourceId: `${city}-tramits`, reason: 'rights-unverified' });
+  }
+});
+
+it('registra como huecos las variantes municipales sin URL pública exacta comprobada', () => {
+  for (const { id, sourceId, language, jurisdiction } of [
+    { id: 'lleida-es', sourceId: 'lleida-tramits', language: 'es', jurisdiction: 'ES-CT-LLEIDA' },
+    {
+      id: 'tarragona-ca',
+      sourceId: 'tarragona-tramits',
+      language: 'ca',
+      jurisdiction: 'ES-CT-TARRAGONA',
+    },
+  ]) {
+    expect(extractPublicCatalogue(id, { consultedAt: day })).toMatchObject({
+      sourceId,
+      url: null,
+      language,
+      jurisdiction,
+      competence: 'municipal',
+      pathway: 'direct',
+      status: 'gap',
+      reason: 'public-url-unverified',
+    });
+    expect(extractPublicCatalogue(id, { ...fueInput })).toMatchObject({
+      url: null,
+      status: 'gap',
+      reason: 'public-url-unverified',
+    });
   }
 });
