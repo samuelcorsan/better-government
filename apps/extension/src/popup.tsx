@@ -62,6 +62,17 @@ function CatalogueSearch() {
           claims: 'Informació subjecta a les condicions anteriors',
           steps: 'Passos possibles, subjectes a les condicions',
           sources: 'Fonts oficials',
+          chat: 'Conversa de guies',
+          answer: 'Resultats del catàleg públic',
+          objective: 'Objectiu',
+          portals: 'Portals de les fonts',
+          portalMissing: 'El portal per tramitar no està verificat en aquesta guia.',
+          actions: 'Accions previstes',
+          noActions: 'Aquesta guia encara no té accions automatitzades verificades.',
+          coverage: 'Cobertura',
+          guideOnly: 'Només guia; sense automatització verificada.',
+          start: 'Inicia el tràmit',
+          startUnavailable: 'L’inici automàtic estarà disponible quan es verifiqui un flux.',
         }
       : {
           title: 'Guías públicas',
@@ -89,6 +100,17 @@ function CatalogueSearch() {
           claims: 'Información sujeta a las condiciones anteriores',
           steps: 'Pasos posibles, sujetos a las condiciones',
           sources: 'Fuentes oficiales',
+          chat: 'Conversación de guías',
+          answer: 'Resultados del catálogo público',
+          objective: 'Objetivo',
+          portals: 'Portales de las fuentes',
+          portalMissing: 'El portal para tramitar no está verificado en esta guía.',
+          actions: 'Acciones previstas',
+          noActions: 'Esta guía aún no tiene acciones automatizadas verificadas.',
+          coverage: 'Cobertura',
+          guideOnly: 'Solo guía; sin automatización verificada.',
+          start: 'Iniciar trámite',
+          startUnavailable: 'El inicio automático estará disponible cuando se verifique un flujo.',
         };
   useEffect(() => {
     void catalogueMessage({ type: 'catalog:read' })
@@ -105,7 +127,7 @@ function CatalogueSearch() {
     setBusy(true);
     setError(false);
     try {
-      if (!refreshed.current) {
+      if (!refreshed.current && !catalogue?.fresh) {
         refreshed.current = true;
         setCatalogue((await catalogueMessage({ type: 'catalog:refresh' })) as PublicCatalogue);
       }
@@ -208,7 +230,9 @@ function CatalogueSearch() {
         </p>
       ) : null}
       {result ? (
-        <div className="space-y-3" aria-live="polite">
+        <div className="space-y-3" role="log" aria-label={copy.chat}>
+          <p className="bg-card p-3 text-right">{query}</p>
+          <h3 className="font-semibold">{copy.answer}</h3>
           {result.municipalCoverage === 'uncovered' ? (
             <p className="bg-callout bg-callout-warning">
               {copy.uncovered} {municipality}. {copy.checkCity}
@@ -217,67 +241,93 @@ function CatalogueSearch() {
           {result.needsTopic ? <p>{copy.topicNeeded}</p> : null}
           {!result.needsTopic && !result.hits.length ? <p>{copy.empty}</p> : null}
           {result.hits.map(({ guide, current, questions }) => (
-            <article className="bg-card space-y-2 p-3" key={guide.id}>
-              <h3 className="font-semibold">{guide.title[language]}</h3>
-              <p className="bg-hint">
-                {guide.jurisdiction} · {current ? copy.current : copy.unknown} ·{copy.consulted}{' '}
-                {guide.consultedAt}
-              </p>
-              {questions.length ? (
-                <div>
-                  <h4 className="font-semibold">{copy.conditions}</h4>
-                  <ul className="list-disc pl-5">
-                    {questions.map((question) => (
-                      <li key={question}>{question}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {guide.exclusions.length ? (
-                <div>
-                  <h4 className="font-semibold">{copy.limits}</h4>
-                  <ul className="list-disc pl-5">
-                    {guide.exclusions.map((item) => (
-                      <li key={item.id}>{item.text[language]}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {current && guide.claims.length ? (
-                <div>
-                  <h4 className="font-semibold">{copy.claims}</h4>
-                  <ul className="list-disc pl-5">
-                    {guide.claims.map((item) => (
-                      <li key={item.id}>{item.text[language]}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {current && guide.steps.length ? (
-                <div>
-                  <h4 className="font-semibold">{copy.steps}</h4>
-                  <ol className="list-decimal pl-5">
-                    {guide.steps.map((item) => (
-                      <li key={item.id}>{item.text[language]}</li>
-                    ))}
-                  </ol>
-                </div>
-              ) : null}
-              <div>
-                <h4 className="font-semibold">{copy.sources}</h4>
+            <details className="bg-card space-y-2 p-3" key={guide.id}>
+              <summary className="cursor-pointer font-semibold">{guide.title[language]}</summary>
+              <div className="space-y-2 pt-2">
+                <h4 className="font-semibold">{copy.objective}</h4>
+                <p>{guide.title[language]}</p>
+                <p className="bg-hint">
+                  {guide.jurisdiction} · {current ? copy.current : copy.unknown} ·{copy.consulted}{' '}
+                  {guide.consultedAt}
+                </p>
+                <h4 className="font-semibold">{copy.coverage}</h4>
+                <p>{copy.guideOnly}</p>
+                <h4 className="font-semibold">{copy.portals}</h4>
                 <ul className="list-disc pl-5">
                   {guide.evidence.map((source) => (
                     <li key={source.id}>
                       <a className="bg-link" href={source.url} target="_blank" rel="noreferrer">
-                        {source.attribution} · {source.language} ↗
+                        {new URL(source.url).host} ↗
                       </a>
-                      <p className="bg-hint">{source.sourceUpdatedAt ?? source.version}</p>
-                      <blockquote className="border-l border-line pl-2">{source.quote}</blockquote>
                     </li>
                   ))}
                 </ul>
+                <p className="bg-hint">{copy.portalMissing}</p>
+                {questions.length ? (
+                  <div>
+                    <h4 className="font-semibold">{copy.conditions}</h4>
+                    <ul className="list-disc pl-5">
+                      {questions.map((question) => (
+                        <li key={question}>{question}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {guide.exclusions.length ? (
+                  <div>
+                    <h4 className="font-semibold">{copy.limits}</h4>
+                    <ul className="list-disc pl-5">
+                      {guide.exclusions.map((item) => (
+                        <li key={item.id}>{item.text[language]}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {current && guide.claims.length ? (
+                  <div>
+                    <h4 className="font-semibold">{copy.claims}</h4>
+                    <ul className="list-disc pl-5">
+                      {guide.claims.map((item) => (
+                        <li key={item.id}>{item.text[language]}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                <h4 className="font-semibold">{copy.actions}</h4>
+                {current && guide.steps.length ? (
+                  <div>
+                    <p>{copy.steps}</p>
+                    <ol className="list-decimal pl-5">
+                      {guide.steps.map((item) => (
+                        <li key={item.id}>{item.text[language]}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : (
+                  <p>{copy.noActions}</p>
+                )}
+                <div>
+                  <h4 className="font-semibold">{copy.sources}</h4>
+                  <ul className="list-disc pl-5">
+                    {guide.evidence.map((source) => (
+                      <li key={source.id}>
+                        <a className="bg-link" href={source.url} target="_blank" rel="noreferrer">
+                          {source.attribution} · {source.language} ↗
+                        </a>
+                        <p className="bg-hint">{source.sourceUpdatedAt ?? source.version}</p>
+                        <blockquote className="border-l border-line pl-2">
+                          {source.quote}
+                        </blockquote>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button type="button" className="bg-btn bg-btn-secondary w-full" disabled>
+                  {copy.start}
+                </button>
+                <p className="bg-hint">{copy.startUnavailable}</p>
               </div>
-            </article>
+            </details>
           ))}
         </div>
       ) : null}
