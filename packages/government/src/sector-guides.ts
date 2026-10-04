@@ -12,6 +12,8 @@ type Sector = {
   updatedEs?: string;
   quote: string;
   quoteEs: string;
+  exceptionQuote?: string;
+  exceptionQuoteEs?: string;
   condition: Guide['title'];
   exclusion: Guide['title'];
   action: Guide['title'];
@@ -140,11 +142,13 @@ const sectors: Sector[] = [
       'https://tramits.gencat.cat/es/tramits/tramits-temes/Autoritzacio-de-transport-public-lleuger-de-mercaderies-per-carretera-al-territori-catala-MDSL?moda=1',
     source: 'Departament de Territori',
     updated: '2023-03-24',
-    quote: 'transportar mercaderies per compte d’altres a canvi d’una retribució econòmica',
-    quoteEs: 'transportar mercancías por cuenta de otro a cambio de una retribución económica',
+    quote:
+      'una massa màxima autoritzada entre 2 tones i 3,5 tones exclusivament en el territori català',
+    quoteEs:
+      'una masa máxima autorizada entre 2 toneladas y 3,5 toneladas exclusivamente en el territorio catalán',
     condition: {
-      ca: 'MDSL descriu transport remunerat de mercaderies d’altri amb vehicle lleuger només dins Catalunya.',
-      es: 'MDSL describe transporte remunerado de mercancías ajenas con vehículo ligero solo dentro de Catalunya.',
+      ca: 'MDSL descriu transport remunerat de mercaderies d’altri amb MMA entre 2 i 3,5 tones només dins Catalunya.',
+      es: 'MDSL describe transporte remunerado de mercancías ajenas con MMA entre 2 y 3,5 toneladas solo dentro de Catalunya.',
     },
     exclusion: {
       ca: 'No extrapolar a transport propi, viatgers ni rutes internacionals.',
@@ -261,17 +265,21 @@ const sectors: Sector[] = [
       'en espais oberts, de caràcter públic o privat, supòsits en els quals estan sotmesos a llicència municipal',
     quoteEs:
       'en espacios abiertos, de carácter público o privado, supuestos en los que están sometidos a licencia municipal',
+    exceptionQuote:
+      'no caldrà tramitar llicència (llevat que les ordenances o reglaments municipals estableixin el contrari)',
+    exceptionQuoteEs:
+      'no es necesario tramitar licencia (a menos que las ordenanzas o reglamentos municipales establezcan lo contrario)',
     condition: {
-      ca: 'Un espectacle extraordinari en espai obert entra en la branca municipal.',
-      es: 'Un espectáculo extraordinario en espacio abierto entra en la rama municipal.',
+      ca: 'Un espectacle extraordinari en espai obert entra en la branca municipal, subjecta a les excepcions legals.',
+      es: 'Un espectáculo extraordinario en espacio abierto entra en la rama municipal, sujeta a las excepciones legales.',
     },
     exclusion: {
-      ca: 'No enviar per defecte a la Generalitat un acte cobert per competència municipal.',
-      es: 'No enviar por defecto a la Generalitat un acto cubierto por competencia municipal.',
+      ca: 'Alguns actes municipals festius, esportius esporàdics o culturals d’aforament reduït poden quedar exempts de llicència; comprova l’ordenança i si cal comunicació.',
+      es: 'Algunos actos municipales festivos, deportivos esporádicos o culturales de aforo reducido pueden quedar exentos de licencia; comprueba la ordenanza y si hace falta comunicación.',
     },
     action: {
-      ca: 'Comprova la llicència existent, el lloc i l’aforament amb l’ajuntament abans del tràmit.',
-      es: 'Comprueba la licencia existente, el lugar y el aforo con el ayuntamiento antes del trámite.',
+      ca: 'Comprova amb l’ajuntament el tipus d’acte, lloc, aforament i ordenança abans de triar llicència o comunicació.',
+      es: 'Comprueba con el ayuntamiento el tipo de acto, lugar, aforo y ordenanza antes de elegir licencia o comunicación.',
     },
     authority: {
       ca: 'Ajuntament en espai obert; altres supòsits poden correspondre a Interior',
@@ -284,8 +292,8 @@ const sectors: Sector[] = [
       },
     ],
     gap: {
-      ca: 'Excepcions, ordenança i requisits de seguretat s’han de revisar per acte.',
-      es: 'Excepciones, ordenanza y requisitos de seguridad deben revisarse por acto.',
+      ca: 'L’aplicació de les excepcions i els requisits de seguretat s’han de revisar per acte.',
+      es: 'La aplicación de las excepciones y los requisitos de seguridad deben revisarse por acto.',
     },
   },
   {
@@ -339,9 +347,44 @@ export const sectorCoverage = sectors.map(({ id, title, authority, questions, ga
 
 /** Pending orientation only: the automatic source/applicability gate has not run. */
 export const sectorGuides: Guide[] = sectors.map((sector) => {
-  const evidenceId = `${sector.id}-ca`;
-  const evidenceEsId = `${sector.id}-es`;
-  const citation = { evidenceIds: [evidenceId, evidenceEsId], translation: null };
+  const evidence = (
+    [
+      {
+        language: 'ca',
+        url: sector.url,
+        version: sector.updated,
+        quote: sector.quote,
+        exception: sector.exceptionQuote,
+        attribution: `${sector.source}; adaptació del producte, sense aval administratiu`,
+      },
+      {
+        language: 'es',
+        url: sector.urlEs,
+        version: sector.updatedEs ?? sector.updated,
+        quote: sector.quoteEs,
+        exception: sector.exceptionQuoteEs,
+        attribution: `${sector.source}; adaptación del producto, sin aval administrativo`,
+      },
+    ] as const
+  ).flatMap(({ language, url, version, quote, exception, attribution }) =>
+    [quote, ...(exception ? [exception] : [])].map((excerpt, index) => ({
+      id: `${sector.id}-${language}${index ? '-exception' : ''}`,
+      sourceId: sector.source,
+      url,
+      originalUrl: url,
+      version,
+      language,
+      attribution,
+      sourceUpdatedAt: version,
+      // Observation date, not a claim about when the legal rule took effect.
+      applicableFrom: observedAt,
+      applicableUntil: null,
+      informative: true,
+      jurisdiction: 'ES-CT',
+      quote: excerpt,
+    })),
+  );
+  const citation = { evidenceIds: evidence.map(({ id }) => id), translation: null };
   return guideSchema.parse({
     id: `catalunya-sector-${sector.id}`,
     revision: 1,
@@ -353,39 +396,7 @@ export const sectorGuides: Guide[] = sectors.map((sector) => {
     consultedAt: observedAt,
     period: { evidenceIds: [] },
     validation: { status: 'pending' },
-    evidence: [
-      {
-        id: evidenceId,
-        sourceId: sector.source,
-        url: sector.url,
-        originalUrl: sector.url,
-        version: sector.updated,
-        language: 'ca',
-        attribution: `${sector.source}; adaptació del producte, sense aval administratiu`,
-        sourceUpdatedAt: sector.updated,
-        // Page edition date, not the legal commencement of the activity.
-        applicableFrom: sector.updated,
-        applicableUntil: null,
-        informative: true,
-        jurisdiction: 'ES-CT',
-        quote: sector.quote,
-      },
-      {
-        id: evidenceEsId,
-        sourceId: sector.source,
-        url: sector.urlEs,
-        originalUrl: sector.urlEs,
-        version: sector.updatedEs ?? sector.updated,
-        language: 'es',
-        attribution: `${sector.source}; adaptación del producto, sin aval administrativo`,
-        sourceUpdatedAt: sector.updatedEs ?? sector.updated,
-        applicableFrom: sector.updatedEs ?? sector.updated,
-        applicableUntil: null,
-        informative: true,
-        jurisdiction: 'ES-CT',
-        quote: sector.quoteEs,
-      },
-    ],
+    evidence,
     conditions: [{ id: `${sector.id}-condition`, text: sector.condition, ...citation }],
     exclusions: [{ id: `${sector.id}-exclusion`, text: sector.exclusion, ...citation }],
     claims: [],

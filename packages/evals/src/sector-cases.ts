@@ -65,12 +65,14 @@ const observations = [
     urlEs:
       'https://tramits.gencat.cat/es/tramits/tramits-temes/Autoritzacio-de-transport-public-lleuger-de-mercaderies-per-carretera-al-territori-catala-MDSL?moda=1',
     version: '2023-03-24',
-    excerpt: 'transportar mercaderies per compte d’altres a canvi d’una retribució econòmica',
-    excerptEs: 'transportar mercancías por cuenta de otro a cambio de una retribución económica',
-    fact: 'per compte d’altres',
-    factEs: 'por cuenta de otro',
-    ca: 'Per a compte de qui descriu la fitxa el transport MDSL?',
-    es: '¿Por cuenta de quién describe la ficha el transporte MDSL?',
+    excerpt:
+      'una massa màxima autoritzada entre 2 tones i 3,5 tones exclusivament en el territori català',
+    excerptEs:
+      'una masa máxima autorizada entre 2 toneladas y 3,5 toneladas exclusivamente en el territorio catalán',
+    fact: 'entre 2 tones i 3,5 tones',
+    factEs: 'entre 2 toneladas y 3,5 toneladas',
+    ca: 'Quina MMA i quin àmbit territorial descriu la fitxa MDSL?',
+    es: '¿Qué MMA y ámbito territorial describe la ficha MDSL?',
     missingCa:
       'És MDSL un repartiment sense saber si és per compte propi o aliè, la MMA i el territori?',
     missingEs:
@@ -125,8 +127,8 @@ const observations = [
       'en espacios abiertos, de carácter público o privado, supuestos en los que están sometidos a licencia municipal',
     fact: 'llicència municipal',
     factEs: 'licencia municipal',
-    ca: 'Qui dona la llicència per a un espectacle extraordinari en espai obert?',
-    es: '¿Quién concede la licencia para un espectáculo extraordinario en espacio abierto?',
+    ca: 'Quina administració dona la llicència per a un espectacle extraordinari en espai obert, si és exigible?',
+    es: '¿Qué administración concede la licencia para un espectáculo extraordinario en espacio abierto, si se exige?',
     missingCa:
       'És competència automàtica de la Generalitat un concert sense saber espai, aforament ni llicència existent?',
     missingEs:
@@ -160,59 +162,102 @@ export const sectorDataset: CatalunyaDataset = catalunyaDatasetSchema.parse({
   stage: 'controlled',
   description:
     'Casos sectorials bilingües de font pública i abstenció; falta executar T-004 contra el motor real.',
-  cases: observations.flatMap((observation) =>
-    (['ca', 'es'] as const).flatMap((language) => [
-      {
-        id: `${observation.id}-${language}-fact`,
-        query: observation[language],
-        domain: 'D-07',
-        subtopic: observation.id,
-        profile: observation.id,
-        language,
-        city: null,
-        year: 2026,
-        critical: 'obligation',
-        sources: [
-          {
-            sourceId: 'gencat-public',
-            documentId: observation.id,
-            version:
-              language === 'ca'
-                ? observation.version
-                : 'versionEs' in observation
-                  ? observation.versionEs
-                  : observation.version,
-            url: language === 'ca' ? observation.url : observation.urlEs,
+  cases: [
+    ...observations.flatMap((observation) =>
+      (['ca', 'es'] as const).flatMap((language) => [
+        {
+          id: `${observation.id}-${language}-fact`,
+          query: observation[language],
+          domain: 'D-07',
+          subtopic: observation.id,
+          profile: observation.id,
+          language,
+          city: null,
+          year: 2026,
+          critical: 'obligation',
+          sources: [
+            {
+              sourceId: 'gencat-public',
+              documentId: observation.id,
+              version:
+                language === 'ca'
+                  ? observation.version
+                  : 'versionEs' in observation
+                    ? observation.versionEs
+                    : observation.version,
+              url: language === 'ca' ? observation.url : observation.urlEs,
+              jurisdiction: 'ES-CT',
+              consultedAt: '2026-10-04',
+              excerpt: language === 'ca' ? observation.excerpt : observation.excerptEs,
+            },
+          ],
+          expected: {
+            shouldAnswer: true,
             jurisdiction: 'ES-CT',
-            consultedAt: '2026-10-04',
-            excerpt: language === 'ca' ? observation.excerpt : observation.excerptEs,
+            requiredFacts: [language === 'ca' ? observation.fact : observation.factEs],
+            forbiddenFacts: [],
           },
+        },
+        {
+          id: `${observation.id}-${language}-abstain`,
+          query: language === 'ca' ? observation.missingCa : observation.missingEs,
+          domain: 'D-07',
+          subtopic: observation.id,
+          profile: observation.id,
+          language,
+          city: null,
+          year: 2026,
+          critical: 'jurisdiction',
+          sources: [],
+          expected: {
+            shouldAnswer: false,
+            jurisdiction: 'ES-CT',
+            requiredFacts: [],
+            forbiddenFacts: [observation.forbidden],
+          },
+        },
+      ]),
+    ),
+    ...(['ca', 'es'] as const).map((language) => ({
+      id: `shows-extraordinary-${language}-exception`,
+      query:
+        language === 'ca'
+          ? 'La fitxa exigeix sempre llicència a un espectacle extraordinari en espai obert?'
+          : '¿La ficha exige siempre licencia para un espectáculo extraordinario en espacio abierto?',
+      domain: 'D-07',
+      subtopic: 'shows-extraordinary',
+      profile: 'shows-extraordinary',
+      language,
+      city: null,
+      year: 2026,
+      critical: 'obligation',
+      sources: [
+        {
+          sourceId: 'gencat-public',
+          documentId: 'shows-extraordinary',
+          version: language === 'ca' ? '2026-06-19' : '2016-01-19',
+          url:
+            language === 'ca'
+              ? 'https://interior.gencat.cat/ca/arees_dactuacio/espectacles/espectacles_i_activitats_caracter_extraordinari/index.html'
+              : 'https://interior.gencat.cat/es/arees_dactuacio/espectacles/espectacles_i_activitats_caracter_extraordinari/index.html',
+          jurisdiction: 'ES-CT',
+          consultedAt: '2026-10-04',
+          excerpt:
+            language === 'ca'
+              ? 'no caldrà tramitar llicència (llevat que les ordenances o reglaments municipals estableixin el contrari)'
+              : 'no es necesario tramitar licencia (a menos que las ordenanzas o reglamentos municipales establezcan lo contrario)',
+        },
+      ],
+      expected: {
+        shouldAnswer: true,
+        jurisdiction: 'ES-CT',
+        requiredFacts: [
+          language === 'ca'
+            ? 'llevat que les ordenances o reglaments municipals estableixin el contrari'
+            : 'a menos que las ordenanzas o reglamentos municipales establezcan lo contrario',
         ],
-        expected: {
-          shouldAnswer: true,
-          jurisdiction: 'ES-CT',
-          requiredFacts: [language === 'ca' ? observation.fact : observation.factEs],
-          forbiddenFacts: [],
-        },
+        forbiddenFacts: [],
       },
-      {
-        id: `${observation.id}-${language}-abstain`,
-        query: language === 'ca' ? observation.missingCa : observation.missingEs,
-        domain: 'D-07',
-        subtopic: observation.id,
-        profile: observation.id,
-        language,
-        city: null,
-        year: 2026,
-        critical: 'jurisdiction',
-        sources: [],
-        expected: {
-          shouldAnswer: false,
-          jurisdiction: 'ES-CT',
-          requiredFacts: [],
-          forbiddenFacts: [observation.forbidden],
-        },
-      },
-    ]),
-  ),
+    })),
+  ],
 });

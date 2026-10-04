@@ -11,7 +11,10 @@ describe('D-07 sectorial controlado', () => {
       expect(() => guideSchema.parse(guide)).not.toThrow();
       expect(guide.validation.status).toBe('pending');
       expect(guide.steps[0]?.evidenceIds).toEqual(guide.evidence.map((item) => item.id));
-      expect(guide.evidence.map((item) => item.language)).toEqual(['ca', 'es']);
+      expect(guide.evidence.map((item) => item.language)).toEqual(
+        guide.subtopic === 'shows-extraordinary' ? ['ca', 'ca', 'es', 'es'] : ['ca', 'es'],
+      );
+      expect(guide.evidence.every((item) => item.applicableFrom === guide.consultedAt)).toBe(true);
       for (const evidence of guide.evidence)
         expect(evidence.url).toMatch(/^https:\/\/(?:[^/]+\.)?gencat\.cat\//);
       const coverage = sectorCoverage.find((item) => item.id === guide.subtopic);
@@ -24,14 +27,20 @@ describe('D-07 sectorial controlado', () => {
 
   it('exige abstención ca/es cuando faltan actividad o local, junto al caso sustentado', () => {
     expect(sectorDataset.stage).toBe('controlled');
-    expect(sectorDataset.cases).toHaveLength(32);
+    expect(sectorDataset.cases).toHaveLength(34);
     for (const guide of sectorGuides) {
       const cases = sectorDataset.cases.filter((item) => item.subtopic === guide.subtopic);
-      expect(cases).toHaveLength(4);
+      expect(cases).toHaveLength(guide.subtopic === 'shows-extraordinary' ? 6 : 4);
       for (const language of ['ca', 'es']) {
         const pair = cases.filter((item) => item.language === language);
-        expect(pair.map((item) => item.expected.shouldAnswer).sort()).toEqual([false, true]);
-        expect(pair.find((item) => item.expected.shouldAnswer)?.sources).toHaveLength(1);
+        expect(pair.map((item) => item.expected.shouldAnswer).sort()).toEqual(
+          guide.subtopic === 'shows-extraordinary' ? [false, true, true] : [false, true],
+        );
+        expect(
+          pair
+            .filter((item) => item.expected.shouldAnswer)
+            .every((item) => item.sources.length === 1),
+        ).toBe(true);
         expect(pair.find((item) => !item.expected.shouldAnswer)?.sources).toHaveLength(0);
       }
     }
@@ -50,5 +59,12 @@ describe('D-07 sectorial controlado', () => {
       sectorDataset.cases.find((item) => item.id === 'shows-extraordinary-es-fact')?.sources[0]
         ?.version,
     ).toBe('2016-01-19');
+    expect(shows.exclusions[0]?.text.es).toContain('exentos de licencia');
+    expect(
+      shows.evidence.find((item) => item.id === 'shows-extraordinary-es-exception')?.quote,
+    ).toContain('ordenanzas');
+    expect(
+      sectorGuides.find((guide) => guide.subtopic === 'transport-mdsl')?.conditions[0]?.text.ca,
+    ).toContain('2 i 3,5 tones');
   });
 });
