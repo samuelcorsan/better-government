@@ -28,7 +28,7 @@ describe('ficha municipal de Barcelona', () => {
 
   it('deja un escenario municipal controlado por idioma y abstiene Girona', () => {
     expect(barcelonaMunicipalDataset.stage).toBe('controlled');
-    expect(barcelonaMunicipalDataset.cases).toHaveLength(4);
+    expect(barcelonaMunicipalDataset.cases).toHaveLength(6);
     for (const language of ['ca', 'es']) {
       const answer = barcelonaMunicipalDataset.cases.find(
         (item) => item.language === language && item.expected.shouldAnswer,
@@ -38,8 +38,15 @@ describe('ficha municipal de Barcelona', () => {
       );
       expect(answer?.city).toBe('Barcelona');
       expect(answer?.sources).toHaveLength(1);
+      expect(answer?.expected.requiredFacts[0]).toContain('Número identificador');
       expect(abstain?.city).toBe('Girona');
       expect(abstain?.sources).toEqual([]);
+      expect(abstain?.expected.forbiddenFacts).not.toContain('Barcelona');
+      expect(
+        barcelonaMunicipalDataset.cases.find(
+          (item) => item.language === language && item.id.endsWith('unclassified'),
+        )?.expected.shouldAnswer,
+      ).toBe(false);
     }
   });
 });

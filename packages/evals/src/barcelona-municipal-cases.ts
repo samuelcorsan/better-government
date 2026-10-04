@@ -39,7 +39,11 @@ export const barcelonaMunicipalDataset = catalunyaDatasetSchema.parse({
         expected: {
           shouldAnswer: true,
           jurisdiction: 'ES-CT-BARCELONA',
-          requiredFacts: [language === 'ca' ? 'consulta prèvia' : 'consulta previa'],
+          requiredFacts: [
+            language === 'ca'
+              ? "Número identificador de la consulta prèvia d'activitats"
+              : 'Número identificador de la consulta previa de actividades',
+          ],
           forbiddenFacts: ['licencia concedida', 'llicència concedida'],
         },
       },
@@ -61,7 +65,36 @@ export const barcelonaMunicipalDataset = catalunyaDatasetSchema.parse({
           shouldAnswer: false,
           jurisdiction: 'ES-CT-GIRONA',
           requiredFacts: [],
-          forbiddenFacts: ['Barcelona'],
+          forbiddenFacts: [
+            language === 'ca'
+              ? 'demana aquest informe de Barcelona per al local de Girona'
+              : 'solicita este informe de Barcelona para el local de Girona',
+          ],
+        },
+      },
+      {
+        id: `barcelona-local-${language}-unclassified`,
+        query:
+          language === 'ca'
+            ? 'Tinc un local a Barcelona. He de demanar aquest informe sense saber l’activitat ni si està inclosa en un Pla d’usos?'
+            : 'Tengo un local en Barcelona. ¿Debo pedir este informe sin saber la actividad ni si está incluida en un Plan de usos?',
+        domain: 'D-06',
+        subtopic: barcelonaMunicipalGuide.subtopic,
+        profile: 'with-premises',
+        language,
+        city: 'Barcelona',
+        year: 2026,
+        critical: 'obligation',
+        sources: [],
+        expected: {
+          shouldAnswer: false,
+          jurisdiction: 'ES-CT-BARCELONA',
+          requiredFacts: [],
+          forbiddenFacts: [
+            language === 'ca'
+              ? 'informe obligatori per a qualsevol activitat'
+              : 'informe obligatorio para cualquier actividad',
+          ],
         },
       },
     ];

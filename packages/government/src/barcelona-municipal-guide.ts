@@ -48,10 +48,30 @@ export const barcelonaMunicipalGuide: Guide = guideSchema.parse({
     evidence('scope', 'es', 'actividad incluida en los Planes de usos'),
     evidence('consult', 'ca', "Número identificador de la consulta prèvia d'activitats"),
     evidence('consult', 'es', 'Número identificador de la consulta previa de actividades'),
-    evidence('documents', 'ca', 'Memòria explicativa amb les dades de superfície útil'),
-    evidence('documents', 'es', 'Memoria explicativa con los datos de superficie útil'),
+    evidence(
+      'documents',
+      'ca',
+      'Memòria explicativa amb les dades de superfície útil, públic, etc. amb plànols de planta i secció',
+    ),
+    evidence(
+      'documents',
+      'es',
+      'Memoria explicativa con los datos de superficie útil, público, etc. con planos de planta y sección',
+    ),
+    evidence(
+      'upload',
+      'ca',
+      'Adjunteu els arxius o fitxers de la documentació necessària pel tràmit.',
+    ),
+    evidence(
+      'upload',
+      'es',
+      'Adjunte los archivos o ficheros de la documentación necesaria para el trámite.',
+    ),
     evidence('form', 'ca', 'Signeu la sol·licitud per presentar-la al registre telemàtic.'),
     evidence('form', 'es', 'Firme la solicitud para presentarla en el registro telemático.'),
+    evidence('payment', 'ca', 'Efectueu el pagament en línia.'),
+    evidence('payment', 'es', 'Efectúe el pago en línea.'),
     evidence(
       'authority',
       'ca',
@@ -90,8 +110,8 @@ export const barcelonaMunicipalGuide: Guide = guideSchema.parse({
     {
       id: 'consult-activity',
       text: text(
-        'Fes la consulta prèvia municipal del permís per iniciar l’activitat i conserva el número identificador que demana aquesta fitxa.',
-        'Haz la consulta previa municipal del permiso para iniciar la actividad y conserva el número identificador que pide esta ficha.',
+        'Abans de demanar l’informe, tingues a mà el número identificador de la consulta prèvia d’activitats que demana aquesta fitxa.',
+        'Antes de pedir el informe, ten a mano el número identificador de la consulta previa de actividades que pide esta ficha.',
       ),
       evidenceIds: cited('consult'),
       translation: null,
@@ -113,7 +133,7 @@ export const barcelonaMunicipalGuide: Guide = guideSchema.parse({
         'Obre la fitxa municipal de l’informe urbanístic previ i segueix el formulari original per adjuntar la documentació, signar i pagar si correspon.',
         'Abre la ficha municipal del informe urbanístico previo y sigue el formulario original para adjuntar la documentación, firmar y pagar si corresponde.',
       ),
-      evidenceIds: cited('form'),
+      evidenceIds: [...cited('upload'), ...cited('form'), ...cited('payment')],
       translation: null,
       dependsOn: ['prepare-plan'],
     },
