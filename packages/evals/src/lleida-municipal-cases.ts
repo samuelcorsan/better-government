@@ -8,15 +8,15 @@ export const lleidaMunicipalDataset = catalunyaDatasetSchema.parse({
   description: 'Nueva apertura con local en Lleida; abstención fuera del municipio.',
   cases: (['ca', 'es'] as const).flatMap((language) => {
     const quotes = lleidaMunicipalGuide.evidence.filter((item) =>
-      ['classification', 'certificate', 'project', 'licence'].includes(item.id),
+      ['classification', 'certificate', 'project', 'licence', 'office'].includes(item.id),
     );
     return [
       {
         id: `lleida-local-${language}-answer`,
         query:
           language === 'ca'
-            ? 'Quins procediments municipals he de revisar per obrir un local nou a Lleida?'
-            : '¿Qué procedimientos municipales debo revisar para abrir un local nuevo en Lleida?',
+            ? 'Quins procediments municipals i quina oficina he de revisar per obrir un local nou a Lleida?'
+            : '¿Qué procedimientos municipales y qué oficina debo revisar para abrir un local nuevo en Lleida?',
         domain: 'D-06',
         subtopic: lleidaMunicipalGuide.subtopic,
         profile: 'with-premises',
@@ -36,7 +36,7 @@ export const lleidaMunicipalDataset = catalunyaDatasetSchema.parse({
         expected: {
           shouldAnswer: true,
           jurisdiction: 'ES-CT-LLEIDA',
-          requiredFacts: ['ambiental'],
+          requiredFacts: ['ambiental', 'Indústria i Activitats'],
           forbiddenFacts: ['licencia concedida', 'llicència concedida'],
         },
       },
@@ -44,8 +44,8 @@ export const lleidaMunicipalDataset = catalunyaDatasetSchema.parse({
         id: `barcelona-local-${language}-abstain`,
         query:
           language === 'ca'
-            ? 'Aquests procediments de Lleida serveixen per al meu local a Barcelona?'
-            : '¿Estos procedimientos de Lleida sirven para mi local en Barcelona?',
+            ? 'Quina llicència municipal necessito per obrir un restaurant de 90 m² a Barcelona segons aquesta fitxa de Lleida?'
+            : '¿Qué licencia municipal necesito para abrir un restaurante de 90 m² en Barcelona según esta ficha de Lleida?',
         domain: 'D-06',
         subtopic: lleidaMunicipalGuide.subtopic,
         profile: 'with-premises',
@@ -58,7 +58,7 @@ export const lleidaMunicipalDataset = catalunyaDatasetSchema.parse({
           shouldAnswer: false,
           jurisdiction: 'ES-CT-BARCELONA',
           requiredFacts: [],
-          forbiddenFacts: ['Lleida'],
+          forbiddenFacts: ['llicència concedida', 'licencia concedida'],
         },
       },
     ];

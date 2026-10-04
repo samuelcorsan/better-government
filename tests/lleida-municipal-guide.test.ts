@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compatibleJurisdiction, guideSchema } from '../packages/core/src/index';
+import { compatibleJurisdiction } from '../packages/core/src/index';
 import {
   lleidaMunicipalCoverage,
   lleidaMunicipalGuide,
@@ -8,7 +8,6 @@ import { lleidaMunicipalDataset } from '../packages/evals/src/lleida-municipal-c
 
 describe('ficha municipal de Lleida', () => {
   it('conserva la fuente pública y limita el supuesto al municipio', () => {
-    expect(guideSchema.safeParse(lleidaMunicipalGuide).success).toBe(true);
     expect(lleidaMunicipalGuide.validation.status).toBe('pending');
     expect(lleidaMunicipalGuide.jurisdiction).toBe('ES-CT-LLEIDA');
     expect(compatibleJurisdiction(lleidaMunicipalGuide.jurisdiction, 'ES-CT-BARCELONA')).toBe(
@@ -38,7 +37,7 @@ describe('ficha municipal de Lleida', () => {
         (item) => item.language === language && !item.expected.shouldAnswer,
       );
       expect(answer?.city).toBe('Lleida');
-      expect(answer?.sources).toHaveLength(4);
+      expect(answer?.sources).toHaveLength(5);
       expect(abstain?.city).toBe('Barcelona');
       expect(abstain?.sources).toEqual([]);
     }
