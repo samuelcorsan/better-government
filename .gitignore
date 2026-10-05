@@ -20,3 +20,7 @@ coverage/
 artifacts/runs/
 artifacts/feedback/
 artifacts/crawl/
+
+# Timeless Type (timeless.co): la licencia prohíbe subir las fuentes a un repositorio público.
+# Cada persona las descarga gratis en timeless.co/type y las copia aquí.
+apps/web/public/fonts/timeless/

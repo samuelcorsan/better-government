@@ -1,0 +1,108 @@
+/* Pie: el atardecer al revés. El sol queda arriba y el color baja de amarillo claro a naranja.
+   Todo el texto va en tinta (9,56 sobre amarillo, 6,10 sobre naranja). */
+.pie {
+  --marca-color: currentColor; /* la R nunca va roja sobre amarillo */
+  /* Anula la regla global `footer` de app/(search)/globals.css (filo gris y ancho máximo). */
+  max-width: none;
+  padding: var(--e-8);
+  border-top: 0;
+}
+.pie-sol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-40);
+  /* El relleno lateral centra el contenido en la retícula de las secciones (--ancho). */
+  padding: clamp(48px, 8vw, 112px) max(var(--margen), (100% - var(--ancho)) / 2 + var(--margen))
+    var(--e-40);
+  border-radius: var(--r-28);
+  background:
+    radial-gradient(80% 70% at 50% -12%, #ffe58f 0%, rgba(255, 229, 143, 0) 70%),
+    linear-gradient(180deg, #ffd34d 0%, var(--amarillo) 46%, var(--naranja) 100%);
+  color: var(--tinta);
+}
+.pie-titulo {
+  margin: 0;
+  max-width: 13ch;
+  font-size: clamp(44px, 6.4vw, 92px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.pie-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-12);
+}
+.pie-acciones :is(.boton, .boton-claro) {
+  min-height: 52px;
+  padding-inline: var(--e-24) 22px;
+}
+/* Sobre amarillo, el claro se separa con una sombra cálida y no con línea gris. */
+.pie-acciones .boton-claro {
+  box-shadow: var(--sombra-suave);
+}
+
+.pie-legal {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--e-8) var(--e-32);
+  margin-top: var(--e-40);
+  padding-top: var(--e-24);
+  border-top: 1px solid rgba(34, 34, 34, 0.18);
+  font-size: 15px;
+}
+.pie-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-12);
+  font-size: 19px;
+}
+.pie-legal ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 var(--e-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pie-legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--e-8);
+  border-radius: var(--r-12);
+  color: var(--tinta);
+  text-decoration-line: underline;
+  text-decoration-color: rgba(34, 34, 34, 0.35);
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.25em;
+}
+.pie-legal p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 14px;
+  color: var(--tinta);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pie-legal a:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+@media (max-width: 720px) {
+  .pie-sol {
+    gap: var(--e-32);
+  }
+  .pie-acciones :is(.boton, .boton-claro) {
+    width: 100%;
+  }
+  .pie-legal {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--e-16);
+  }
+  .pie-legal ul {
+    justify-content: flex-start;
+    margin-inline: calc(-1 * var(--e-8));
+  }
+}

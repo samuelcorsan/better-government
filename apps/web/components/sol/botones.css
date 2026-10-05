@@ -1,0 +1,162 @@
+/* Botones Sol. Requieren tokens.css dentro de .sol-raiz. Uso en GUIA.md.
+   El hover vive en una capa ::before: solo cambian su opacity y su transform. */
+:is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-8);
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--r-pildora);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-rapido) var(--curva-salida);
+}
+:is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  transition:
+    opacity var(--t-medio) var(--curva-salida),
+    transform var(--t-medio) var(--curva-salida);
+}
+:is(.boton, .boton-claro, .boton-fantasma) {
+  padding: 0 var(--e-20);
+}
+:is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar):active:not(:disabled) {
+  transform: scale(0.96);
+}
+:is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar):disabled {
+  background: var(--apagado);
+  color: var(--apagado-texto);
+  opacity: 1;
+  cursor: default;
+}
+
+/* Primario y enviar: tinta. Al pasar el ratón sale un sol desenfocado por el borde de abajo;
+   el texto queda sobre tinta y rojo, nunca sobre amarillo (contraste). */
+:is(.boton, .boton-enviar) {
+  background: var(--tinta);
+  color: var(--blanco);
+}
+:is(.boton, .boton-enviar)::before {
+  inset: 45% -10% -75%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    var(--amarillo) 0%,
+    var(--naranja) 38%,
+    rgba(223, 23, 23, 0.9) 68%,
+    rgba(223, 23, 23, 0) 100%
+  );
+  filter: blur(12px);
+  transform: translateY(40%) scale(0.75);
+  transition:
+    opacity 180ms var(--curva-salida),
+    transform 180ms var(--curva-salida);
+}
+.boton-enviar {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+/* Enviar sigue negro cuando aún no hay texto: apagado, sin hover, y se enciende al escribir. */
+.boton-enviar:disabled {
+  background: var(--tinta);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.boton-claro {
+  background: var(--blanco);
+  color: var(--tinta);
+  box-shadow: 0 0 0 1px var(--linea);
+}
+.boton-claro::before {
+  background: var(--superficie);
+}
+
+/* Fantasma e icono: transparentes, heredan el color del fondo en el que estén. */
+:is(.boton-fantasma, .boton-icono) {
+  background: transparent;
+  color: inherit;
+}
+:is(.boton-fantasma, .boton-icono)::before {
+  background: currentColor;
+}
+.boton-icono {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.boton, .boton-enviar, .boton-claro):hover:not(:disabled)::before {
+    opacity: 1;
+    transform: none;
+  }
+  /* La entrada del sol dura algo más que la salida: sube despacio y se va rápido. */
+  :is(.boton, .boton-enviar):hover:not(:disabled)::before {
+    transition:
+      opacity 280ms var(--curva-salida),
+      transform 420ms var(--curva-salida);
+  }
+  :is(.boton-fantasma, .boton-icono):hover:not(:disabled)::before {
+    opacity: 0.08;
+  }
+}
+
+/* Píldora: chips de sugerencia y citas. 36 px visibles, 44 px de área táctil. */
+.pildora {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--r-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+}
+:is(a, button).pildora {
+  cursor: pointer;
+  transition: transform var(--t-rapido) var(--curva-salida);
+}
+:is(a, button).pildora::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+:is(a, button).pildora:active {
+  transform: scale(0.96);
+}
+@media (hover: hover) and (pointer: fine) {
+  :is(a, button).pildora:hover {
+    background: color-mix(in oklch, var(--superficie), var(--tinta) 8%);
+  }
+}
+
+/* Sin movimiento: el atardecer aparece en su sitio, solo con opacity. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.boton, .boton-enviar)::before {
+    transform: none;
+  }
+}

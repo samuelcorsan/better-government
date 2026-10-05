@@ -1,0 +1,489 @@
+/* Recorrido. Requiere tokens.css y botones.css dentro de .sol-raiz. */
+.rc {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: var(--e-96) var(--e-24);
+}
+.rc-cabeza {
+  display: grid;
+  gap: var(--e-12);
+  max-width: 40rem;
+}
+.rc-cabeza p {
+  margin: 0;
+  color: var(--tinta-2);
+}
+.rc-pasos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rc-paso-texto {
+  position: relative;
+  display: grid;
+  gap: var(--e-12);
+  max-width: 30rem;
+}
+.rc-paso-texto h3,
+.rc-paso-texto p {
+  margin: 0;
+}
+.rc-paso-num {
+  font-size: 14px;
+}
+
+/* Marco: tamaño fijo por aspect-ratio. Las escenas van en absoluto y no pueden empujarlo. */
+.rc-marco {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 5 / 4;
+  border-radius: var(--r-28);
+  background: var(--superficie);
+  contain: strict;
+  container-type: size;
+  user-select: none;
+  pointer-events: none;
+}
+/* El sol: un disco que asoma por abajo, detrás de cada pieza. */
+.rc-marco::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: 84cqi;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 22%,
+    #ffd34d 0%,
+    var(--amarillo) 36%,
+    var(--naranja) 100%
+  );
+  transform: translateX(-50%);
+}
+.rc-escena,
+.rc-pieza {
+  position: absolute;
+  inset: 0;
+}
+
+/* Escena 1: la portada con el compositor. */
+.rc-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6cqi;
+  padding: 6cqi;
+  background: var(--atardecer);
+  color: var(--blanco);
+  text-align: center;
+}
+.rc-hero-titulo {
+  margin-top: -8cqi;
+  font-family: var(--font-titular);
+  font-size: clamp(28px, 8cqi, 52px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.rc-compositor {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  width: min(100%, 440px);
+  min-height: 60px;
+  padding: 6px 6px 6px var(--e-20);
+  border-radius: var(--r-pildora);
+  background: var(--blanco);
+  box-shadow: var(--sombra-flota);
+  color: var(--tinta);
+  text-align: left;
+}
+.rc-compositor-texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: clamp(15px, 4.4cqi, 16px);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rc-enviar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--tinta);
+  color: var(--blanco);
+}
+
+/* Escena 2: la respuesta con su fuente. */
+.rc-sobre-sol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6cqi;
+}
+.rc-respuesta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  width: min(100%, 420px);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.rc-burbuja {
+  align-self: flex-end;
+  max-width: 90%;
+  padding: var(--e-8) 14px;
+  border-radius: var(--r-16) var(--r-16) var(--e-4) var(--r-16);
+  background: var(--superficie);
+  font-size: 14px;
+}
+.rc-lista {
+  display: grid;
+  gap: var(--e-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rc-lista li {
+  display: flex;
+  gap: 10px;
+}
+.rc-num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--amarillo);
+  font-size: 12px;
+}
+.rc-citas {
+  display: flex;
+}
+.rc-citas .pildora {
+  min-height: 32px;
+  font-size: 13px;
+  color: var(--tinta-2);
+}
+.rc-abrir {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--e-8);
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: var(--r-pildora);
+  background: var(--tinta);
+  color: var(--blanco);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Escenas 3 y 4: navegador que sale por abajo del marco. */
+.rc-pieza-web {
+  align-items: stretch;
+  padding: 7cqi 7cqi 0;
+}
+.rc-navegador {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--r-16) var(--r-16) 0 0;
+  background: var(--blanco);
+  box-shadow: var(--sombra-flota);
+}
+.rc-navegador-barra {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 var(--e-12);
+  border-bottom: 1px solid var(--linea);
+}
+.rc-navegador-barra i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--apagado);
+}
+.rc-url {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 26px;
+  margin-left: 6px;
+  padding: 0 10px;
+  overflow: hidden;
+  border-radius: var(--r-pildora);
+  background: var(--superficie);
+  color: var(--tinta-2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.rc-navegador-cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+/* Captura oficial: sin recolorear, recortada desde arriba a la izquierda. */
+.rc-navegador-cuerpo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: left top;
+}
+.rc-marca-puesto {
+  position: absolute;
+  left: 50%;
+  bottom: 7cqi;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+  padding: 10px var(--e-16) 10px 14px;
+  border-radius: var(--r-pildora);
+  background: var(--tinta);
+  box-shadow: var(--sombra-flota);
+  color: var(--blanco);
+  font-size: 15px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.rc-marca-puesto b {
+  color: var(--amarillo);
+  font-weight: 500;
+}
+
+.rc-ordenada {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  padding: var(--e-20);
+}
+.rc-ordenada-etiqueta {
+  color: var(--tinta-2);
+}
+.rc-buscador {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  min-height: 48px;
+  padding: 0 var(--e-16);
+  border-radius: var(--r-pildora);
+  box-shadow: inset 0 0 0 2px var(--tinta);
+  font-size: 16px;
+}
+.rc-buscador-texto {
+  flex: 1;
+}
+.rc-buscador-cuenta {
+  color: var(--tinta-2);
+  font-size: 13px;
+}
+.rc-resultados {
+  display: flex;
+  flex-direction: column;
+}
+.rc-resultado {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: var(--r-12);
+}
+.rc-resultado + .rc-resultado {
+  margin-top: 2px;
+}
+.rc-resultado-cat {
+  color: var(--tinta-2);
+  font-size: 12px;
+}
+.rc-resultado-nombre {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.rc-resultado[data-elegido] {
+  background: var(--azul-claro);
+  box-shadow: inset 0 0 0 1px rgba(35, 70, 232, 0.24);
+}
+.rc-resultado[data-elegido] .rc-resultado-cat {
+  color: var(--azul);
+}
+.rc-solicitar {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--e-8);
+  min-height: 44px;
+  padding: 0 var(--e-20);
+  border-radius: var(--r-pildora);
+  background: var(--tinta);
+  color: var(--blanco);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Marco estrecho (móvil): la lista ordenada se queda en lo esencial para que quepa el botón. */
+@container (max-width: 420px) {
+  .rc-ordenada {
+    gap: 10px;
+    padding: var(--e-16);
+  }
+  .rc-resultado {
+    padding: var(--e-8) var(--e-12);
+  }
+  .rc-resultado-cat {
+    display: none;
+  }
+}
+
+/* Progreso del escenario */
+.rc-progreso {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-16);
+  color: var(--tinta-2);
+}
+.rc-progreso-barras {
+  display: flex;
+  gap: 6px;
+}
+.rc-progreso-barras i {
+  position: relative;
+  width: 28px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--apagado);
+}
+.rc-progreso-barras i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 320ms var(--curva-salida);
+}
+.rc-progreso-barras i[data-lleno]::after {
+  transform: none;
+}
+
+/* Móvil: cada paso con su escena debajo, sin escenario fijo. */
+@media (max-width: 959px) {
+  .rc {
+    padding-block: var(--e-64);
+  }
+  .rc-cabeza {
+    margin-bottom: var(--e-40);
+  }
+  .rc-pasos {
+    display: grid;
+    gap: var(--e-48);
+  }
+  .rc-marco-movil {
+    max-width: 480px;
+    margin-top: var(--e-20);
+    aspect-ratio: 3 / 4;
+  }
+  .rc-fijo {
+    display: none;
+  }
+}
+
+/* Escritorio: los pasos se leen a la izquierda; el escenario se queda fijo a la derecha. */
+@media (min-width: 960px) {
+  .rc-cuerpo {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--e-64);
+  }
+  .rc-pasos {
+    padding-block: 18vh;
+  }
+  .rc-paso {
+    display: flex;
+    align-items: center;
+    min-height: 64vh;
+    /* 0,64 deja la tinta inactiva en 4,8:1 sobre blanco. */
+    opacity: 0.64;
+    transition: opacity var(--t-medio) var(--curva-salida);
+  }
+  .rc-paso[data-activo] {
+    opacity: 1;
+  }
+  .rc-paso-texto {
+    padding-left: var(--e-24);
+  }
+  .rc-paso-texto::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    bottom: 2px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--rojo);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 320ms var(--curva-salida);
+  }
+  .rc-paso[data-activo] .rc-paso-texto::before {
+    transform: none;
+  }
+  .rc-marco-movil {
+    display: none;
+  }
+  .rc-fijo {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--e-16);
+    height: 100vh;
+    height: 100svh;
+  }
+  .rc-escenario,
+  .rc-progreso {
+    width: 100%;
+    max-width: calc((100svh - 140px) * 5 / 4);
+  }
+  .rc-escena {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    transition:
+      opacity 280ms var(--curva-salida),
+      transform 360ms var(--curva-salida);
+  }
+  .rc-escena[data-activa] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Sin movimiento: las escenas y las marcas cambian en el acto. */
+@media (prefers-reduced-motion: reduce) {
+  .rc-escena,
+  .rc-paso,
+  .rc-paso-texto::before,
+  .rc-progreso-barras i::after {
+    transition: none;
+  }
+  .rc-escena {
+    transform: none;
+  }
+}

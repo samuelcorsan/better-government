@@ -1,0 +1,259 @@
+/* Sección «Tus datos se quedan contigo». Requiere tokens.css dentro de .sol-raiz.
+   El estado de reposo de la escena es el final (todos los datos ocultos): así se ve sin
+   movimiento. Las animaciones solo corren con la escena en pantalla (data-activo). */
+.datos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-areas:
+    'escena texto'
+    'escena nunca';
+  column-gap: var(--e-64);
+  row-gap: var(--e-40);
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: var(--e-120) var(--margen);
+  overflow-x: clip;
+}
+.datos-texto {
+  grid-area: texto;
+  align-self: end;
+}
+.datos-texto p {
+  max-width: 46ch;
+  margin: var(--e-16) 0 0;
+  color: var(--tinta-2);
+}
+.datos-nunca {
+  grid-area: nunca;
+}
+.datos-nunca h3 {
+  margin: 0 0 var(--e-12);
+  color: var(--tinta-2);
+}
+.datos-nunca ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-8);
+  margin: 0;
+  list-style: none;
+}
+.datos-nunca li {
+  --caja-pad: var(--e-12) var(--e-16) var(--e-12) var(--e-12);
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: 60px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.datos-marca {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--superficie);
+  color: var(--rojo);
+}
+
+/* Escena: el sol y cinco datos en órbita. */
+.datos-escena {
+  --estado: paused;
+  grid-area: escena;
+  align-self: center;
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  container-type: inline-size;
+  pointer-events: none;
+  user-select: none;
+}
+.datos-escena[data-activo] {
+  --estado: running;
+}
+
+.datos-planeta {
+  position: absolute;
+  inset: 0;
+  width: 42cqi;
+  aspect-ratio: 1;
+  margin: auto;
+  border-radius: 50%;
+  /* El sol de la marca: el mismo degradado que el del chat y los botones. */
+  background: radial-gradient(circle at 50% 35%, #ffd34d, var(--amarillo) 45%, var(--naranja));
+  box-shadow: 0 0 0 9cqi rgba(255, 190, 11, 0.12);
+}
+
+.datos-orbita {
+  --r: 36cqi;
+  position: absolute;
+  inset: 0;
+  /* Un quinto de vuelta mientras se ocultan los datos y se para (menos de 5 s, WCAG 2.2.2):
+     acaba en una posición equivalente a la de reposo. */
+  animation: datos-gira 5s var(--curva-salida) both;
+}
+.datos-orbita::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: calc(var(--r) * 2);
+  aspect-ratio: 1;
+  margin: auto;
+  border: 1px dashed rgba(0, 0, 0, 0.14);
+  border-radius: 50%;
+}
+@container (max-width: 480px) {
+  .datos-planeta {
+    width: 34cqi;
+  }
+  .datos-orbita {
+    --r: 31cqi;
+  }
+  .datos-real,
+  .datos-oculto {
+    padding: 0 12px 0 10px;
+  }
+}
+/* Cada dato se sitúa en su ángulo y se contrarrota para quedar siempre derecho. */
+.datos-satelite {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a)));
+}
+.datos-satelite:nth-child(1) {
+  --a: -90deg;
+  --i: 0;
+}
+.datos-satelite:nth-child(2) {
+  --a: -18deg;
+  --i: 1;
+}
+.datos-satelite:nth-child(3) {
+  --a: 54deg;
+  --i: 2;
+}
+.datos-satelite:nth-child(4) {
+  --a: 126deg;
+  --i: 3;
+}
+.datos-satelite:nth-child(5) {
+  --a: 198deg;
+  --i: 4;
+}
+.datos-contra {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  height: 0;
+  animation: datos-contragira 5s var(--curva-salida) both;
+}
+
+.datos-chip {
+  display: grid;
+  border-radius: var(--r-pildora);
+  box-shadow: var(--sombra-suave);
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  animation: datos-entra 520ms var(--curva-salida) both;
+  animation-delay: calc(var(--i) * 0.7s + 0.2s);
+}
+.datos-real,
+.datos-oculto {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px 0 12px;
+  border-radius: inherit;
+}
+/* Reposo = final: el dato real ya se ha ido y queda el oculto. */
+.datos-real {
+  background: var(--blanco);
+  color: var(--tinta);
+  opacity: 0;
+  transform: translateY(-4px);
+  animation: datos-sale 280ms ease-in both;
+  animation-delay: calc(var(--i) * 0.7s + 1.4s);
+}
+.datos-real .icono {
+  color: var(--tinta-3);
+}
+.datos-oculto {
+  background: var(--azul-claro);
+  color: var(--azul);
+  box-shadow: inset 0 0 0 1px rgba(35, 70, 232, 0.24);
+  animation: datos-oculta 360ms var(--curva-salida) both;
+  animation-delay: calc(var(--i) * 0.7s + 1.4s);
+}
+
+/* Va al final para ganar al `animation` abreviado de cada regla. */
+.datos-escena * {
+  animation-play-state: var(--estado);
+}
+
+@keyframes datos-gira {
+  from {
+    transform: rotate(-72deg);
+  }
+}
+@keyframes datos-contragira {
+  from {
+    transform: rotate(72deg);
+  }
+}
+@keyframes datos-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+@keyframes datos-sale {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes datos-oculta {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@media (max-width: 880px) {
+  .datos {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'texto' 'escena' 'nunca';
+    row-gap: var(--e-16); /* la escena ya trae aire alrededor del sol */
+    padding-block: var(--e-80);
+  }
+  .datos-escena {
+    max-width: 480px;
+  }
+}
+@media (max-width: 560px) {
+  .datos-nunca ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* La escena llega a los bordes de la pantalla para que la órbita quepa sin cruzarse. */
+  .datos-escena {
+    width: auto;
+    max-width: none;
+    margin-inline: calc(-1 * var(--margen));
+  }
+}
+
+/* Sin movimiento: la escena se queda quieta en su estado final. */
+@media (prefers-reduced-motion: reduce) {
+  .datos-escena * {
+    animation: none;
+  }
+}

@@ -1,0 +1,353 @@
+/* Sistema Sol: única fuente de tokens de la portada y sus prototipos. Uso en GUIA.md.
+   Timeless Serif, Serif Text y Sans (timeless.co, gratis): su licencia prohíbe subirlas a un
+   repositorio público, así que viven en public/fonts/timeless/ (ignorado por git). Quien no las
+   tenga ve Georgia y Geist. El logotipo usa Timeless Sans Bold. */
+@font-face {
+  font-family: 'Timeless Serif';
+  src: url('/fonts/timeless/TimelessSerifVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Timeless Serif';
+  src: url('/fonts/timeless/TimelessSerifItalicVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Timeless Serif Text';
+  src: url('/fonts/timeless/TimelessSerif-TextRegular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Timeless Serif Text';
+  src: url('/fonts/timeless/TimelessSerif-TextMedium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Timeless Sans';
+  src: url('/fonts/timeless/TimelessSans-SansRegular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Timeless Sans';
+  src: url('/fonts/timeless/TimelessSans-SansMedium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Timeless Sans';
+  src: url('/fonts/timeless/TimelessSans-SansSemibold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Timeless Sans';
+  src: url('/fonts/timeless/TimelessSans-SansBold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+.sol-raiz {
+  /* Color. Pares medidos en GUIA.md. */
+  --rojo: #df1717;
+  --doblez: #a50e0e;
+  --naranja: #ff7a1a; /* solo dentro de degradados */
+  --amarillo: #ffbe0b;
+  --tinta: #222222;
+  --tinta-2: #4d4d4d;
+  --tinta-3: #6b6b6b; /* marcadores y texto terciario */
+  --superficie: #f2f2f2;
+  --blanco: #ffffff;
+  --linea: rgba(0, 0, 0, 0.1);
+  --ambar-claro: #fff3d1;
+  --ambar-texto: #6b4a00;
+  --azul: #2346e8; /* oklch(0.492 0.244 266.4): resuelto, verificado, enlaces secundarios */
+  --azul-claro: #edf1fe;
+  --apagado: #e4e4e4;
+  --apagado-texto: #767676;
+  --foco: var(--tinta);
+
+  /* Atardecer: el sol sube desde abajo sobre el rojo. */
+  --atardecer:
+    radial-gradient(
+      90% 55% at 50% 118%,
+      #ffd34d 0%,
+      var(--amarillo) 20%,
+      var(--naranja) 45%,
+      rgba(223, 23, 23, 0) 78%
+    ),
+    var(--rojo);
+  /* Versión compacta para botones: el brillo queda por debajo del texto, que sigue sobre rojo. */
+  --atardecer-boton:
+    radial-gradient(
+      110% 80% at 50% 135%,
+      var(--amarillo) 0%,
+      var(--naranja) 38%,
+      rgba(223, 23, 23, 0) 72%
+    ),
+    var(--rojo);
+
+  /* Tipografía */
+  --font-titular: 'Timeless Serif', Georgia, serif;
+  --font-lectura: 'Timeless Serif Text', 'Timeless Serif', Georgia, serif; /* párrafos de lectura */
+  --font-texto: 'Timeless Sans', var(--font-geist), 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), 'Geist Mono', ui-monospace, monospace;
+  /* Cifras grandes de marca (89, 83, 20). Para probarlas en mono: var(--font-mono). */
+  --font-cifra: var(--font-titular);
+  --marca-color: var(
+    --rojo
+  ); /* la R: roja sobre claro; los fondos rojos y tinta la ponen en currentColor */
+  --font-logo: var(--font-texto); /* logotipo: Timeless Sans Bold, en .marca */
+
+  /* Radios */
+  --r-12: 12px;
+  --r-16: 16px;
+  --r-20: 20px;
+  --r-28: 28px;
+  --r-pildora: 999px;
+
+  /* Espaciado */
+  --e-4: 4px;
+  --e-8: 8px;
+  --e-12: 12px;
+  --e-16: 16px;
+  --e-20: 20px;
+  --e-24: 24px;
+  --e-32: 32px;
+  --e-40: 40px;
+  --e-48: 48px;
+  --e-64: 64px;
+  --e-80: 80px;
+  --e-96: 96px;
+  --e-120: 120px;
+
+  /* Retícula: ancho de contenedor (con su margen dentro) y margen lateral de todas las secciones. */
+  --ancho: 1200px;
+  --margen: clamp(20px, 3vw, 24px);
+
+  /* Sombra cálida en capas: anillo + contacto + ambiente. */
+  --sombra-suave:
+    0 0 0 1px rgba(120, 40, 0, 0.06), 0 1px 2px rgba(120, 40, 0, 0.08),
+    0 6px 16px -6px rgba(120, 40, 0, 0.12);
+  --sombra-flota:
+    0 0 0 1px rgba(120, 40, 0, 0.06), 0 2px 4px rgba(120, 40, 0, 0.08),
+    0 18px 40px -12px rgba(120, 40, 0, 0.16);
+
+  /* Movimiento */
+  --t-rapido: 160ms;
+  --t-medio: 200ms;
+  --curva-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --curva-cajon: cubic-bezier(0.32, 0.72, 0, 1);
+
+  background: var(--blanco);
+  color: var(--tinta);
+  font-family: var(--font-texto);
+  font-size: 16px;
+  line-height: 1.55;
+  font-synthesis: none;
+  font-variation-settings: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.sol-raiz :where(h1, h2) {
+  font-family: var(--font-titular);
+  font-weight: 400;
+}
+/* Anula el 'opsz' que styles/theme.css fija en los titulares de Inter (misma especificidad). */
+:root .sol-raiz :is(h1, h2, h3, legend) {
+  font-variation-settings: normal;
+}
+.sol-raiz :where(h1, h2, h3, h4, dt) {
+  text-wrap: balance;
+}
+.sol-raiz :where(p, li, dd, figcaption, small) {
+  text-wrap: pretty;
+}
+.sol-raiz ::selection {
+  background: var(--amarillo);
+  color: var(--tinta);
+}
+.sol-raiz :focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+/* <main tabindex="-1"> recibe el foco al cambiar entre portada y chat: sin anillo. */
+.sol-raiz main:focus {
+  outline: none;
+}
+
+/* Salto al contenido propio (Geist y tinta); el del layout compartido queda oculto. */
+body:has(.sol-raiz) > .skip-link {
+  display: none;
+}
+.sol-salto {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--e-16);
+  border-radius: var(--r-12);
+  background: var(--tinta);
+  color: var(--blanco);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 16px));
+}
+.sol-salto:focus-visible {
+  transform: none;
+}
+
+/* Logotipo: la R y «Reforma / Digital» en Timeless Sans Bold (componente Logotipo). */
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-logo);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+}
+.marca-texto {
+  display: block;
+}
+
+/* Texto */
+.t-titular-xl,
+.t-titular-m,
+.t-titular-s {
+  margin: 0;
+  font-family: var(--font-titular);
+  font-weight: 400;
+  font-kerning: normal;
+  text-wrap: balance;
+}
+.t-titular-xl {
+  font-size: clamp(44px, 6.4vw, 92px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.t-titular-m {
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.t-titular-s {
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.t-texto-l {
+  font-family: var(--font-lectura);
+  font-size: clamp(17px, 1.4vw, 19px);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.t-texto {
+  font-size: 16px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.t-cifra {
+  font-family: var(--font-cifra);
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.t-dato {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.t-etiqueta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.enlace {
+  color: var(--azul);
+  text-decoration-line: underline;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.2em;
+}
+
+/* Iconos: ver icono.tsx */
+.icono {
+  flex-shrink: 0;
+}
+.icono-girado {
+  transform: rotate(180deg);
+}
+
+/* Cajas (superficies). El prefijo `caja-` queda reservado para ellas.
+   Radio 20 y relleno 24 (20 en móvil). Anidado: el contenedor pasa a 28 de radio con 12 de
+   relleno y la caja hija toma 28 − 12 = 16, así la esquina mantiene el hueco uniforme. */
+:is([class^='caja-'], [class*=' caja-']) {
+  --caja-r: var(--r-20);
+  --caja-pad: var(--e-24);
+  border-radius: var(--caja-r);
+  padding: var(--caja-pad);
+}
+@media (max-width: 480px) {
+  :is([class^='caja-'], [class*=' caja-']) {
+    --caja-pad: var(--e-20);
+  }
+}
+:is([class^='caja-'], [class*=' caja-']):has(> :is([class^='caja-'], [class*=' caja-'])) {
+  --caja-r: var(--r-28);
+  --caja-pad: var(--e-12);
+}
+:is([class^='caja-'], [class*=' caja-']) > :is([class^='caja-'], [class*=' caja-']) {
+  --caja-r: calc(var(--r-28) - var(--e-12));
+}
+
+.caja-plana {
+  background: var(--blanco);
+  box-shadow: 0 0 0 1px var(--linea);
+}
+.caja-gris {
+  background: var(--superficie);
+}
+.caja-sol {
+  background:
+    radial-gradient(120% 90% at 100% 0%, #ffd34d 0%, rgba(255, 211, 77, 0) 60%), var(--amarillo);
+  color: var(--tinta);
+}
+.caja-tinta {
+  --foco: var(--blanco);
+  background: var(--tinta);
+  color: var(--blanco);
+}
+.caja-flota {
+  background: var(--blanco);
+  box-shadow: var(--sombra-flota);
+}
+.caja-aviso {
+  background: var(--ambar-claro);
+  color: var(--ambar-texto);
+}
+.caja-error {
+  background: var(--blanco);
+  box-shadow: inset 0 0 0 1.5px var(--rojo);
+}
+.caja-error :where(strong, h3, h4) {
+  color: var(--doblez);
+}
+.caja-resuelto {
+  background: var(--azul-claro);
+  box-shadow: inset 0 0 0 1px rgba(35, 70, 232, 0.24);
+}
+.caja-resuelto :where(strong, h3, h4, .icono) {
+  color: var(--azul);
+}

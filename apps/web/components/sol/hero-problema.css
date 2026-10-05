@@ -1,0 +1,147 @@
+/* Hero «Problema primero»: tinta en vez de rojo. Mismo marco redondeado que el hero del chat. */
+.hp {
+  --marca-color: currentColor;
+  --foco: var(--blanco);
+  --pt-punto: #8c8c8c; /* 4,7 sobre tinta */
+  --pt-repetido: var(--blanco);
+  --pt-renta-borde: var(--amarillo);
+  --pt-texto: rgba(255, 255, 255, 0.64);
+  --pt-globo-fondo: var(--blanco);
+  --pt-globo-texto: var(--tinta);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - 16px);
+  margin: 8px;
+  padding: var(--e-20) var(--e-32) var(--e-48);
+  border-radius: var(--r-28);
+  background: var(--tinta);
+  color: var(--blanco);
+}
+
+.hp-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-16);
+}
+.hp-marca {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  gap: var(--e-12);
+  font-size: 22px;
+}
+.hp .hp-extension {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.hp-cuerpo {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--e-48) var(--e-80);
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  padding: var(--e-64) 0 var(--e-16);
+}
+
+.hp-texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-24);
+}
+.hp-antetitulo {
+  margin: 0;
+  color: var(--amarillo);
+}
+.hp-titulo {
+  margin: 0;
+  max-width: 10ch;
+  font-family: var(--font-titular);
+  font-size: clamp(56px, 8.4vw, 132px);
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+}
+.hp-entradilla {
+  max-width: 44ch;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+/* Sobre tinta, el primario va en rojo; el atardecer del hover sube igual. */
+.hp .hp-cta {
+  margin-top: var(--e-8);
+  background: var(--rojo);
+}
+
+.hp-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: var(--e-32);
+  margin: var(--e-24) 0 0;
+  padding-top: var(--e-24);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.hp-cifras > div {
+  display: grid;
+  align-content: start;
+  gap: var(--e-4);
+}
+/* Mismas cifras de marca que en Problema: mismo token. */
+.hp-cifras dt {
+  font-family: var(--font-cifra);
+  font-size: 36px;
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.hp-cifras div:nth-child(2) dt {
+  color: var(--amarillo);
+}
+.hp-cifras dd {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.hp-imagen {
+  justify-self: end;
+  width: min(600px, 100%);
+}
+
+@media (max-width: 900px) {
+  .hp {
+    min-height: 0;
+    padding: var(--e-16) var(--e-20) var(--e-32);
+  }
+  .hp-cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: var(--e-48);
+  }
+  .hp-imagen {
+    justify-self: stretch;
+    width: 100%;
+  }
+}
+@media (max-width: 480px) {
+  .hp-marca {
+    font-size: 18px;
+  }
+  .hp .hp-extension {
+    padding: 0 var(--e-16);
+    font-size: 14px;
+  }
+  .hp-extension :is(.icono, .hp-largo) {
+    display: none;
+  }
+  .hp-cifras {
+    gap: var(--e-20);
+  }
+  .hp-cifras dt {
+    font-size: 30px;
+  }
+}

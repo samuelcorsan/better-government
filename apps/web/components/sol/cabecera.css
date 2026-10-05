@@ -1,0 +1,22 @@
+.cabecera {
+  display: flex;
+  align-items: center;
+  max-width: var(--ancho);
+  margin-inline: auto;
+  padding: var(--e-20) var(--margen) 0;
+}
+.cabecera-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: 44px;
+  border-radius: var(--r-12);
+  font-size: 22px;
+  color: var(--rojo);
+  text-decoration: none;
+}
+@media (max-width: 480px) {
+  .cabecera-marca {
+    font-size: 19px;
+  }
+}

@@ -1,0 +1,513 @@
+/* Hero «La extensión a tu lado». Requiere tokens.css y botones.css dentro de .sol-raiz. */
+.hx {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: var(--e-64) var(--margen) var(--e-24);
+}
+
+.hx-copia {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+  align-items: end;
+  gap: var(--e-48);
+}
+.hx-etiqueta {
+  margin: 0 0 var(--e-20);
+  color: var(--doblez);
+}
+.hx-titular h1 {
+  max-width: 13ch;
+}
+.hx-sub {
+  max-width: 40ch;
+  margin: 0 0 var(--e-24);
+  color: var(--tinta-2);
+}
+.hx-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-12);
+}
+
+/* Escenario: el atardecer y, encima, el navegador con el panel. */
+.hx-escena {
+  --foco: var(--blanco);
+  margin: var(--e-48) 0 0;
+  padding: var(--e-16) var(--e-48) var(--e-64);
+  border-radius: var(--r-28);
+  /* --atardecer con el sol más ancho para que asome por los lados del navegador. */
+  background:
+    radial-gradient(
+      120% 70% at 50% 122%,
+      #ffd34d 0%,
+      var(--amarillo) 22%,
+      var(--naranja) 48%,
+      rgba(223, 23, 23, 0) 80%
+    ),
+    var(--rojo);
+  isolation: isolate;
+}
+.hx-escena-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-16);
+  max-width: 1080px;
+  margin: 0 auto var(--e-16);
+  color: var(--blanco);
+}
+.hx-guia {
+  padding-right: var(--e-16);
+}
+
+.hx-navegador {
+  max-width: 1080px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: var(--r-16);
+  background: var(--blanco);
+  box-shadow: var(--sombra-flota);
+  user-select: none;
+  pointer-events: none;
+}
+.hx-barra {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 420px) 1fr;
+  align-items: center;
+  gap: var(--e-12);
+  height: 44px;
+  padding: 0 var(--e-12) 0 var(--e-16);
+  background: var(--superficie);
+  box-shadow: inset 0 -1px 0 var(--linea);
+}
+.hx-semaforo {
+  display: flex;
+  gap: 6px;
+}
+.hx-semaforo i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.14);
+}
+.hx-url {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 var(--e-12);
+  border-radius: var(--r-pildora);
+  background: var(--blanco);
+  color: var(--tinta-2);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hx-ext {
+  position: relative;
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--blanco);
+  color: var(--rojo);
+  box-shadow: 0 0 0 1px var(--linea);
+}
+.hx-ext::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amarillo);
+  box-shadow: 0 0 0 2px var(--superficie);
+}
+
+.hx-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  height: 540px;
+}
+
+/* Web oficial: la captura no se recolorea; los añadidos de la extensión van encima. */
+.hx-web {
+  overflow: hidden;
+}
+.hx-lienzo {
+  position: relative;
+  aspect-ratio: 1280 / 900;
+}
+.hx-captura {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* Lo que añade la extensión encima de la página: un buscador y su resultado, flotando. */
+.hx-capa-buscar,
+.hx-capa-resultado {
+  --capa-alto: 40px;
+  --capa-arriba: 27%;
+  position: absolute;
+  left: 7.5%;
+  width: 46%;
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  height: var(--capa-alto);
+  padding: 0 var(--e-12);
+  border-radius: var(--r-12);
+  background: var(--blanco);
+  box-shadow: var(--sombra-flota);
+  font-size: 13px;
+  line-height: 1.25;
+}
+/* A la altura del índice: tapa el bloque entero y deja a la vista el título de la página. */
+.hx-capa-buscar {
+  top: var(--capa-arriba);
+}
+.hx-capa-resultado {
+  /* Pegado al buscador: el borde blanco tapa la rendija y los dos leen como un desplegable. */
+  top: calc(var(--capa-arriba) + var(--capa-alto) + 4px);
+  height: auto;
+  min-height: var(--capa-alto);
+  justify-content: space-between;
+  padding-block: 6px;
+  box-shadow:
+    0 0 0 4px var(--blanco),
+    var(--sombra-flota);
+  background: var(--ambar-claro);
+  color: var(--ambar-texto);
+}
+.hx-capa-cuenta {
+  margin-left: auto;
+  color: var(--tinta-3);
+  font-size: 12px;
+}
+.hx-capa-resultado > span {
+  display: grid;
+  min-width: 0;
+}
+.hx-capa-resultado strong {
+  color: var(--tinta);
+  font-weight: 500;
+}
+.hx-capa-resultado small {
+  overflow: hidden;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Lo que señala la guía: un anillo amarillo que cambia de sitio con el paso. */
+.hx-capa-buscar::after,
+.hx-capa-resultado::after,
+.hx-foco {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 15px;
+  box-shadow:
+    0 0 0 2.5px var(--amarillo),
+    0 0 0 8px rgba(255, 190, 11, 0.28);
+  opacity: 0;
+  transform: scale(1.04);
+  transition:
+    opacity var(--t-medio) var(--curva-salida),
+    transform var(--t-medio) var(--curva-salida);
+}
+.hx-foco {
+  inset: auto;
+  top: 18.2%;
+  left: 72.2%;
+  width: 20.6%;
+  height: 31%;
+  border-radius: 6px;
+}
+.hx-capa-resultado {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--t-medio) var(--curva-salida),
+    transform var(--t-medio) var(--curva-salida);
+}
+[data-paso='1'] .hx-capa-buscar::after,
+[data-paso='2'] .hx-capa-resultado::after,
+[data-paso='3'] .hx-foco,
+:is([data-paso='2'], [data-paso='3']) .hx-capa-resultado {
+  opacity: 1;
+  transform: none;
+}
+
+/* Panel lateral de la extensión */
+.hx-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-shadow: inset 1px 0 0 var(--linea);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.hx-panel-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 var(--e-16);
+  box-shadow: inset 0 -1px 0 var(--linea);
+  color: var(--tinta-3);
+}
+.hx-panel-marca {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  color: var(--tinta);
+  font-size: 15px;
+}
+.hx-panel-marca svg {
+  color: var(--rojo);
+}
+.hx-panel-hilo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  min-height: 0;
+  padding: var(--e-16);
+  overflow: hidden;
+}
+.hx-pregunta {
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
+  padding: var(--e-8) var(--e-12);
+  border-radius: var(--r-16) var(--r-16) 4px var(--r-16);
+  background: var(--superficie);
+}
+.hx-respuesta {
+  margin: 0;
+}
+.hx-guion {
+  display: grid;
+  gap: var(--e-12);
+  padding: 14px;
+  border-radius: var(--r-16);
+  box-shadow:
+    0 0 0 1px var(--linea),
+    0 6px 16px -8px rgba(120, 40, 0, 0.12);
+}
+.hx-guion-titulo {
+  margin: 0;
+  color: var(--tinta);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hx-progreso {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.hx-progreso i {
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--superficie);
+}
+.hx-progreso i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 320ms var(--curva-salida);
+}
+.hx-progreso i[data-estado='hecho']::after {
+  background: var(--azul);
+}
+.hx-progreso i:not([data-estado='pendiente'])::after {
+  transform: none;
+}
+
+/* Los tres mensajes ocupan la misma celda: el alto es el del más largo y no cambia. */
+.hx-mensajes {
+  display: grid;
+  color: var(--tinta-2);
+}
+.hx-mensajes > span {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--t-medio) var(--curva-salida),
+    transform var(--t-medio) var(--curva-salida);
+}
+.hx-mensajes > [data-activo] {
+  opacity: 1;
+  transform: none;
+}
+
+.hx-pasos {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: var(--e-8) 0 0;
+  box-shadow: inset 0 1px 0 var(--linea);
+  list-style: none;
+}
+.hx-pasos li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  color: var(--tinta-3);
+  font-weight: 500;
+}
+.hx-pasos li[data-estado='activo'] {
+  color: var(--tinta);
+}
+.hx-pasos li[data-estado='hecho'] {
+  color: var(--tinta-2);
+}
+.hx-casilla {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--linea);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+[data-estado='activo'] > .hx-casilla {
+  background: var(--tinta);
+  box-shadow: none;
+  color: var(--blanco);
+}
+[data-estado='hecho'] > .hx-casilla {
+  background: var(--azul-claro);
+  box-shadow: none;
+  color: var(--azul);
+}
+.hx-cita {
+  align-self: flex-start;
+  min-height: 30px;
+  font-size: 12px;
+  color: var(--tinta-2);
+}
+
+.hx-compositor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  margin: 0 var(--e-16) var(--e-16);
+  padding: 0 6px 0 var(--e-16);
+  border-radius: var(--r-pildora);
+  box-shadow: 0 0 0 1px var(--linea);
+  color: var(--tinta-3);
+}
+.hx-enviar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--tinta);
+  color: var(--blanco);
+}
+
+@media (max-width: 1080px) {
+  .hx-escena {
+    padding-inline: var(--e-24);
+  }
+}
+
+@media (max-width: 860px) {
+  .hx {
+    padding-block: var(--e-40) var(--e-16);
+  }
+  .hx-copia {
+    grid-template-columns: 1fr;
+    gap: var(--e-24);
+  }
+  .hx-escena {
+    margin-top: var(--e-32);
+    padding: var(--e-12) var(--e-12) var(--e-40);
+    border-radius: var(--r-20);
+  }
+  .hx-escena-barra {
+    padding-left: var(--e-8);
+  }
+  .hx-barra {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-left: var(--e-12);
+  }
+  .hx-cuerpo {
+    display: block;
+    height: auto;
+  }
+  .hx-web {
+    box-shadow: inset 0 -1px 0 var(--linea);
+  }
+  .hx-capa-buscar,
+  .hx-capa-resultado {
+    --capa-alto: 26px;
+    --capa-arriba: 25%;
+    width: 58%;
+    gap: 6px;
+    padding: 0 var(--e-8);
+    border-radius: 8px;
+    font-size: 11px;
+  }
+  .hx-capa-resultado {
+    padding-block: 3px;
+  }
+  .hx-capa-resultado small {
+    display: none;
+  }
+  .hx-capa-cuenta {
+    font-size: 10px;
+  }
+  .hx-capa-buscar::after,
+  .hx-capa-resultado::after {
+    border-radius: 11px;
+  }
+  .hx-solo-ancho,
+  .hx-cita {
+    display: none;
+  }
+  :is(.hx-capa-buscar, .hx-capa-resultado) .icono {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hx-ctas > * {
+    flex: 1 1 100%;
+  }
+  .hx-semaforo {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-capa-buscar::after,
+  .hx-capa-resultado::after,
+  .hx-foco,
+  .hx-capa-resultado,
+  .hx-progreso i::after,
+  .hx-mensajes > span {
+    transition: none;
+    transform: none;
+  }
+}

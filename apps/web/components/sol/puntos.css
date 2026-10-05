@@ -1,0 +1,261 @@
+/* Puntos del catálogo. Un ancestro puede fijar --pt-punto, --pt-repetido, --pt-renta-borde,
+   --pt-texto, --pt-globo-fondo y --pt-globo-texto (el hero en tinta lo hace).
+   El botón lleva `.pt` delante para ganar a botones.css. */
+.pt {
+  display: grid;
+  gap: var(--e-20);
+  width: 100%;
+  margin: 0;
+  color: var(--pt-texto, var(--tinta-2));
+}
+
+.pt-lienzo {
+  position: relative;
+  /* Hueco para la etiqueta de la Renta, que cuelga bajo la última fila. */
+  padding-bottom: 52px;
+}
+
+.pt-rejilla {
+  display: grid;
+  grid-template-columns: 2.5em repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pt-fila {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* La celda es la zona de puntero; el punto visible es ::before, más pequeño. */
+.pt-punto {
+  position: relative;
+  aspect-ratio: 1;
+}
+.pt-punto::before,
+.pt-muestra::before {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: var(--pt-punto, #8c8c8c); /* 3,4 sobre blanco */
+}
+.pt-punto[data-tipo='repetido']::before,
+.pt-muestra[data-tipo='repetido']::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--pt-repetido, var(--tinta));
+}
+.pt-punto[data-tipo='renta']::before,
+.pt-muestra[data-tipo='renta']::before {
+  inset: 4%;
+  background: var(--amarillo);
+  box-shadow:
+    0 0 0 2px var(--pt-renta-borde, var(--tinta)),
+    0 0 0 8px rgba(255, 190, 11, 0.28);
+}
+.pt-muestra[data-tipo='renta']::before {
+  inset: 12%;
+  box-shadow: 0 0 0 1.5px var(--pt-renta-borde, var(--tinta));
+}
+
+.pt-renta {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  z-index: 1;
+  padding: 4px 10px;
+  border-radius: var(--r-pildora);
+  background: var(--amarillo);
+  color: var(--tinta);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.pt-renta::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 1.5px;
+  height: 10px;
+  margin-left: -0.75px;
+  background: var(--pt-renta-borde, var(--tinta));
+}
+
+/* Globo al pasar el puntero: un solo nodo que se coloca encima del punto. */
+.pt-globo {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  width: max-content;
+  max-width: min(260px, 80vw);
+  padding: 8px 12px;
+  border-radius: var(--r-12);
+  background: var(--pt-globo-fondo, var(--tinta));
+  color: var(--pt-globo-texto, var(--blanco));
+  box-shadow: var(--sombra-flota);
+  font-size: 14px;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(var(--gx, -50%), var(--gy, calc(-100% - 8px)));
+  transition: opacity 120ms var(--curva-salida);
+}
+/* En los bordes el globo se alinea hacia dentro; en la primera fila sale por debajo. */
+.pt-globo[data-lado='izq'] {
+  --gx: -20px;
+}
+.pt-globo[data-lado='der'] {
+  --gx: calc(-100% + 20px);
+}
+.pt-globo[data-abajo] {
+  --gy: 8px;
+}
+.pt-globo[data-visible] {
+  opacity: 1;
+}
+.pt-globo .t-etiqueta {
+  opacity: 0.72;
+}
+
+.pt-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-8) var(--e-24);
+}
+.pt-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8) var(--e-20);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.pt-leyenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+}
+.pt-muestra {
+  position: relative;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+.pt .pt-repetir {
+  min-height: 44px;
+  margin-right: calc(var(--e-12) * -1);
+  padding: 0 var(--e-12);
+  font-size: 14px;
+}
+.pt-fuente {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Recorrido: los puntos ya están en su estado final desde el primer fotograma. Un anillo pasa
+   por cada servicio en orden, como quien lee la lista, hasta la Renta, que se enciende con un halo.
+   Solo transform y opacity; sin JS o con movimiento reducido no hay anillo. */
+.pt-punto::after {
+  content: '';
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--pt-escaner, var(--rojo));
+  opacity: 0;
+  pointer-events: none;
+}
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .pt-rejilla[data-fase='recorrido'] .pt-punto:not([data-despues])::after {
+    animation: pt-leer 240ms var(--curva-salida) both;
+    animation-delay: inherit;
+  }
+  .pt-rejilla[data-fase='recorrido'] .pt-punto[data-tipo='renta']::before {
+    animation: pt-encontrada 520ms var(--curva-salida) both;
+    animation-delay: inherit;
+  }
+  .pt-rejilla[data-fase='recorrido'] .pt-punto[data-tipo='renta']::after {
+    box-shadow: 0 0 0 2px var(--amarillo);
+    animation: pt-halo 900ms var(--curva-salida) both;
+    animation-delay: inherit;
+  }
+  .pt-rejilla[data-fase='espera'] .pt-renta {
+    opacity: 0;
+  }
+  .pt-rejilla[data-fase='recorrido'] .pt-renta {
+    animation: pt-etiqueta 280ms var(--curva-salida) both;
+  }
+}
+@media (scripting: none), (prefers-reduced-motion: reduce) {
+  .pt .pt-repetir {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pt-globo {
+    transition: none;
+  }
+}
+
+/* El anillo aparece de golpe y se desvanece: deja una estela corta detrás del punto actual. */
+@keyframes pt-leer {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+@keyframes pt-encontrada {
+  0% {
+    transform: scale(0.82);
+  }
+  55% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes pt-halo {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+@keyframes pt-etiqueta {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 480px) {
+  .pt-rejilla {
+    gap: 4px;
+  }
+}

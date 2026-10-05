@@ -1,0 +1,1094 @@
+/* Chat de demostración Sol. Requiere tokens.css y botones.css dentro de .sol-raiz.
+   Modo pagina: pantalla completa. Modo panel: 380 px, hoja lateral de la extensión. */
+.ch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--blanco);
+  color: var(--tinta);
+}
+.ch[data-modo='pagina'] {
+  min-height: 100dvh;
+}
+.ch[data-modo='panel'] {
+  overflow: hidden;
+  inline-size: 380px;
+  max-inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 480px;
+}
+.ch :is(button, a, label) {
+  touch-action: manipulation;
+}
+
+/* ---------- Cabecera ---------- */
+.ch-cab {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-12) var(--e-24);
+  background: linear-gradient(var(--blanco) 72%, rgba(255, 255, 255, 0));
+}
+.ch-marca {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-12);
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--rojo);
+}
+.ch-marca svg {
+  width: auto;
+  height: 1.15em;
+}
+button.ch-marca {
+  cursor: pointer;
+}
+.ch-aviso {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+  margin: 0;
+  padding: 4px 14px 4px 4px;
+  border-radius: var(--r-pildora);
+  background: var(--ambar-claro);
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--ambar-texto);
+}
+.ch-aviso .t-etiqueta {
+  padding: 4px 8px;
+  border-radius: var(--r-pildora);
+  background: var(--amarillo);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--tinta);
+}
+.ch-nueva {
+  justify-self: end;
+}
+.ch-nueva.boton-claro {
+  padding: 0 18px 0 14px;
+  font-size: 15px;
+}
+
+/* ---------- Conversación ---------- */
+.ch-conversacion {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--e-80);
+  width: min(760px, 100% - 40px);
+  margin: 0 auto;
+  padding: var(--e-24) 0 var(--e-48);
+}
+.ch-turno {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-24);
+  scroll-margin-top: 88px;
+}
+/* La cabecera y el compositor son fijos: el foco de teclado se desplaza fuera de ellos. */
+.ch[data-modo='pagina'] .ch-conversacion :is(a, button, [tabindex]) {
+  scroll-margin-block: 96px 180px;
+}
+/* La última pregunta puede subir arriba del todo aunque su respuesta aún sea corta. */
+.ch[data-modo='pagina'] .ch-turno:last-child:not(:first-child) {
+  min-height: calc(100dvh - 260px);
+}
+.ch-pregunta {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-titular);
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.ch-vacio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-16);
+  padding-top: clamp(40px, 14vh, 140px);
+}
+.ch-vacio p {
+  margin: 0;
+  color: var(--tinta-2);
+}
+.ch-sugerencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+}
+.ch-sugerencias .pildora {
+  max-width: 100%;
+  padding-block: 8px;
+  white-space: normal;
+  text-align: left;
+}
+.ch-seguir {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  color: var(--tinta-2);
+}
+
+/* Protección de datos: el dato se subraya y un chip dice cuántos se han ocultado. */
+.ch-oculto {
+  display: inline-block;
+  border-radius: 4px;
+  text-decoration: underline dashed var(--rojo) 2px;
+  text-underline-offset: 0.18em;
+  cursor: help;
+}
+.ch-oculto-nota {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  max-width: min(280px, 100%);
+  padding: 8px 12px;
+  border-radius: var(--r-12);
+  background: var(--tinta);
+  font-family: var(--font-texto);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--blanco);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--t-rapido) var(--curva-salida),
+    transform var(--t-rapido) var(--curva-salida);
+}
+.ch-pregunta:has(.ch-oculto:focus-visible) .ch-oculto-nota {
+  opacity: 1;
+  transform: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ch-pregunta:has(.ch-oculto:hover) .ch-oculto-nota {
+    opacity: 1;
+    transform: none;
+    transition-delay: 200ms;
+  }
+}
+.ch-protegido {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--e-8);
+  margin: -8px 0 0;
+  padding: 6px 14px 6px 10px;
+  border-radius: var(--r-pildora);
+  background: var(--tinta);
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--blanco);
+}
+.ch-protegido .icono {
+  color: var(--amarillo);
+}
+
+/* ---------- Pensando: el sol sale una franja por cada etapa ---------- */
+.ch-pensando {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-16);
+}
+.ch-sol {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  width: 48px;
+  height: 28px;
+  margin-top: 1px;
+  border-bottom: 2px solid var(--tinta);
+}
+.ch-sol i {
+  position: absolute;
+  bottom: -16px;
+  left: calc(50% - 16px);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #ffd34d, var(--amarillo) 45%, var(--naranja));
+  transform: translateY(10px);
+  transition: transform 480ms var(--curva-salida);
+}
+.ch-sol i::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 190, 11, 0.55), rgba(255, 190, 11, 0));
+  animation: ch-brillo 1.2s ease-in-out infinite alternate;
+}
+.ch-sol[data-etapa='1'] i {
+  transform: translateY(2px);
+}
+.ch-sol[data-etapa='2'] i {
+  transform: translateY(-7px);
+}
+@starting-style {
+  .ch-sol i {
+    transform: translateY(20px);
+  }
+}
+@keyframes ch-brillo {
+  from {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+.ch-pensando ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.ch-pensando li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tinta-2);
+}
+.ch-pensando li[data-estado='ahora'] {
+  color: var(--tinta);
+}
+.ch-pensando li[data-estado='luego'] {
+  color: var(--tinta-3);
+}
+.ch-etapa-marca {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--linea);
+}
+[data-estado='hecho'] > .ch-etapa-marca {
+  background: var(--azul-claro);
+  box-shadow: none;
+  color: var(--azul);
+}
+[data-estado='ahora'] > .ch-etapa-marca::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tinta);
+  animation: ch-latido 900ms ease-in-out infinite alternate;
+}
+@keyframes ch-latido {
+  from {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+}
+
+/* ---------- Respuesta ---------- */
+@keyframes ch-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.ch-pasos li,
+.ch-datos > div,
+.ch-destino,
+.ch-resuelto,
+.ch-acciones,
+.ch-seguir,
+.ch-nota,
+.ch-detenido {
+  animation: ch-entra 240ms var(--curva-salida) both;
+}
+.ch-resuelto {
+  animation-delay: 60ms;
+}
+.ch-acciones {
+  animation-delay: 110ms;
+}
+.ch-seguir {
+  animation-delay: 160ms;
+}
+
+.ch-pasos {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linea);
+  list-style: none;
+}
+.ch-pasos li {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: var(--e-16);
+  padding: var(--e-20) 0;
+  border-bottom: 1px solid var(--linea);
+}
+.ch-paso-num {
+  padding-top: 7px;
+  color: var(--tinta-2);
+}
+.ch-paso-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-12);
+}
+.ch-paso-texto {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 19px;
+  line-height: 1.5;
+}
+.ch-cita.pildora {
+  gap: var(--e-8);
+  padding: 0 12px 0 5px;
+  font-size: 13px;
+  color: var(--tinta-2);
+}
+.ch-cita i,
+.ch-siglas i,
+.ch-fuente-org i {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--tinta);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--blanco);
+}
+
+.ch-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+  margin: 0;
+}
+.ch-datos > div {
+  --caja-pad: 18px 20px;
+  display: flex;
+  flex: 1 1 190px;
+  flex-direction: column;
+  gap: var(--e-8);
+}
+.ch-datos > [data-kind='document'] {
+  flex: 2 1 260px;
+}
+.ch-datos dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tinta-2);
+}
+.ch-datos .caja-sol dt {
+  color: var(--tinta);
+}
+.ch-datos dd {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.ch-datos [data-kind='cost'] dd {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.ch-datos [data-numerico] dd {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.ch-nota {
+  display: flex;
+  gap: 14px;
+}
+.ch-nota > .icono {
+  margin-top: 2px;
+}
+.ch-nota h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--tinta);
+}
+.ch-nota p {
+  margin: 0;
+  max-width: 58ch;
+}
+.ch-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+  margin-top: var(--e-16);
+}
+
+.ch-detenido {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-8);
+}
+.ch-detenido p {
+  margin: 0;
+  color: var(--tinta-2);
+}
+.ch-detenido .boton-fantasma {
+  padding: 0 14px;
+  font-size: 15px;
+}
+
+/* Destino oficial: la acción principal de la respuesta. */
+.ch-destino {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-20);
+}
+.ch-destino-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ch-destino-texto .t-etiqueta {
+  color: var(--tinta-2);
+}
+.ch-destino-texto strong {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.ch-host {
+  font-size: 13px;
+  color: var(--tinta-3);
+}
+.ch-destino-boton {
+  flex-shrink: 0;
+  min-height: 52px;
+  padding: 0 22px 0 24px;
+}
+
+/* Resuelto: azul, con la marca clara de que es un ejemplo. */
+.ch-resuelto {
+  --caja-pad: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-12);
+}
+.ch-resuelto > .icono {
+  margin-top: 2px;
+}
+.ch-resuelto strong {
+  font-weight: 600;
+  line-height: 1.4;
+}
+.ch-resuelto p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--tinta-2);
+}
+
+.ch-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-8);
+  margin-top: -12px;
+}
+.ch-fuentes.pildora {
+  gap: 10px;
+  padding: 0 14px 0 4px;
+}
+.ch-fuentes .t-dato {
+  font-size: 13px;
+}
+.ch-siglas {
+  display: flex;
+}
+.ch-siglas i {
+  box-shadow: 0 0 0 2px var(--superficie);
+}
+.ch-siglas i + i {
+  margin-left: -8px;
+}
+.ch-votos {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+.ch-votos .boton-icono {
+  color: var(--tinta-2);
+}
+.ch-votos .boton-icono[aria-pressed='true'] {
+  background: var(--tinta);
+  color: var(--blanco);
+}
+.ch-confirmacion {
+  margin-right: 6px;
+  font-size: 13px;
+  color: var(--azul);
+}
+.ch-copiar {
+  display: grid;
+}
+.ch-copiar .icono {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--t-rapido) var(--curva-salida),
+    transform var(--t-rapido) var(--curva-salida);
+}
+.ch-copiar .icono + .icono {
+  color: var(--azul);
+  opacity: 0;
+  transform: scale(0.6);
+}
+[data-copiado] .ch-copiar .icono:first-child {
+  opacity: 0;
+  transform: scale(0.6);
+}
+[data-copiado] .ch-copiar .icono + .icono {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Compositor ---------- */
+.ch-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e-8);
+  padding: var(--e-48) var(--e-20) max(16px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(
+      48% 110% at 50% 140%,
+      rgba(255, 190, 11, 0.85),
+      rgba(255, 122, 26, 0.4) 45%,
+      rgba(255, 255, 255, 0) 82%
+    ),
+    linear-gradient(rgba(255, 255, 255, 0), var(--blanco) 45%);
+  pointer-events: none;
+}
+.ch-dock > * {
+  pointer-events: auto;
+}
+.ch-compositor {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--e-8);
+  width: min(760px, 100%);
+  padding: 8px 8px 8px 24px;
+  border-radius: 34px;
+  background: var(--blanco);
+  box-shadow: var(--sombra-flota);
+}
+.ch-compositor:focus-within {
+  box-shadow:
+    0 0 0 1.5px var(--tinta),
+    var(--sombra-flota);
+}
+.ch .ch-compositor textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  max-height: 200px;
+  padding: 13px 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  field-sizing: content;
+  background: transparent;
+  font: inherit;
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--tinta);
+}
+.ch .ch-compositor textarea::placeholder {
+  color: var(--tinta-3);
+}
+.ch-pie {
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--tinta-2);
+}
+
+/* ---------- Fuentes: hoja lateral (dialog) ---------- */
+.ch-panel {
+  position: fixed;
+  inset: 12px 12px 12px auto;
+  width: min(460px, 100vw - 24px);
+  height: calc(100dvh - 24px);
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: var(--r-28);
+  background: var(--blanco);
+  color: var(--tinta);
+  box-shadow:
+    0 0 0 1px rgba(120, 40, 0, 0.06),
+    0 24px 60px -12px rgba(120, 40, 0, 0.28);
+  opacity: 0;
+  transform: translateX(24px);
+  transition:
+    opacity 180ms var(--curva-salida),
+    transform 180ms var(--curva-salida),
+    overlay 180ms allow-discrete,
+    display 180ms allow-discrete;
+}
+.ch-panel[open] {
+  opacity: 1;
+  transform: none;
+  transition-duration: 260ms;
+  transition-timing-function: var(--curva-cajon);
+}
+@starting-style {
+  .ch-panel[open] {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+.ch-panel::backdrop {
+  background: rgba(34, 34, 34, 0.32);
+  opacity: 0;
+  transition:
+    opacity 180ms var(--curva-salida),
+    overlay 180ms allow-discrete,
+    display 180ms allow-discrete;
+}
+.ch-panel[open]::backdrop {
+  opacity: 1;
+  transition-duration: 260ms;
+}
+@starting-style {
+  .ch-panel[open]::backdrop {
+    opacity: 0;
+  }
+}
+.ch-panel-cuerpo {
+  display: flex;
+  flex-direction: column;
+  padding: 0 28px 28px;
+}
+.ch-panel-barra {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-right: -16px;
+  padding: 12px 0 8px;
+  background: var(--blanco);
+}
+.ch-panel-barra h2 {
+  margin: 0;
+  color: var(--tinta-2);
+}
+.ch-fuente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-16);
+  padding: var(--e-20) 0 var(--e-24);
+  scroll-margin-top: 64px;
+}
+.ch-fuente + .ch-fuente {
+  border-top: 1px solid var(--linea);
+}
+.ch-fuente-org {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-weight: 500;
+}
+.ch-fuente h3 {
+  margin: 0;
+}
+.ch-fuente blockquote {
+  margin: 0;
+  padding: 16px 18px;
+  border-left: 3px solid var(--linea);
+  border-radius: 0 var(--r-16) var(--r-16) 0;
+  background: var(--superficie);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.ch-fuente[data-activa] blockquote {
+  border-left-color: var(--amarillo);
+}
+.ch-fuente dl {
+  margin: 0;
+  border-top: 1px solid var(--linea);
+}
+.ch-fuente dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--e-16);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 14px;
+}
+.ch-fuente dt {
+  color: var(--tinta-2);
+}
+.ch-fuente dd {
+  margin: 0;
+  font-size: 13px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.ch-fuente-abrir {
+  align-self: flex-start;
+}
+
+/* ---------- Modo panel (380 px) ---------- */
+.ch[data-modo='panel'] .ch-cab {
+  position: static;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  padding: 6px 6px 12px 16px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--blanco);
+}
+.ch[data-modo='panel'] .ch-marca {
+  font-size: 17px;
+}
+.ch[data-modo='panel'] .ch-aviso {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  justify-self: start;
+  font-size: 13px;
+}
+.ch[data-modo='panel'] .ch-conversacion {
+  container-type: size;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: var(--e-20) var(--e-16) var(--e-32);
+  gap: var(--e-48);
+}
+.ch[data-modo='panel'] .ch-turno {
+  gap: var(--e-16);
+}
+.ch[data-modo='panel'] .ch-turno:last-child:not(:first-child) {
+  min-height: calc(100cqb - 52px);
+}
+.ch[data-modo='panel'] .ch-pregunta {
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.ch[data-modo='panel'] .ch-protegido {
+  margin: 0;
+}
+.ch[data-modo='panel'] .ch-vacio {
+  padding-top: var(--e-24);
+}
+.ch[data-modo='panel'] .ch-pasos {
+  border-top: 0;
+}
+.ch[data-modo='panel'] .ch-pasos li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 4px 0 12px;
+}
+.ch[data-modo='panel'] .ch-paso-texto {
+  font-size: 16px;
+}
+.ch[data-modo='panel'] .ch-cita {
+  margin-left: 34px;
+}
+.ch[data-modo='panel'] .ch-datos > div {
+  --caja-pad: 14px 16px;
+}
+.ch[data-modo='panel'] .ch-datos [data-numerico] dd {
+  font-size: 20px;
+}
+.ch[data-modo='panel'] .ch-destino {
+  flex-direction: column;
+  align-items: stretch;
+  --caja-pad: 16px;
+}
+.ch[data-modo='panel'] .ch-destino-texto strong {
+  font-size: 16px;
+}
+.ch[data-modo='panel'] .ch-destino-boton {
+  min-height: 48px;
+}
+.ch[data-modo='panel'] .ch-resuelto {
+  --caja-pad: 14px 16px;
+}
+.ch[data-modo='panel'] .ch-dock {
+  position: static;
+  padding: var(--e-12);
+  border-top: 1px solid var(--linea);
+  background: var(--blanco);
+}
+.ch[data-modo='panel'] .ch-compositor {
+  padding: 6px 6px 6px 16px;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1px var(--linea);
+}
+.ch[data-modo='panel'] .ch-compositor:focus-within {
+  box-shadow: 0 0 0 1.5px var(--tinta);
+}
+.ch[data-modo='panel'] .ch-compositor textarea {
+  min-height: 44px;
+  padding: 10px 0;
+  font-size: 16px;
+  line-height: 24px;
+}
+.ch[data-modo='panel'] .ch-enviar {
+  width: 44px;
+  height: 44px;
+}
+
+/* Progreso de la guía: casillas que se marcan, «Paso 1 de 2». */
+.ch-progreso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+}
+.ch-progreso .t-dato {
+  font-size: 13px;
+  color: var(--tinta-2);
+}
+.ch-progreso[data-completo] .t-dato {
+  color: var(--azul);
+}
+.ch-barra {
+  overflow: hidden;
+  height: 4px;
+  border-radius: var(--r-pildora);
+  background: var(--superficie);
+}
+.ch-barra i {
+  display: block;
+  height: 100%;
+  background: var(--azul);
+  transform-origin: left;
+  transition: transform var(--t-medio) var(--curva-salida);
+}
+.ch-casilla {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-12);
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 0 4px;
+  cursor: pointer;
+}
+.ch-casilla input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.ch-casilla-caja {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1.5px var(--tinta-3);
+  color: var(--blanco);
+}
+.ch-casilla-caja .icono {
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--t-rapido) var(--curva-salida),
+    transform var(--t-rapido) var(--curva-salida);
+}
+.ch-casilla:has(input:checked) .ch-casilla-caja {
+  background: var(--azul);
+  box-shadow: none;
+}
+.ch-casilla:has(input:checked) .ch-casilla-caja .icono {
+  opacity: 1;
+  transform: none;
+}
+.ch-casilla:has(input:checked) .ch-paso-texto {
+  color: var(--tinta-3);
+}
+.ch-casilla:has(input:focus-visible) .ch-casilla-caja {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ch-casilla:hover input:not(:checked) + .ch-casilla-caja {
+    box-shadow: inset 0 0 0 1.5px var(--tinta);
+  }
+}
+
+/* Fuentes dentro del panel: hoja que sube desde abajo, sin tapar la web oficial. */
+.ch[data-modo='panel'] .ch-panel {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 4;
+  width: 100%;
+  height: auto;
+  max-height: 86%;
+  border-radius: var(--r-20) var(--r-20) 0 0;
+  box-shadow:
+    0 0 0 1px rgba(120, 40, 0, 0.06),
+    0 -16px 40px -12px rgba(120, 40, 0, 0.22);
+  transform: translateY(24px);
+}
+.ch[data-modo='panel'] .ch-panel[open] {
+  transform: none;
+}
+@starting-style {
+  .ch[data-modo='panel'] .ch-panel[open] {
+    transform: translateY(24px);
+  }
+}
+.ch[data-modo='panel'] .ch-panel-cuerpo {
+  padding: 0 20px 20px;
+}
+.ch[data-modo='panel'] .ch-fuente h3 {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* ---------- Móvil (modo pagina) ---------- */
+@media (max-width: 640px) {
+  .ch[data-modo='pagina'] .ch-cab {
+    grid-template-columns: 1fr auto;
+    gap: 4px var(--e-8);
+    padding: var(--e-8) var(--e-12) var(--e-12) var(--e-16);
+  }
+  .ch[data-modo='pagina'] .ch-aviso {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-self: start;
+    font-size: 13px;
+  }
+  .ch-nueva.boton-claro {
+    width: 44px;
+    padding: 0;
+  }
+  .ch-nueva-texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ch[data-modo='pagina'] .ch-conversacion {
+    width: min(760px, 100% - 32px);
+    gap: var(--e-64);
+  }
+  .ch-turno {
+    scroll-margin-top: 112px;
+  }
+  .ch[data-modo='pagina'] .ch-conversacion :is(a, button, [tabindex]) {
+    scroll-margin-top: 112px;
+  }
+  .ch-pasos li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--e-8);
+    padding: var(--e-16) 0;
+  }
+  .ch-paso-num {
+    padding-top: 0;
+  }
+  .ch-paso-texto {
+    font-size: 17px;
+  }
+  .ch-destino {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ch-dock {
+    padding: var(--e-32) var(--e-12) max(12px, env(safe-area-inset-bottom));
+  }
+  .ch-compositor {
+    padding-left: 18px;
+  }
+}
+
+/* Sin movimiento: todo aparece en su sitio. */
+@media (prefers-reduced-motion: reduce) {
+  .ch-pasos li,
+  .ch-datos > div,
+  .ch-destino,
+  .ch-resuelto,
+  .ch-acciones,
+  .ch-seguir,
+  .ch-nota,
+  .ch-detenido,
+  .ch-sol i::after,
+  [data-estado='ahora'] > .ch-etapa-marca::before {
+    animation: none;
+  }
+  .ch-sol i,
+  .ch-oculto-nota,
+  .ch-copiar .icono,
+  .ch-casilla-caja .icono,
+  .ch-barra i,
+  .ch-panel,
+  .ch-panel::backdrop {
+    transition: none;
+  }
+  .ch-oculto-nota {
+    transform: none;
+  }
+}

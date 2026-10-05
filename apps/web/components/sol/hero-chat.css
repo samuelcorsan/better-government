@@ -1,0 +1,168 @@
+/* Portada con chat: rojo con el atardecer subiendo desde abajo y margen redondeado.
+   Blanco sobre rojo (4,92); lo que cae sobre el sol (naranja o amarillo) va en tinta. */
+.hc {
+  --marca-color: currentColor;
+  --foco: var(--blanco);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - 16px);
+  margin: var(--e-8);
+  padding: var(--e-20) clamp(20px, 3vw, 28px) var(--e-24);
+  border-radius: var(--r-28);
+  background: var(--atardecer);
+  color: var(--blanco);
+}
+
+.hc-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-16);
+}
+.hc-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: 44px;
+  border-radius: var(--r-12);
+  font-size: 22px;
+  color: inherit;
+  text-decoration: none;
+}
+.hc-descargar {
+  padding-inline: 18px var(--e-20);
+}
+
+.hc-centro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-24);
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: var(--e-48) 0 var(--e-32);
+  text-align: center;
+}
+.hc-titulo {
+  margin: 0;
+  font-size: clamp(44px, 6.4vw, 92px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* Compositor: el foco se dibuja alrededor de toda la caja, en blanco sobre el rojo. */
+.hc-compositor {
+  --foco: var(--tinta);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--e-12);
+  width: 100%;
+  padding: var(--e-12) var(--e-12) var(--e-12) var(--e-24);
+  border-radius: var(--r-28);
+  background: var(--blanco);
+  color: var(--tinta);
+  text-align: start;
+  box-shadow:
+    0 2px 4px rgba(90, 0, 0, 0.1),
+    0 22px 48px -12px rgba(90, 0, 0, 0.36);
+}
+.hc-compositor:focus-within {
+  outline: 3px solid var(--blanco);
+  outline-offset: 4px;
+}
+.hc-compositor textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  max-height: 200px;
+  padding: 13px 0;
+  border: 0;
+  resize: none;
+  field-sizing: content;
+  background: transparent;
+  font: inherit;
+  font-size: 19px;
+  line-height: 1.4;
+  color: var(--tinta);
+}
+.hc-compositor textarea:focus-visible {
+  outline: none;
+}
+.hc-compositor textarea::placeholder {
+  color: var(--tinta-3);
+  opacity: 1;
+}
+
+/* Ejemplos: píldoras discretas, un velo oscuro sobre el rojo (blanco encima: 6,07). */
+.hc-ejemplos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--e-8);
+  margin: calc(-1 * var(--e-8)) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.hc .hc-ejemplo {
+  background: rgba(0, 0, 0, 0.12);
+  color: var(--blanco);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hc .hc-ejemplo:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.hc-nota {
+  max-width: 44ch;
+  margin: calc(-1 * var(--e-8)) 0 var(--e-8);
+  font-size: clamp(17px, 1.4vw, 19px);
+  line-height: 1.5;
+}
+
+/* «Quiero saber más» cae sobre el sol: tinta. */
+.hc .hc-mas {
+  --foco: var(--tinta);
+  align-self: center;
+  padding-inline: var(--e-20) 18px;
+  color: var(--tinta);
+}
+
+/* En móvil el sol se mide en píxeles desde abajo: en pantallas bajas el contenido llena el alto
+   y, con el degradado en %, las píldoras caían sobre el naranja (blanco encima < 4,5). */
+@media (max-width: 480px) {
+  .hc {
+    background:
+      radial-gradient(
+        160% 300px at 50% calc(100% + 90px),
+        #ffd34d 0%,
+        var(--amarillo) 20%,
+        var(--naranja) 45%,
+        rgba(223, 23, 23, 0) 78%
+      ),
+      var(--rojo);
+  }
+  .hc-centro {
+    padding-bottom: var(--e-96);
+  }
+  .hc-marca {
+    font-size: 19px;
+  }
+  .hc-oculto-movil {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .hc-compositor {
+    padding-left: var(--e-20);
+  }
+  .hc-compositor textarea {
+    font-size: 17px;
+  }
+}

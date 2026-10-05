@@ -1,0 +1,333 @@
+/* Antes y después. Requiere tokens.css y botones.css dentro de .sol-raiz. */
+.ad {
+  display: grid;
+  gap: clamp(80px, 10vw, 136px);
+  max-width: var(--ancho);
+  margin-inline: auto;
+  padding: clamp(56px, 8vw, 96px) var(--margen) clamp(80px, 10vw, 136px);
+}
+
+.ad-cabeza {
+  display: grid;
+  gap: var(--e-20);
+}
+.ad-antetitulo {
+  margin: 0;
+  color: var(--doblez);
+}
+.ad-cabeza .t-texto-l {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--tinta-2);
+}
+
+.ad-par {
+  display: grid;
+  gap: var(--e-32);
+}
+.ad-par-cabeza {
+  display: flex;
+  align-items: baseline;
+  gap: var(--e-16);
+}
+.ad-num {
+  font-size: 14px;
+  color: var(--tinta-3);
+}
+.ad-lados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-12);
+}
+.ad-lado {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--e-20);
+  min-width: 0;
+  padding: var(--e-24);
+  border-radius: var(--r-28);
+}
+.ad-lado > .t-etiqueta {
+  align-self: flex-start;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--r-pildora);
+}
+.ad-hoy {
+  background: var(--superficie);
+}
+.ad-hoy > .t-etiqueta {
+  background: var(--blanco);
+  color: var(--tinta-2);
+}
+.ad-con {
+  background: var(--atardecer);
+}
+.ad-con > .t-etiqueta {
+  background: var(--doblez);
+  color: var(--blanco);
+}
+/* Las tarjetas sobre el atardecer: radio 28 − 24 de relleno no deja curva; se quedan en 16. */
+.ad-con > .caja-flota {
+  --caja-r: var(--r-16);
+}
+
+/* 01 · Navegador con la captura oficial, sin recolorear. */
+.ad-navegador {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  border-radius: var(--r-16);
+  background: var(--blanco);
+  box-shadow: var(--sombra-suave);
+}
+.ad-barra {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--linea);
+}
+.ad-barra i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--apagado);
+}
+.ad-barra span {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-left: 8px;
+  padding: 4px 12px;
+  overflow: hidden;
+  border-radius: var(--r-pildora);
+  background: var(--superficie);
+  font-size: 12px;
+  color: var(--tinta-2);
+  white-space: nowrap;
+}
+.ad-captura img {
+  display: block;
+  width: 100%;
+  height: auto;
+  outline: 1px solid var(--linea);
+  outline-offset: -1px;
+}
+.ad-pin {
+  position: absolute;
+  right: var(--e-12);
+  bottom: var(--e-12);
+  padding: 8px 14px;
+  border-radius: var(--r-pildora);
+  background: var(--tinta);
+  box-shadow: var(--sombra-flota);
+  font-size: 14px;
+  color: var(--blanco);
+}
+.ad-pin b {
+  font-weight: 500;
+  color: var(--amarillo);
+}
+
+/* 01 · Buscador de la extensión */
+.ad-tarjeta {
+  display: grid;
+  gap: var(--e-16);
+}
+.ad-tarjeta p {
+  margin: 0;
+}
+.ad-buscador {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  min-height: 48px;
+  padding: 0 var(--e-16);
+  border-radius: var(--r-pildora);
+  box-shadow: inset 0 0 0 2px var(--tinta);
+  font-size: 16px;
+}
+.ad-buscador small {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--tinta-2);
+}
+.ad-resultados {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ad-resultados li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12);
+  padding: var(--e-12);
+  font-weight: 500;
+}
+.ad-resultados li + li {
+  border-top: 1px solid var(--linea);
+}
+.ad-resultados li[data-elegido],
+.ad-resultados li[data-elegido] + li {
+  border-top-color: transparent;
+}
+.ad-resultados li[data-elegido] {
+  border-radius: var(--r-12);
+  background: var(--azul-claro);
+  color: var(--azul);
+}
+.ad-resultados small {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--tinta-2);
+}
+.ad-resultados li[data-elegido] small {
+  color: var(--azul);
+}
+.ad-nota {
+  font-size: 14px;
+  color: var(--tinta-3);
+}
+
+/* 02 · Pestañas */
+.ad-pestanas ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ad-pestanas li {
+  padding: 10px 14px;
+  border-radius: 10px 10px 4px 4px;
+  background: var(--blanco);
+  font-size: 13px;
+  color: var(--tinta-2);
+}
+.ad-cual {
+  margin: var(--e-20) 0 0;
+  font-family: var(--font-titular);
+  font-size: clamp(28px, 3vw, 36px);
+  line-height: 1.1;
+  color: var(--tinta-2);
+}
+
+/* 02 · Respuesta */
+.ad-pregunta {
+  font-family: var(--font-titular);
+  font-size: 24px;
+  line-height: 1.2;
+}
+.ad-pasos {
+  display: grid;
+  gap: var(--e-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ad-pasos li {
+  display: grid;
+  gap: 4px;
+  padding-top: var(--e-12);
+  border-top: 1px solid var(--linea);
+}
+.ad-pasos .t-etiqueta {
+  color: var(--tinta-3);
+}
+.ad-cita {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--e-8);
+  min-height: 36px;
+  padding: 0 14px 0 4px;
+  border-radius: var(--r-pildora);
+  background: var(--superficie);
+  font-size: 13px;
+}
+.ad-cita-sigla {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--tinta);
+  font-size: 11px;
+  color: var(--blanco);
+}
+
+/* 03 · Texto legal frente a pasos */
+.ad-legal {
+  max-width: 52ch;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--tinta-2);
+}
+.ad-claro {
+  display: grid;
+  gap: var(--e-8);
+  margin: 0;
+  list-style: none;
+}
+.ad-claro li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  font-size: 19px;
+  line-height: 1.4;
+}
+.ad-claro li + li {
+  padding-top: var(--e-12);
+  border-top: 1px solid var(--linea);
+}
+.ad-claro .t-dato {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--rojo);
+  font-size: 14px;
+  color: var(--blanco);
+}
+
+.ad-cierre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-24);
+  padding-top: var(--e-48);
+  border-top: 1px solid var(--linea);
+}
+
+@media (max-width: 860px) {
+  .ad-lados {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .ad-lado {
+    padding: var(--e-16);
+    border-radius: var(--r-20);
+  }
+  .ad-con > .caja-flota {
+    --caja-r: var(--r-12);
+  }
+  .ad-pin {
+    position: static;
+    display: block;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
