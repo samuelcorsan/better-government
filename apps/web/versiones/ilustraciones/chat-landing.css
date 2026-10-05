@@ -1,0 +1,864 @@
+/* Propuesta de portada en /nueva: chat a pantalla completa y, debajo, el proyecto paso a paso.
+   ponytail: Ufficio (logo) y FFF Tool Serif Text (titulares y cifras) son fuentes de prueba
+   instaladas en local, sin archivos en el repo; sin ellas cae a Geist y Georgia. Para
+   publicar hacen falta licencias web. */
+.cl {
+  --rojo: #df1717;
+  --amarillo: #ffbe0b;
+  --tinta: #222222;
+  --tinta-2: #4d4d4d;
+  --gris: #f2f2f2;
+  --sans: var(--font-geist), 'Geist', var(--bg-font);
+  --serif: 'Timeless Serif', Georgia, serif;
+  --logo: 'Timeless Sans', var(--sans);
+  background: #fff;
+  color: var(--tinta);
+  font-family: var(--sans);
+}
+.cl :is(h1, h2, dt) {
+  font-family: var(--serif);
+  font-variation-settings: normal;
+  font-weight: 400;
+  text-wrap: balance;
+}
+.cl :is(p, li, dd, small) {
+  text-wrap: pretty;
+}
+.cl ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Portada: rojo con el atardecer subiendo desde abajo */
+.cl-hero {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - 16px);
+  margin: 8px;
+  padding: 20px 28px 32px;
+  border-radius: 28px;
+  background:
+    radial-gradient(
+      90% 55% at 50% 118%,
+      #ffd34d 0%,
+      var(--amarillo) 20%,
+      #ff7a1a 45%,
+      rgba(223, 23, 23, 0) 78%
+    ),
+    var(--rojo);
+  color: #fff;
+}
+.cl-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.cl-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--logo);
+  font-size: 22px;
+  font-weight: 500;
+  color: inherit;
+  text-decoration: none;
+}
+.cl-hero-centro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 48px 0;
+  text-align: center;
+}
+.cl-hero h1 {
+  margin: 0;
+  font-size: clamp(44px, 6.4vw, 92px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.cl-hero-centro > p {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.cl .hero-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 12px 12px 24px;
+  border-radius: 28px;
+  background: #fff;
+  color: var(--tinta);
+  text-align: start;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 18px 48px rgba(90, 0, 0, 0.28);
+}
+.cl .hero-composer:focus-within {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+.cl .hero-composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 64px;
+  max-height: 200px;
+  padding: 18px 0;
+  border: 0;
+  resize: none;
+  field-sizing: content;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--tinta);
+}
+.cl .hero-composer textarea::placeholder {
+  color: #6b6b6b;
+}
+.cl .hero-composer button {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tinta);
+  color: #fff;
+}
+.cl .hero-composer button:disabled {
+  background: #d6d6d6;
+  color: #555;
+}
+.cl-mas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--tinta);
+  font-size: 16px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.cl-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 16px;
+  text-decoration: none;
+}
+.cl-boton-claro {
+  background: #fff;
+  color: var(--tinta);
+}
+.cl-boton-oscuro {
+  align-self: flex-start;
+  min-height: 56px;
+  padding: 8px 24px;
+  background: var(--tinta);
+  color: #fff;
+}
+
+/* Cuerpo: lectura lineal, un paso por sección */
+.cl-cuerpo {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  padding: 120px 28px 80px;
+}
+.cl-cuerpo h2 {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.cl-cuerpo p {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--tinta-2);
+}
+.cl-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 96px;
+}
+.cl-intro h2 {
+  font-size: clamp(44px, 6.4vw, 88px);
+  line-height: 1;
+  color: var(--tinta);
+}
+.cl-intro p:not(.cl-antetitulo) {
+  font-size: 22px;
+}
+.cl-cuerpo .cl-antetitulo {
+  font-size: 15px;
+  color: var(--rojo);
+}
+.cl-paso {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 24px;
+  padding: 64px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+.cl-paso > div {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.cl-num {
+  font-family: var(--serif);
+  font-size: 52px;
+  line-height: 1.05;
+  color: var(--rojo);
+}
+.cl-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 8px 0 0;
+}
+.cl-cifras div {
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--gris);
+}
+.cl-cifras div:nth-child(2) {
+  background: var(--amarillo);
+}
+.cl-cifras dt {
+  font-size: clamp(56px, 6vw, 84px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.cl-cifras dd {
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.cl-paso-cabeza {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 40px;
+  align-items: center;
+}
+.cl-paso-cabeza > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Ilustraciones: una pieza de interfaz ladeada sobre un sol */
+.cl-ilus {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 28px;
+}
+.cl-ilus::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  right: 0;
+  bottom: 0;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #ffd34d, var(--amarillo) 45%, #ff7a1a);
+}
+.cl-ilus-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 18px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(120, 40, 0, 0.16);
+  transform: rotate(-2deg);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.cl-ilus-titulo,
+.cl-ilus-pregunta,
+.cl-ilus-texto {
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.cl-ilus-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--gris);
+}
+.cl-ilus-fila i {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #d6d6d6;
+}
+.cl-ilus-fila b {
+  width: 44px;
+  height: 16px;
+  border-radius: 6px;
+  background: #b9c6d6;
+}
+.cl-ilus-salto {
+  text-align: center;
+  color: var(--tinta-2);
+}
+.cl-ilus-destacada {
+  background: var(--amarillo);
+  font-weight: 500;
+}
+.cl-ilus-destacada small {
+  font-size: 14px;
+  font-weight: 400;
+}
+.cl-ilus-paso {
+  display: flex;
+  gap: 8px;
+  text-wrap: pretty;
+}
+.cl-ilus-paso em {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-style: normal;
+  line-height: 1;
+  color: var(--rojo);
+}
+.cl-ilus-cita,
+.cl-ilus-boton,
+.cl-ilus-chip {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  border-radius: 999px;
+}
+.cl-ilus-cita {
+  margin-left: 18px;
+  padding: 3px 10px;
+  background: var(--gris);
+}
+.cl-ilus-boton {
+  margin-top: 6px;
+  padding: 9px 16px;
+  background: var(--tinta);
+  color: #fff;
+}
+.cl-ilus-texto u {
+  text-decoration: underline dashed var(--rojo) 2px;
+  text-underline-offset: 6px;
+}
+.cl-ilus-chip {
+  padding: 6px 12px;
+  background: var(--tinta);
+  color: #fff;
+}
+.cl-ilus-chip svg {
+  color: var(--amarillo);
+}
+.cl-ilus-nota {
+  color: var(--tinta-2);
+}
+
+/* Demo: la web oficial y la versión con la extensión, sobre el atardecer */
+.cl-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 28px;
+  background:
+    radial-gradient(
+      80% 45% at 50% 115%,
+      #ffd34d 0%,
+      var(--amarillo) 22%,
+      #ff7a1a 50%,
+      rgba(223, 23, 23, 0) 85%
+    ),
+    var(--rojo);
+}
+.cl-cuerpo .cl-demo-guia {
+  max-width: none;
+  font-size: 17px;
+  color: #fff;
+}
+.cl .demo-view-switch {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.cl .demo-view-switch button {
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: 500 16px var(--sans);
+  color: #fff;
+  cursor: pointer;
+}
+.cl .demo-view-switch button[aria-pressed='true'] {
+  background: #fff;
+  color: var(--tinta);
+}
+.cl-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  min-height: 44px;
+  font-size: 17px;
+  color: var(--tinta);
+  text-underline-offset: 5px;
+}
+.cl-webs li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 18px;
+}
+.cl-webs small {
+  display: block;
+  font-size: 15px;
+  color: var(--tinta-2);
+}
+.cl-estado {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #fff3d1;
+  font-size: 14px;
+  color: #6b4a00;
+  white-space: nowrap;
+}
+.cl-nunca {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.cl-nunca li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--gris);
+  font-size: 17px;
+}
+.cl-nunca svg {
+  flex-shrink: 0;
+  color: var(--rojo);
+}
+
+/* Pie: lo público, en rojo */
+.cl-pie {
+  padding: 8px;
+}
+.cl-pie-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: clamp(40px, 7vw, 96px) clamp(28px, 7vw, 96px);
+  border-radius: 28px;
+  background: var(--rojo);
+  color: #fff;
+}
+.cl-pie-bloque h2 {
+  margin: 0;
+  max-width: 14ch;
+  font-size: clamp(44px, 6.4vw, 92px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.cl-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.cl-acciones a {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 56px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 17px;
+  color: var(--tinta);
+  text-decoration: none;
+}
+.cl-pie-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+  padding: 28px 20px 32px;
+  font-size: 15px;
+  color: var(--tinta-2);
+}
+.cl-pie-legal .cl-marca {
+  font-size: 18px;
+  color: var(--rojo);
+}
+.cl-pie-legal nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.cl-pie-legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--tinta);
+}
+.cl-pie-legal small {
+  flex-basis: 100%;
+  font-size: 14px;
+}
+
+.cl :focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cl-acciones a:hover {
+    background: var(--gris);
+  }
+}
+@media (max-width: 760px) {
+  .cl-hero {
+    min-height: calc(100svh - 12px);
+    margin: 6px;
+    padding: 16px 16px 24px;
+    border-radius: 22px;
+  }
+  .cl-cab {
+    white-space: nowrap;
+  }
+  .cl-cab .cl-marca {
+    font-size: 18px;
+  }
+  .cl-boton-claro {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  .cl-boton-claro svg {
+    display: none;
+  }
+  .cl-cuerpo {
+    padding: 80px 20px 48px;
+  }
+  .cl-paso {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 48px 0;
+  }
+  .cl-cifras,
+  .cl-nunca,
+  .cl-paso-cabeza {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cl-ilus {
+    width: min(340px, 100%);
+  }
+  .cl-demo {
+    padding: 14px;
+  }
+}
+
+/* Chat de /nueva con la piel Sol. Solo cambia tokens y estilos dentro de .sol;
+   el chat de la portada actual no se toca. */
+.sol {
+  --bg-ink: 34 34 34;
+  --bg-ink-muted: 77 77 77;
+  --bg-ink-subtle: 90 90 90;
+  --bg-canvas: 255 255 255;
+  --bg-surface: 255 255 255;
+  --bg-surface-muted: 242 242 242;
+  --bg-line: 224 224 224;
+  --bg-line-strong: 224 224 224;
+  --bg-brand-600: 34 34 34;
+  --bg-brand-700: 0 0 0;
+  --bg-radius-card: 24px;
+  --bg-font: var(--font-geist), 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  --sol-serif: 'Timeless Serif', Georgia, serif;
+  --sol-rojo: #df1717;
+}
+.sol .chat-page {
+  font-size: 17px;
+}
+.sol :is(p, li) {
+  text-wrap: pretty;
+}
+.sol .chat-header .project-brand {
+  gap: 12px;
+  font:
+    500 22px/1 'Timeless Sans',
+    var(--bg-font);
+  letter-spacing: 0;
+  color: var(--sol-rojo);
+}
+.sol .chat-header .project-brand svg {
+  display: none;
+}
+.sol .chat-header .project-brand::before {
+  content: '';
+  width: 21px;
+  height: 28px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 144 192'%3E%3Cpath fill='%23df1717' d='M48 0H96V48H48V96H96V144H48V192H0V48H48Z'/%3E%3Cpath fill='%23a50e0e' d='M0 48L48 0V48Z'/%3E%3Cpath fill='%23df1717' d='M96 48h48v48H96zM96 144h48v48H96z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+.sol .chat-menu summary {
+  background: rgb(var(--bg-surface-muted));
+  color: rgb(var(--bg-ink));
+}
+.sol .chat-conversation {
+  max-width: 784px;
+}
+
+/* La pregunta es el titular de la conversación */
+.sol .chat-user {
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+.sol .chat-user p {
+  max-width: none;
+  padding: 0;
+  background: none;
+  font: 400 clamp(32px, 4.4vw, 52px) / 1.08 var(--sol-serif);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.sol .chat-hidden-datum {
+  text-decoration: underline dashed var(--sol-rojo) 2px;
+  text-underline-offset: 8px;
+}
+.sol .chat-hidden-tooltip {
+  font: 400 14px/1.4 var(--bg-font);
+  letter-spacing: 0;
+}
+.sol .chat-hidden-summary {
+  margin-top: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgb(var(--bg-ink));
+  color: #fff;
+  font-size: 14px;
+}
+
+/* Respuesta: pasos con número rojo, datos en superficies, citas en píldora */
+.sol .chat-assistant {
+  font-size: 18px;
+}
+.sol .chat-step {
+  gap: 16px;
+}
+.sol .chat-step-number {
+  width: 28px;
+  height: auto;
+  margin-top: 0;
+  border: 0;
+  background: none;
+  font: 400 26px/30px var(--sol-serif);
+  color: var(--sol-rojo);
+}
+.sol .chat-fact {
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: rgb(var(--bg-surface-muted));
+}
+.sol .chat-claim h2 {
+  font-weight: 500;
+  color: rgb(var(--bg-ink-muted));
+}
+.sol .chat-inline-citation {
+  border: 0;
+  background: rgb(var(--bg-surface-muted));
+  color: rgb(var(--bg-ink));
+  font-size: 14px !important;
+}
+
+/* Pensando: un sol que sale sobre el horizonte */
+.sol .chat-thinking {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sol .chat-thinking::before {
+  content: '';
+  flex-shrink: 0;
+  width: 40px;
+  height: 22px;
+  border-bottom: 2px solid rgb(var(--bg-ink));
+  background: radial-gradient(circle at 50% 100%, #ffbe0b 0 14px, transparent 14.5px) 50% 14px /
+    100% 100% no-repeat;
+  animation: sol-sale 1.4s cubic-bezier(0.23, 1, 0.32, 1) infinite alternate;
+}
+@keyframes sol-sale {
+  to {
+    background-position: 50% 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sol .chat-thinking::before {
+    animation: none;
+    background-position: 50% 4px;
+  }
+}
+
+.sol .chat-notice {
+  gap: 16px;
+  padding: 24px;
+  border: 0;
+  background: #fff3d1;
+}
+.sol .chat-notice > svg {
+  color: #6b4a00;
+}
+.sol .chat-notice h2 {
+  font-size: 19px;
+  font-weight: 500;
+}
+.sol .chat-notice p {
+  color: rgb(var(--bg-ink));
+}
+.sol .chat-error {
+  border: 1.5px solid var(--sol-rojo);
+  background: #fff;
+  color: rgb(var(--bg-ink));
+}
+.sol .chat-error > svg {
+  color: var(--sol-rojo);
+}
+.sol .chat-error button,
+.sol .chat-retry {
+  display: inline-flex;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgb(var(--bg-ink));
+  color: #fff;
+}
+.sol .chat-followups {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sol .chat-followups button {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: rgb(var(--bg-ink));
+}
+
+/* Compositor con el brillo del atardecer detrás */
+.sol .chat-composer-dock {
+  width: min(784px, calc(100% - 40px));
+  background: none;
+}
+.sol .chat-composer-dock::after {
+  position: fixed;
+  top: auto;
+  height: 200px;
+  background:
+    radial-gradient(
+      48% 110% at 50% 140%,
+      rgb(255 190 11 / 0.85),
+      rgb(255 122 26 / 0.45) 45%,
+      rgb(255 255 255 / 0) 82%
+    ),
+    linear-gradient(rgb(255 255 255 / 0), #fff 40%);
+  pointer-events: none;
+}
+.sol .chat-composer {
+  border-color: rgb(var(--bg-line));
+  border-radius: 28px;
+  box-shadow: 0 12px 32px rgb(120 40 0 / 0.12);
+}
+.sol .chat-composer:focus-within {
+  border-color: rgb(var(--bg-ink));
+  box-shadow: 0 12px 32px rgb(120 40 0 / 0.12);
+}
+
+/* Conversación vacía: vuelve el rojo */
+.sol .chat-page:has(.chat-empty) {
+  background:
+    radial-gradient(
+      90% 55% at 50% 118%,
+      #ffd34d 0%,
+      #ffbe0b 20%,
+      #ff7a1a 45%,
+      rgb(223 23 23 / 0) 78%
+    ),
+    var(--sol-rojo);
+}
+.sol .chat-page:has(.chat-empty) .chat-header {
+  background: none;
+}
+.sol .chat-page:has(.chat-empty) .chat-header .project-brand {
+  color: #fff;
+}
+.sol .chat-page:has(.chat-empty) .chat-header .project-brand::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 144 192'%3E%3Cpath fill='%23fff' d='M48 0H96V48H48V96H96V144H48V192H0V48H48Z'/%3E%3Cpath fill='%23a50e0e' d='M0 48L48 0V48Z'/%3E%3Cpath fill='%23fff' d='M96 48h48v48H96zM96 144h48v48H96z'/%3E%3C/svg%3E");
+}
+.sol .chat-page:has(.chat-empty) .chat-composer-dock::after {
+  display: none;
+}
+.sol .chat-empty {
+  padding-top: 18vh;
+  text-align: center;
+  color: #fff;
+}
+.sol .chat-empty h1 {
+  font: 400 clamp(44px, 6.4vw, 92px) / 1 var(--sol-serif);
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.sol .chat-empty > p {
+  color: #fff;
+}
+.sol .chat-empty .chat-followups {
+  justify-content: center;
+}
+.sol .chat-empty .chat-followups button {
+  border: 0;
+}
