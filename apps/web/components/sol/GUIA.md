@@ -4,16 +4,9 @@ Fuentes de verdad: `tokens.css`, `botones.css` e `icono.tsx`. Si algo no está a
 
 ## Montaje
 
-```tsx
-// Rutas relativas desde la página.
-import { fuentesSol } from '../../components/sol/fuentes';
-import '../../components/sol/tokens.css';
-import '../../components/sol/botones.css';
+El layout de `app/layout.tsx` monta `fuentesSol`, `.sol-raiz`, `tokens.css` y `botones.css` una sola vez. Las páginas no importan las fuentes ni crean otro contenedor de tema. Usa `Cabecera`, `Pie` y `PaginaInformativa` para las páginas interiores. La cabecera del hero sigue dentro del propio gradiente.
 
-<div className={`${fuentesSol} sol-raiz`}>…</div>;
-```
-
-Los tokens solo existen dentro de `.sol-raiz`. Esa clase fija Timeless Sans, la tinta, el suavizado, `text-wrap` (balance en titulares, pretty en párrafos y listas), la selección amarilla y el foco neutro.
+La referencia general es [DESIGN.md](../../../../DESIGN.md#8-web-pública-sistema-sol). No se mantienen rutas de variantes o prototipos.
 
 ## Tipografía
 
@@ -99,7 +92,7 @@ Todas: radio 20 y relleno 24 (20 en móvil). El prefijo `caja-` está reservado.
 - Para desactivarlos se usa el atributo `disabled`, no una clase.
 - Sobre el rojo del hero, el hover de `.boton` se confunde con el fondo. Ahí usa `.boton-claro` y pon `--foco: var(--blanco)` en el contenedor rojo.
 - El hover vive en una capa `::before` (opacity y transform). En `.boton` y `.boton-enviar` es un degradado radial de bordes suaves, sin `filter`, que sube desde el borde inferior: entra en 420 ms y sale en 180 ms, y el texto queda siempre sobre tinta o rojo. La capa ocupa el botón y hereda su radio para conservar el recorte en Safari. No añadas `transition: all` ni animes colores.
-- El selector global de `app/(search)/globals.css` sigue animando el color de fondo de los `<button>` sin clase. Dentro de Sol, dale clase a cada botón.
+- Da clase a cada botón y reutiliza los estilos del sistema; el reset global no añade animaciones.
 
 ## Iconos
 
@@ -117,6 +110,6 @@ Todas las secciones usan `max-width: var(--ancho)` (1200 px, con el margen dentr
 
 ## Movimiento y superficies
 
-- `--t-rapido` (160 ms: hover, pulsación), `--t-medio` (200 ms: capas, aparición), `--curva-salida` (entradas), `--curva-cajon` (paneles). Solo `transform` y `opacity`; toda animación con alternativa quieta bajo `prefers-reduced-motion: reduce`. Nada se mueve solo más de 5 s (WCAG 2.2.2): las secuencias se reproducen una vez y paran.
+- `--t-rapido` (160 ms: hover, pulsación), `--t-medio` (200 ms: capas, aparición), `--curva-salida` (entradas), `--curva-cajon` (paneles). Solo `transform` y `opacity`; toda animación con alternativa quieta bajo `prefers-reduced-motion: reduce`. Las secuencias de más de 5 s deben ofrecer pausa (WCAG 2.2.2); las demás se reproducen una vez y paran.
 - Sombras: solo `--sombra-suave` o `--sombra-flota` (marrón cálido, por capas). Listas y tablas se separan con `--linea`; las tarjetas se elevan con sombra.
 - Capturas oficiales: `outline: 1px solid rgba(0,0,0,.1); outline-offset: -1px`. Nunca se recolorean.

@@ -1,4 +1,4 @@
-/* Sistema Sol: única fuente de tokens de la portada y sus prototipos. Uso en GUIA.md.
+/* Sistema Sol: única fuente de tokens de la web pública. Uso en GUIA.md.
    Timeless Serif, Serif Text y Sans (timeless.co, gratis): su licencia prohíbe subirlas a un
    repositorio público, así que viven en public/fonts/timeless/ (ignorado por git). Quien no las
    tenga ve Georgia y Geist. El logotipo usa Timeless Sans Bold. */
@@ -52,6 +52,19 @@
   font-display: swap;
 }
 .sol-raiz {
+  /* Compatibilidad del chat, las fuentes y el mapa con los tokens compartidos de la extensión. */
+  --bg-font: var(--font-texto);
+  --bg-canvas: 255 255 255;
+  --bg-surface: 255 255 255;
+  --bg-ink: 34 34 34;
+  --bg-ink-muted: 77 77 77;
+  --bg-ink-subtle: 107 107 107;
+  --bg-surface-muted: 242 242 242;
+  --bg-brand-600: 34 34 34;
+  --bg-brand-700: 77 77 77;
+  --bg-radius-card: var(--r-20);
+  --bg-radius-control: var(--r-12);
+
   /* Color. Pares medidos en GUIA.md. */
   --rojo: #df1717;
   --doblez: #a50e0e;
@@ -157,10 +170,6 @@
   font-family: var(--font-titular);
   font-weight: 400;
 }
-/* Anula el 'opsz' que styles/theme.css fija en los titulares de Inter (misma especificidad). */
-:root .sol-raiz :is(h1, h2, h3, legend) {
-  font-variation-settings: normal;
-}
 .sol-raiz :where(h1, h2, h3, h4, dt) {
   text-wrap: balance;
 }
@@ -180,10 +189,7 @@
   outline: none;
 }
 
-/* Salto al contenido propio (Geist y tinta); el del layout compartido queda oculto. */
-body:has(.sol-raiz) > .skip-link {
-  display: none;
-}
+/* Salto al contenido compartido por todas las páginas. */
 .sol-salto {
   position: fixed;
   top: 8px;

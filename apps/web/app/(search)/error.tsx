@@ -1,12 +1,13 @@
 'use client';
+import { PaginaInformativa } from '../../components/sol/pagina-informativa';
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
-    <main id="main" className="content-page">
+    <PaginaInformativa lectura>
       <h1>No hemos podido cargar esta página.</h1>
-      <p className="lede">Inténtalo de nuevo en un momento.</p>
-      <button className="primary-link" onClick={reset}>
+      <p className="info-entradilla">Inténtalo de nuevo en un momento.</p>
+      <button className="boton" onClick={reset}>
         Volver a intentar
       </button>
-    </main>
+    </PaginaInformativa>
   );
 }

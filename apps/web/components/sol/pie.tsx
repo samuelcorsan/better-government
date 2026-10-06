@@ -1,10 +1,12 @@
-import { links } from '../../landing/site';
+import { links } from '../../lib/site';
 import { Icono } from './icono';
 import { Logotipo } from './marca';
 import './pie.css';
 
 const legal = [
-  ['La propuesta', '/propuesta'],
+  ['La iniciativa', '/#iniciativa'],
+  ['Buscador', '/chat'],
+  ['Equipo', '/equipo'],
   ['Cómo funciona', '/how-it-works'],
   ['Fuentes oficiales', '/sources'],
   ['Privacidad', '/privacy'],

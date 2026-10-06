@@ -2,7 +2,6 @@
    Todo el texto va en tinta (9,56 sobre amarillo, 6,10 sobre naranja). */
 .pie {
   --marca-color: currentColor; /* la R nunca va roja sobre amarillo */
-  /* Anula la regla global `footer` de app/(search)/globals.css (filo gris y ancho máximo). */
   max-width: none;
   padding: var(--e-8);
   border-top: 0;

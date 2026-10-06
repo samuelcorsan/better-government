@@ -13,5 +13,11 @@ const config: NextConfig = {
   ],
   serverExternalPackages: ['postgres', '@langfuse/otel', '@opentelemetry/sdk-node'],
   poweredByHeader: false,
+  redirects() {
+    return [
+      { source: '/explorar', destination: '/chat', permanent: true },
+      { source: '/propuesta', destination: '/#iniciativa', permanent: true },
+    ];
+  },
 };
 export default config;

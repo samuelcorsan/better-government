@@ -27,86 +27,6 @@ html:has(.chat-page) {
 .chat-page button:disabled {
   cursor: default;
 }
-.chat-header {
-  position: fixed;
-  z-index: 20;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: max(16px, env(safe-area-inset-top)) 48px 16px;
-  background: linear-gradient(rgb(var(--bg-canvas)) 70%, rgb(var(--bg-canvas) / 0));
-  min-height: 88px;
-  box-sizing: border-box;
-  pointer-events: none;
-}
-.chat-header > * {
-  pointer-events: auto;
-}
-.chat-wordmark {
-  font: 500 27px/1.1 var(--bg-font);
-  letter-spacing: -1px;
-  color: rgb(var(--bg-ink));
-  text-decoration: none;
-}
-.chat-menu {
-  position: relative;
-}
-.chat-menu summary {
-  list-style: none;
-  background: rgb(var(--bg-brand-600));
-  color: rgb(var(--bg-surface));
-  border-radius: 30px;
-  padding: 9px 24px;
-  cursor: pointer;
-  font-size: 14px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-}
-.chat-menu summary::-webkit-details-marker {
-  display: none;
-}
-.chat-menu nav {
-  position: absolute;
-  right: 0;
-  top: 52px;
-  display: grid;
-  gap: 4px;
-  background: rgb(var(--bg-surface));
-  box-shadow: none;
-  border: 1px solid rgb(var(--bg-line));
-  border-radius: var(--bg-radius-card);
-  padding: 16px;
-  width: 245px;
-}
-.chat-menu nav a,
-.chat-menu nav button {
-  padding: 10px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: rgb(var(--bg-ink));
-  text-align: left;
-}
-.chat-menu nav a:hover,
-.chat-menu nav button:hover {
-  background: rgb(var(--bg-surface-muted));
-}
-.chat-assistant .chat-coverage-note {
-  margin-top: 16px;
-  color: rgb(var(--bg-ink-muted));
-  font-size: 14px;
-}
-.chat-menu small {
-  padding: 12px 10px 4px;
-  color: rgb(var(--bg-ink-subtle));
-  font-size: 14px;
-  line-height: 1.5;
-}
 .chat-conversation {
   max-width: 688px;
   margin: 0 auto;
@@ -723,22 +643,6 @@ html:has(.chat-coverage-dialog[open]) {
   }
 }
 @media (max-width: 800px) {
-  .chat-header {
-    min-height: 72px;
-    padding: max(12px, env(safe-area-inset-top)) 16px 12px;
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-  }
-  .chat-header .project-brand {
-    min-width: 0;
-    font-size: 16px;
-  }
-  .chat-wordmark {
-    font-size: 24px;
-  }
-  .chat-wordmark span {
-    font-size: 21px;
-  }
   .chat-menu summary {
     padding: 8px 18px;
     min-height: 44px;

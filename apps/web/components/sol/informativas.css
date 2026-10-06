@@ -1,0 +1,221 @@
+.info-pagina {
+  max-width: var(--ancho);
+  min-height: 55vh;
+  margin-inline: auto;
+  padding: var(--e-64) var(--margen) var(--e-80);
+}
+.info-lectura {
+  max-width: 760px;
+}
+.info-etiqueta {
+  display: block;
+  margin-bottom: var(--e-16);
+  color: var(--tinta-2);
+}
+.info-pagina > h1 {
+  max-width: 22ch;
+  margin-bottom: var(--e-24);
+  font: 400 clamp(36px, 4.5vw, 60px)/1.1 var(--font-titular);
+  letter-spacing: -0.02em;
+}
+.info-entradilla {
+  max-width: 65ch;
+  margin-bottom: var(--e-40);
+  color: var(--tinta-2);
+  font-size: 18px;
+  line-height: 1.6;
+}
+.info-lectura > h2,
+.info-prosa h2 {
+  margin-block: var(--e-40) var(--e-16);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.2;
+}
+.info-lectura > p:not(.info-entradilla),
+.info-lectura li,
+.info-prosa p {
+  margin-block: var(--e-16);
+  color: var(--tinta-2);
+}
+.info-lectura ol {
+  padding-left: var(--e-24);
+}
+.info-lectura li {
+  padding-left: var(--e-8);
+}
+.info-lectura strong {
+  color: var(--tinta);
+}
+.info-prosa {
+  max-width: 65ch;
+  margin-top: var(--e-48);
+}
+.info-mapa {
+  margin-bottom: var(--e-48);
+  padding: var(--e-24);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-20);
+  background: var(--superficie);
+}
+.registry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--linea);
+  border-left: 1px solid var(--linea);
+}
+.registry-card {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: var(--e-16);
+  padding: var(--e-24);
+  border-right: 1px solid var(--linea);
+  border-bottom: 1px solid var(--linea);
+}
+.registry-card h2 {
+  font-size: 26px;
+  line-height: 1.2;
+}
+.registry-card p,
+.registry-meta {
+  font-size: 14px;
+  color: var(--tinta-2);
+}
+.registry-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+  min-height: 44px;
+  margin-top: auto;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.admin-message,
+.report-panel {
+  padding: var(--e-24);
+  background: var(--superficie);
+  border-radius: var(--r-20);
+  margin-block: var(--e-24);
+}
+.admin-message h2,
+.report-panel h2 {
+  font-size: 28px;
+}
+.admin-message p,
+.report-panel p {
+  margin-top: var(--e-16);
+  color: var(--tinta-2);
+}
+.admin-message form {
+  display: grid;
+  gap: var(--e-16);
+  max-width: 360px;
+  margin-top: var(--e-24);
+}
+.info-pagina input,
+.info-pagina select {
+  min-height: 44px;
+  max-width: 100%;
+  padding: var(--e-12);
+  border: 1px solid var(--tinta-3);
+  border-radius: var(--r-12);
+  background: var(--blanco);
+  color: var(--tinta);
+}
+.info-pagina form:has(select) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e-12);
+  margin-block: var(--e-24);
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--e-16);
+  margin-block: var(--e-24);
+}
+.metric-tile {
+  padding: var(--e-20);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-20);
+}
+.metric-tile span {
+  font-size: 14px;
+  color: var(--tinta-2);
+}
+.metric-tile strong {
+  display: block;
+  margin-top: var(--e-12);
+  font: 400 26px/1.2 var(--font-mono);
+}
+.report-panel summary {
+  min-height: 44px;
+  cursor: pointer;
+}
+.report-panel pre {
+  max-height: 400px;
+  overflow: auto;
+  padding: var(--e-16);
+  background: var(--blanco);
+  border-radius: var(--r-12);
+  font: 14px/1.6 var(--font-mono);
+}
+.table-scroll {
+  overflow: auto;
+}
+.info-pagina table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-block: var(--e-16);
+}
+.info-pagina :is(th, td) {
+  padding: var(--e-12);
+  border-bottom: 1px solid var(--linea);
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+.status-badge {
+  display: inline-block;
+  margin: var(--e-8) var(--e-8) 0 0;
+  padding: var(--e-8) var(--e-12);
+  border-radius: var(--r-12);
+  background: var(--ambar-claro);
+  color: var(--ambar-texto);
+  font-size: 14px;
+}
+.failure {
+  padding-block: var(--e-20);
+  border-top: 1px solid var(--linea);
+  overflow-wrap: anywhere;
+}
+.failure h3 {
+  margin-block: var(--e-12);
+  font-size: 18px;
+}
+.failure a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--azul);
+  text-decoration: underline;
+}
+@media (max-width: 800px) {
+  .registry-grid,
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .info-pagina {
+    padding-block: var(--e-40) var(--e-64);
+  }
+  .registry-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .info-mapa {
+    padding: var(--e-20);
+  }
+}

@@ -1,8 +1,8 @@
 # Reforma Digital · Sistema de diseño
 
-Versión 1.0 · 2026‑09‑27
+Versión 2.0 · 2026‑10‑06
 
-Este documento es la referencia visual de **todo** lo que Reforma Digital pinta: los paneles, el popup, la capa de estilo que viste la web oficial y la web pública (`apps/web`: landing, chat y páginas informativas). Ningún portal (`sites/<id>`) ni la landing definen colores, tamaños ni componentes propios: usan los de aquí. Las demostraciones de la landing se pintan con las mismas clases que la extensión, así que lo que enseña la portada es lo que se instala.
+Este documento es la referencia visual de Reforma Digital. La extensión y las adaptaciones de sedes oficiales usan `packages/design` (§§1–7); la web pública usa **Sol** (§8), el sistema de la portada definitiva, el buscador y las páginas informativas. Cada ámbito reutiliza sus tokens y componentes; las capturas y ejemplos de sedes conservan su identidad oficial.
 
 | Qué                                    | Dónde vive en el código                                                                                                                                                                                                                                                       |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -22,7 +22,7 @@ Los componentes se definen **una sola vez** en el preset. Los paneles los usan c
 3. **Claridad antes que decoración.** Una acción principal por pantalla, jerarquía tipográfica corta, mucho aire y nada de ornamentos.
 4. **Nada importante se oculta.** Los avisos legales, errores, condiciones y requisitos se re‑maquetan, pero nunca se esconden, se acortan ni se reordenan.
 5. **Accesible por defecto.** Todo cumple WCAG 2.2 AA: contraste, foco visible, objetivos de 44 px y controles nativos.
-6. **Privado por diseño.** Sin fuentes, imágenes ni scripts remotos. Todo va dentro del paquete.
+6. **Privado por diseño.** La extensión no carga fuentes, imágenes ni scripts remotos: todo va dentro del paquete. Las dependencias externas de la web pública se describen en §8 y en `/privacy`.
 
 ## 2. Tokens
 
@@ -177,23 +177,48 @@ Si un panel ofrece un control sincronizado con uno oficial (el desplegable de pr
 3. Revisa el resultado con `npm run site:preview -- <portal>`, que reproduce una visita grabada con `site:record` sin conexión y guarda capturas a 1280 y 390 px en `.cache/preview/<portal>/`. Para los campos conectados, usa el laboratorio (`npm run dev`).
 4. Un PR que cambie el diseño debe incluir capturas y, si toca tokens de color, el contraste medido.
 
-## 8. Landing
+## 8. Web pública: sistema Sol
 
-La web pública (`apps/web`: landing, chat y páginas informativas) usa los mismos tokens y el mismo preset que la extensión; no tiene una guía aparte.
+Sol es el diseño definitivo de `apps/web`, no una variante de portada. Las rutas públicas son `/` (iniciativa y proyectos), `/chat` (buscador), `/equipo`, `/sources`, `/how-it-works` y `/privacy`. Las evaluaciones conservan su acceso interno en `/admin/evals`. Las páginas de error usan el mismo sistema. No se mantienen catálogos de variantes ni demos de chat con respuestas simuladas.
 
-- **Componentes.** Las demostraciones (portada y Fig. 5) se montan con las clases del preset (`bg-card`, `bg-step`, `bg-field-search`, `bg-choice`, `bg-btn`). La hoja de la landing solo añade lo que la extensión no tiene: el marco de navegador (contenedor gris de 28 px de radio con 10 px de relleno y panel interior de 18 px) y la maquetación del artículo.
-- **Tipografía.** Es la única diferencia: la landing carga Inter Variable en local (títulos con el diseño óptico Display, `opsz: 32`; cuerpo con `opsz: 14`) redefiniendo `--bg-font`. La extensión sigue con las fuentes del sistema para no empaquetar ni pedir fuentes dentro de una web oficial (§1.6).
-- **Iconos.** `lucide-react`, trazo 1.65–1.7. La marca se gira −90° con el texto horizontal.
-- **Figuras.** Blanco y negro, sin marcos decorativos. Las capturas de webs oficiales no se recolorean y van dentro del marco de navegador; las notas sobre una captura son píldoras negras con número, y en móvil pasan a lista bajo la imagen. Rojo (`danger-fg`) y verde (`success-fg`) solo rotulan «sin» y «con» Reforma Digital.
-- **Movimiento.** La portada admite una animación de entrada en sus dos previsualizaciones; se desactiva con `prefers-reduced-motion`. El resto sigue §2.4.
-- Las demostraciones no solicitan citas ni envían datos.
+| Fuente de verdad                                             | Archivo                                                                                                                                                                          |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Colores, tipografía, espaciado, radios, sombras y movimiento | [`components/sol/tokens.css`](apps/web/components/sol/tokens.css)                                                                                                                |
+| Acciones, campos y superficies compartidas                   | [`components/sol/botones.css`](apps/web/components/sol/botones.css)                                                                                                              |
+| Marca y familia de iconos                                    | [`marca.tsx`](apps/web/components/sol/marca.tsx), [`icono.tsx`](apps/web/components/sol/icono.tsx)                                                                               |
+| Navegación, pie y estructura informativa                     | [`cabecera.tsx`](apps/web/components/sol/cabecera.tsx), [`pie.tsx`](apps/web/components/sol/pie.tsx), [`pagina-informativa.tsx`](apps/web/components/sol/pagina-informativa.tsx) |
+| Guía detallada de componentes y contraste                    | [`GUIA.md`](apps/web/components/sol/GUIA.md)                                                                                                                                     |
 
-### 8.1 Buscador y conversación
+El layout monta `.sol-raiz` y las fuentes una sola vez. Las páginas añaden su composición, sin volver a montar otro tema ni definir una segunda paleta. Los tokens `--bg-*` que necesita el chat y el mapa se adaptan a Sol dentro de `tokens.css`; no se cambian los tokens de la extensión.
 
-- La landing, el chat, las citas y las páginas informativas comparten `apps/web/styles/theme.css`: Inter local y los tokens originales de `packages/design`. La propuesta se explica en la misma landing; `/propuesta` baja a `#texto`. El chat conserva los tokens originales; la portada añade acentos editoriales propios.
-- Títulos con Inter Display (`opsz: 32`), peso 500 y espaciado compacto; cuerpo con Inter Text (`opsz: 14`), 16 px como mínimo. Metadatos a 14 px y rótulos a 12 px. El titular de la iniciativa puede crecer hasta 72 px (40 px en móvil); la descripción principal mide de 18 a 24 px y se separa de la fotografía por 40 px. Las secciones mantienen la escala editorial de la propuesta.
-- Lienzo `canvas`, superficies blancas, radios de 16/24 px y acciones negras. En portada, el composer va sobre la fotografía del hero, sin borde y con anillo de foco; no lleva píldoras ni texto auxiliar de fuentes. Las citas agrupan las fuentes de cada afirmación en una píldora con organismo y recuento. Las citas, las tarjetas y la pila de fuentes usan el favicon de cada dominio servido por Google S2; las iniciales quedan como alternativa si la imagen falla. Solo se envía el hostname, con `referrerPolicy="no-referrer"` y carga diferida. Al pasar el cursor o enfocar una cita, un panel compacto de 320 px muestra organismo, título y una descripción con Markdown del contenido ya consultado, limitada visualmente a tres líneas y sin otra petición al modelo. El clic en la cita o en una tarjeta abre directamente la web oficial; el botón general «Fuentes» permite consultar la lista también en móvil. El panel se cierra con Escape, al pulsar fuera o al abandonar el hover. Su entrada y salida usan un fade de 150 ms, abreviado con movimiento reducido. Los errores usan los tokens `danger`.
-- El hero usa exclusivamente los tokens neutros: `surface-muted` en el fondo, `ink` en el titular y `brand-600` en las acciones. La fotografía de Madrid conserva su tratamiento en blanco y negro; la descripción de las herramientas aparece dentro de la imagen, en `ink-inverse`, sobre un degradado oscuro para mantener el contraste. La foto crece si el composer o la descripción necesitan más espacio. Las sedes de la demo mantienen sus colores oficiales.
-- La portada es el ensayo de `apps/web/landing`. El hero centra el mensaje sobre la fotografía de Madrid, con el composer en su borde superior y el enlace de descarga debajo. Su marco mide hasta 1472 px, tiene 32 px de radio y márgenes de 32 px; la fotografía mide hasta 1016 px. En móvil, los márgenes son de 20 px, el fondo neutro empieza bajo la navegación y la foto tiene 24 px de radio. El composer conserva el campo nativo, crece con el texto hasta 140 px y muestra foco visible. Hasta 1023 px, el menú conserva el icono de hamburguesa con un objetivo táctil de 44 × 44 px. La demo de la extensión es `DemoTransform`: Original y Mejorada a la vez en la figura del artículo, y una sola vista en `/demo`. No alterna sola. No se usa un saludo de chatbot. Las demostraciones de sedes conservan sus colores oficiales y los componentes compartidos.
-- La respuesta aparece según llega, sin animaciones de entrada. Como indicador de actividad, el texto «Pensando» conserva un brillo neutro mientras hay trabajo pendiente; queda estático con `prefers-reduced-motion`. No se anima el resto del contenido al entrar.
-- Cuando el modelo identifica un territorio con 0–2 fuentes propias registradas en una consulta real, el chat muestra su recuento y «Ver mapa de fuentes» junto a la respuesta. El enlace abre esa zona seleccionada en un diálogo que conserva la conversación y devuelve el foco al cerrar. El acceso general queda en el menú, también en preview, donde no se simula la clasificación del modelo. Este dato describe nuestro registro, no la cantidad de información de una comunidad ni las citas de la respuesta; las fuentes estatales se muestran aparte. El mapa usa cuatro colores del sistema: `danger-line` (rojo) para 0, `warning-line` (amarillo) para 1–2, `success-line` (verde claro) para 3–5 y `success-fg` (verde oscuro) para 6 o más fuentes territoriales. La leyenda y las cantidades expresan el dato también sin color; la selección tiene contorno y una lista de botones accesibles.
+### 8.1 Tipografía y retícula
+
+- Titulares en `--font-titular` (Timeless Serif, alternativa Georgia); cuerpo, descripción del hero, interfaz y botones en `--font-texto` (Timeless Sans, alternativa Geist). Los textos editoriales `.t-texto-l` usan `--font-lectura` (Timeless Serif Text, alternativa Georgia). Datos y etiquetas usan Geist Mono. Las fuentes Timeless son opcionales: su licencia impide incluir los archivos en este repositorio público. Viven, cuando están disponibles, en `public/fonts/timeless/`; las alternativas mantienen la página usable sin ellos. Next empaqueta Geist y Geist Mono para servirlos desde la propia web.
+- Portada: titular centrado de 36–72 px; buscador, de 36–64 px; páginas informativas, de 36–60 px. Titulares de sección de 32–52 px, tarjetas de 24–30 px. Texto de lectura desde 16 px; ayudas y metadatos desde 14 px. Solo las etiquetas cortas en mayúsculas pueden medir 12 px.
+- Retícula común de 1200 px, con márgenes laterales de 20–24 px. Los artículos informativos limitan la lectura a 760 px y los párrafos a unas 65 letras de ancho. Las rejillas de fuentes y colaboradores se separan con bordes compartidos, sin huecos ni sombras por celda. El equipo conserva cinco tarjetas por fila en escritorio.
+- La cabecera tiene bordes entre marca y enlaces. En la portada vive dentro del hero; en las páginas interiores, sobre blanco. En móvil, la marca ocupa la primera fila y la navegación la segunda, con objetivos de al menos 44 px.
+
+### 8.2 Color y superficies
+
+- Marca roja `--rojo`, tinta `--tinta`, fondo blanco, superficie neutra `--superficie` y bordes `--linea`. Rojo, naranja y amarillo se combinan en `--atardecer` para el hero y las ilustraciones; el pie invierte ese recorrido con texto en tinta. El naranja no se usa como texto ni color de acción aislado.
+- Texto blanco sobre rojo; tinta sobre amarillo y naranja. El color no sustituye la etiqueta de un estado. La guía registra los pares de contraste medidos.
+- Acciones principales en tinta, con el degradado de Sol al pasar el ratón. El foco usa `--foco`; los controles desactivados, `--apagado` y `--apagado-texto`, sin reducir la opacidad de todo el control. Errores y estados conservan texto e icono.
+- Radios de 12, 16, 20 y 28 px. El hero tiene 28 px y un margen exterior de 8 px. El compositor del chat tiene 28 px; solo las superficies flotantes llevan `--sombra-suave` o `--sombra-flota`.
+- La marca se pinta con `Logotipo` y la R de esquina doblada. Los chevrons son pixelados; los demás iconos son Nucleo UI Essential outline 18, a través de `Icono`. No se introduce otra familia para páginas nuevas.
+
+### 8.3 Chat, fuentes y privacidad
+
+- `/chat` reutiliza el buscador real: protección de datos personales antes del envío, PDF local, respuestas progresivas, citas y valoraciones. El modo de búsqueda se resuelve con `searchMode()`, igual que en la API. La vista previa informa de que la generación con IA no está activada.
+- Al empezar, título, sugerencias y compositor se centran en el área de contenido. Con una conversación, el compositor queda fijo abajo y su altura se reserva para que no tape la respuesta. «Nueva conversación» limpia el historial en memoria y cancela el trabajo pendiente.
+- Las citas mantienen el fragmento y el enlace oficial. El mapa territorial muestra fuentes registradas; el número de organismos no representa cobertura de trámites ni garantiza una respuesta. Sus controles funcionan con teclado y tienen una alternativa en lista.
+- Las imágenes oficiales conservan sus colores. Los avatares de `/equipo` vienen de GitHub, sin enviar el referente, y los contributors se consultan en el servidor con caché y validación. El fallo de esa consulta se muestra; no se inventan perfiles. Los iconos de fuentes usan el servicio de favicons ya descrito en `/privacy`. Estas peticiones externas no incluyen la consulta del chat ni los documentos adjuntos.
+
+### 8.4 Movimiento
+
+- Los proyectos acompañan el scroll, sin controlarlo: el texto sigue el flujo normal y la escena cambia mediante `IntersectionObserver`. En móvil, la representación aparece con cada proyecto.
+- Animar solo `transform` y `opacity`, con los tiempos y curvas de Sol. Las secuencias decorativas de más de cinco segundos tienen pausa; con `prefers-reduced-motion`, quedan quietas. La maqueta de contribución se identifica como ejemplo y enlaza a una issue real; no publica nada por sí misma.
+- Las respuestas no se animan al entrar. El indicador de trabajo puede conservar su brillo discreto mientras hay una consulta, con alternativa quieta.
+
+### 8.5 Cambios posteriores
+
+Antes de añadir otro valor o componente, consulta `GUIA.md` y reutiliza los tokens y piezas existentes. Documenta aquí las decisiones de sistema y en la guía los detalles de uso. Comprueba móvil, teclado, contraste y reducción de movimiento. Incluye capturas comparables antes/después cuando cambies una pantalla existente.

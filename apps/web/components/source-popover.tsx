@@ -12,7 +12,7 @@ import {
 import { createPortal } from 'react-dom';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ArrowUpRight } from 'lucide-react';
+import { Icono } from './sol/icono';
 import type { Evidence } from '@reforma-digital/core';
 import './source-popover.css';
 
@@ -154,6 +154,7 @@ export function SourcePopover({
           }}
           type="button"
           popoverTarget={id}
+          popoverTargetAction="show"
           {...triggerProps}
         >
           {children}
@@ -196,7 +197,7 @@ export function SourcePopover({
                       </span>
                     </div>
                     <strong className="source-popover-title">
-                      {source.title} <ArrowUpRight size={12} aria-hidden="true" />
+                      {source.title} <Icono n="derecha" size={14} />
                     </strong>
                     <div className="source-popover-excerpt">
                       <Markdown

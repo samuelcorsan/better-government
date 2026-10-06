@@ -1,7 +1,7 @@
 'use client';
 
 import { sources } from '@reforma-digital/government';
-import { ExternalLink } from '@reforma-digital/design';
+import { Icono } from './sol/icono';
 import { sourceBand, sourceCoverage } from '../lib/source-coverage';
 import './sources-map.css';
 
@@ -116,7 +116,15 @@ export default function SourcesMap({
                 <ul>
                   {selected.sources.map((source) => (
                     <li key={source.id}>
-                      <ExternalLink href={source.baseUrl}>{source.name}</ExternalLink>
+                      <a
+                        href={source.baseUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="enlace"
+                      >
+                        {source.name} <Icono n="derecha" size={16} />
+                        <span className="sr-only"> (se abre en una pestaña nueva)</span>
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -135,7 +143,7 @@ export default function SourcesMap({
           <li key={region.id}>
             <button
               type="button"
-              className="bg-btn bg-btn-secondary"
+              className="boton-fantasma"
               aria-pressed={selectedId === region.id}
               aria-controls="sources-map-detail"
               onClick={() => onSelect(region.id)}

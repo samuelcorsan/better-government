@@ -2,262 +2,74 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
+    <title>Reforma Digital</title>
     <style>
-      :root {
-        --ink: #0f172a;
-        --ink-muted: #475569;
-        --ink-subtle: #5a6a80;
-        --canvas: #f3f5f8;
-        --surface: #ffffff;
-        --line: #e2e8f0;
-        --line-strong: #cbd5e1;
-        --line-control: #74849a;
-        --brand-50: #eef4ff;
-        --brand-200: #bfd3fe;
-        --brand-600: #1f57bf;
-        --brand-700: #1b469a;
-        --brand-900: #152c5c;
-        --sans: 'Instrument Sans Variable', system-ui, sans-serif;
-        --serif: 'Instrument Serif', Georgia, serif;
-      }
-
       * {
         box-sizing: border-box;
-        margin: 0;
-        padding: 0;
       }
-
-      html,
       body {
+        margin: 0;
         width: 1200px;
         height: 630px;
-        overflow: hidden;
-        background: var(--surface);
-        color: var(--ink);
-        font-family: var(--sans);
-        -webkit-font-smoothing: antialiased;
-      }
-
-      .frame {
-        display: grid;
-        grid-template-columns: 1fr 468px;
-        align-items: center;
-        width: 1200px;
-        height: 630px;
-        padding: 56px 64px 56px 72px;
-        gap: 48px;
-        background: linear-gradient(180deg, var(--surface) 0%, var(--canvas) 100%);
-      }
-
-      .copy {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        min-width: 0;
-      }
-
-      .mark {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: var(--ink);
-      }
-
-      .mark span {
-        font-size: 22px;
-        font-weight: 600;
-        letter-spacing: -0.035em;
-        line-height: 1;
-      }
-
-      h1 {
-        margin-top: 36px;
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: 78px;
-        line-height: 0.94;
-        letter-spacing: -0.035em;
-      }
-
-      .lead {
-        margin-top: 22px;
-        max-width: 28ch;
-        font-size: 24px;
-        line-height: 1.35;
-        color: var(--ink-muted);
-      }
-
-      .card {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        padding: 22px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: var(--surface);
-        box-shadow:
-          0 1px 2px rgb(15 23 42 / 0.06),
-          0 18px 40px -24px rgb(21 44 92 / 0.45);
-      }
-
-      .badge {
-        align-self: flex-start;
-        border: 1px solid var(--brand-200);
-        border-radius: 999px;
-        background: var(--brand-50);
-        padding: 5px 10px;
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 1.3;
-        color: var(--brand-700);
-      }
-
-      .card h2 {
-        font-size: 26px;
-        font-weight: 650;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-      }
-
-      .eyebrow {
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--ink-subtle);
-      }
-
-      .steps {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 6px;
-        list-style: none;
-      }
-
-      .steps li {
-        display: grid;
-        height: 28px;
-        place-items: center;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--ink-subtle);
-      }
-
-      .steps .done {
-        color: #05603a;
-      }
-
-      .steps .current {
-        border-color: var(--brand-600);
-        background: var(--brand-50);
-        color: var(--brand-700);
-      }
-
-      .steps .later {
-        border-style: dashed;
-      }
-
-      .field {
-        border: 1px solid var(--line-control);
-        border-radius: 10px;
-        padding: 10px 12px;
-        font-size: 15px;
-        color: var(--ink-subtle);
-      }
-
-      .choices {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-      }
-
-      .choice {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        border: 1px solid var(--line-strong);
-        border-radius: 10px;
-        padding: 8px 8px;
-        font-size: 13px;
-        line-height: 1.2;
-      }
-
-      .choice i {
-        width: 10px;
-        height: 10px;
-        flex: none;
-        border: 1px solid var(--line-control);
-        border-radius: 999px;
-      }
-
-      .choice.selected {
-        border-color: var(--brand-600);
-        background: var(--brand-50);
-        font-weight: 600;
-        color: var(--brand-900);
-      }
-
-      .choice.selected i {
-        border: 2.5px solid var(--brand-600);
-      }
-
-      .action {
-        align-self: flex-start;
-        border-radius: 10px;
-        background: var(--brand-600);
-        padding: 11px 16px;
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 1;
+        padding: 12px;
+        font-family: Arial, sans-serif;
         color: white;
+        background: white;
+      }
+      main {
+        height: 100%;
+        border-radius: 28px;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            90% 60% at 50% 128%,
+            #ffd34d 0%,
+            #ffbe0b 20%,
+            #ff7a1a 45%,
+            rgba(223, 23, 23, 0) 78%
+          ),
+          #df1717;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 28px 40px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      h1 {
+        max-width: 900px;
+        margin: 86px auto 24px;
+        font:
+          400 76px/1.08 Georgia,
+          serif;
+        text-align: center;
+        letter-spacing: -0.02em;
+      }
+      p {
+        max-width: 690px;
+        margin: 0 auto;
+        font-size: 24px;
+        line-height: 1.5;
+        text-align: center;
       }
     </style>
   </head>
   <body>
-    <div class="frame">
-      <div class="copy">
-        <div class="mark">
-          <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
-            <path d="M16 3.5 28 10l-12 6.5L4 10z" fill="currentColor"></path>
-            <path
-              d="m4 15.5 12 6.5 12-6.5M4 21.5 16 28l12-6.5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linejoin="round"
-              stroke-linecap="round"
-            ></path>
-          </svg>
-          <span>Reforma Digital</span>
-        </div>
-        <h1>La próxima reforma<br />de la Administración</h1>
-        <p class="lead">hecha en comunidad.</p>
-      </div>
-
-      <div class="card">
-        <p class="badge">Interfaz comunitaria · sitio oficial</p>
-        <h2>Elige la provincia</h2>
-        <p class="eyebrow">Paso 2 de 5</p>
-        <ol class="steps">
-          <li class="done">✓</li>
-          <li class="current">2</li>
-          <li>3</li>
-          <li>4</li>
-          <li class="later">5</li>
-        </ol>
-        <p class="field">Buscar provincia</p>
-        <div class="choices">
-          <p class="choice selected"><i></i>Madrid</p>
-          <p class="choice"><i></i>Barcelona</p>
-          <p class="choice"><i></i>Valencia</p>
-          <p class="choice"><i></i>Sevilla</p>
-          <p class="choice"><i></i>Málaga</p>
-          <p class="choice"><i></i>Alicante</p>
-        </div>
-        <p class="action">Continuar con Madrid</p>
-      </div>
-    </div>
+    <main>
+      <header>
+        <svg width="48" height="64" viewBox="0 0 144 192" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M48 0H96V48H48V96H96V144H48V192H0V48H48Z" />
+          <path fill="#a50e0e" d="M0 48L48 0V48Z" />
+          <rect x="96" y="48" width="48" height="48" fill="currentColor" />
+          <rect x="96" y="144" width="48" height="48" fill="currentColor" /></svg
+        ><span>Reforma<br />Digital</span>
+      </header>
+      <h1>Lo público, a la altura<br />de las personas.</h1>
+      <p>Herramientas y propuestas para una Administración más clara, accesible y sencilla.</p>
+    </main>
   </body>
 </html>

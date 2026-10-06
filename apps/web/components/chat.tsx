@@ -1,26 +1,9 @@
 'use client';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import Link from 'next/link';
-import {
-  ArrowUp,
-  ArrowDown,
-  ArrowUpRight,
-  Check,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
-  Square,
-  X,
-  ChevronDown,
-  RotateCcw,
-  FileText,
-  CircleAlert,
-  Info,
-  PencilLine,
-} from 'lucide-react';
+import { Icono } from './sol/icono';
+import './chat.css';
 import type { Evidence, Region, SearchResult, Stage, VerifiedClaim } from '@reforma-digital/core';
 import { sources } from '@reforma-digital/government';
-import { ProjectBrand } from './project-header';
 import { AttachmentPicker } from './attachment-picker';
 import type { PdfContext } from '../lib/attachment';
 import { protectMessages, ProtectionTimeoutError, warm } from '../lib/pii';
@@ -154,7 +137,7 @@ function AnswerActions({ turn }: { turn: Turn }) {
               aria-pressed={rating === 1}
               onClick={() => void vote(1)}
             >
-              <ThumbsUp size={16} />
+              <Icono n="util" size={16} />
             </button>
             <button
               className="chat-icon"
@@ -163,7 +146,7 @@ function AnswerActions({ turn }: { turn: Turn }) {
               aria-pressed={rating === -1}
               onClick={() => setNegative(!negative)}
             >
-              <ThumbsDown size={16} />
+              <Icono n="noUtil" size={16} />
             </button>
           </div>
         )}
@@ -172,7 +155,7 @@ function AnswerActions({ turn }: { turn: Turn }) {
           onClick={() => void copy()}
           aria-label={copied ? 'Copiado' : 'Copiar respuesta'}
         >
-          {copied ? <Check size={16} /> : <Copy size={16} />}
+          {copied ? <Icono n="hecho" size={16} /> : <Icono n="copiar" size={16} />}
         </button>
       </div>
       {negative && (
@@ -211,15 +194,11 @@ function AnswerActions({ turn }: { turn: Turn }) {
 }
 export default function Chat({
   initialQuestion,
-  onNewConversation,
-  onGoHome,
   header,
   footer,
 }: {
   initialQuestion: string;
-  onNewConversation: () => void;
-  onGoHome: () => void;
-  header?: ReactNode;
+  header: ReactNode;
   footer?: ReactNode;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -233,7 +212,6 @@ export default function Chat({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const dock = useRef<HTMLDivElement>(null);
-  const menu = useRef<HTMLDetailsElement>(null);
   const coverageDialog = useRef<HTMLDialogElement>(null);
   const [coverageRegionId, setCoverageRegionId] = useState<string | null>(null);
   const nearBottom = useRef(true);
@@ -375,21 +353,7 @@ export default function Chat({
       setShowJump(!nearBottom.current);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    const dismissMenu = (event: PointerEvent) => {
-      if (menu.current?.open && !menu.current.contains(event.target as Node))
-        menu.current.open = false;
-    };
-    const escapeMenu = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && menu.current?.open) {
-        menu.current.open = false;
-        menu.current.querySelector('summary')?.focus();
-      }
-    };
-    document.addEventListener('pointerdown', dismissMenu);
-    document.addEventListener('keydown', escapeMenu);
     return () => {
-      document.removeEventListener('pointerdown', dismissMenu);
-      document.removeEventListener('keydown', escapeMenu);
       window.removeEventListener('scroll', onScroll);
       active.current?.abort();
     };
@@ -454,58 +418,7 @@ export default function Chat({
   }
   return (
     <div className="chat-page">
-      {header ?? (
-        <header className="chat-header">
-          <Link
-            href="/"
-            onClick={(event) => {
-              event.preventDefault();
-              onGoHome();
-            }}
-            className="project-brand"
-            aria-label="Reforma Digital, inicio"
-          >
-            <ProjectBrand />
-          </Link>
-          <details ref={menu} className="chat-menu">
-            <summary>Menú</summary>
-            <nav aria-label="Navegación del chat">
-              <Link
-                href="/"
-                onClick={(event) => {
-                  event.preventDefault();
-                  onNewConversation();
-                }}
-              >
-                Nueva conversación
-              </Link>
-              <Link href="/#texto">La iniciativa</Link>
-              <Link href="/sources">Fuentes oficiales</Link>
-              <button
-                type="button"
-                aria-haspopup="dialog"
-                aria-controls="chat-coverage-dialog"
-                onClick={() => {
-                  if (menu.current) {
-                    menu.current.open = false;
-                    menu.current.querySelector('summary')?.focus();
-                  }
-                  openCoverage();
-                }}
-              >
-                Mapa de fuentes
-              </button>
-              <Link href="/how-it-works">Cómo funciona</Link>
-              <Link href="/privacy">Privacidad</Link>
-              <small>
-                Proyecto independiente.
-                <br />
-                No es una sede oficial.
-              </small>
-            </nav>
-          </details>
-        </header>
-      )}
+      {header}
       <a className="skip-link" href="#chat-input">
         Ir al cuadro de mensaje
       </a>
@@ -518,7 +431,7 @@ export default function Chat({
               {['¿Cómo me hago autónomo?', '¿Cómo me empadrono en Madrid?'].map((q) => (
                 <button key={q} onClick={() => void send(q)}>
                   {q}
-                  <ArrowUpRight size={17} />
+                  <Icono n="derecha" size={17} />
                 </button>
               ))}
             </div>
@@ -530,7 +443,7 @@ export default function Chat({
               <p>
                 {turn.attachment && (
                   <span className="chat-attached-message">
-                    <FileText size={16} /> {turn.attachment.name}
+                    <Icono n="documento" size={16} /> {turn.attachment.name}
                   </span>
                 )}
                 <ProtectedQuestion text={turn.query} ranges={turn.hiddenData ?? []} id={turn.id} />
@@ -620,7 +533,7 @@ export default function Chat({
                   <p>{turn.result.answer.answer}</p>
                 ) : (
                   <div className="chat-notice" role="status">
-                    <Info size={20} aria-hidden="true" />
+                    <Icono n="info" size={20} />
                     <div>
                       <h2>
                         {turn.result.answer.status === 'needs_clarification'
@@ -631,7 +544,7 @@ export default function Chat({
                       <div className="chat-notice-actions">
                         {turnIndex === turns.length - 1 && (
                           <button className="chat-link-button" onClick={() => rephrase(turn.query)}>
-                            <PencilLine size={15} aria-hidden="true" />
+                            <Icono n="nueva" size={15} />
                             Reformular la pregunta
                           </button>
                         )}
@@ -668,14 +581,14 @@ export default function Chat({
                       disabled={loading}
                       onClick={() => void send(turn.query, turn.id)}
                     >
-                      <RotateCcw size={14} /> Volver a intentar
+                      <Icono n="reintentar" size={14} /> Volver a intentar
                     </button>
                   )}
                 </div>
               )}
               {turn.state === 'error' && (
                 <div className="chat-notice chat-error" role="alert">
-                  <CircleAlert size={20} aria-hidden="true" />
+                  <Icono n="error" size={20} />
                   <div>
                     <h2>No se ha podido completar la respuesta</h2>
                     <p>{turn.error}</p>
@@ -686,7 +599,7 @@ export default function Chat({
                     )}
                     {turnIndex === turns.length - 1 && (
                       <button disabled={loading} onClick={() => void send(turn.query, turn.id)}>
-                        <RotateCcw size={15} /> Volver a intentar
+                        <Icono n="reintentar" size={15} /> Volver a intentar
                       </button>
                     )}
                   </div>
@@ -700,7 +613,7 @@ export default function Chat({
                     {['¿Qué documentación necesito?', '¿Dónde lo puedo tramitar?'].map((q) => (
                       <button key={q} onClick={() => void send(q)}>
                         {q}
-                        <ArrowUpRight size={17} />
+                        <Icono n="derecha" size={17} />
                       </button>
                     ))}
                   </div>
@@ -713,7 +626,7 @@ export default function Chat({
       <div ref={dock} className="chat-composer-dock">
         {showJump && (
           <button className="chat-jump" onClick={jump} aria-label="Ir al último mensaje">
-            <ArrowDown size={18} />
+            <Icono n="abajo" size={18} />
           </button>
         )}
         {attachmentError && (
@@ -724,7 +637,7 @@ export default function Chat({
         {(attachment || attachmentBusy) && (
           <div className="chat-attachment-preview">
             <div>
-              <FileText size={20} />
+              <Icono n="documento" size={20} />
               <span>{attachmentBusy ? 'Leyendo PDF…' : attachment?.name}</span>
               {attachment && !attachmentBusy && (
                 <button
@@ -732,7 +645,7 @@ export default function Chat({
                   onClick={() => setAttachment(undefined)}
                   aria-label="Quitar PDF"
                 >
-                  <X size={16} />
+                  <Icono n="cerrar" size={16} />
                 </button>
               )}
             </div>
@@ -786,6 +699,16 @@ export default function Chat({
                 onAttachment={setAttachment}
                 onError={setAttachmentError}
               />
+              <button
+                className="chat-icon"
+                type="button"
+                aria-label="Mapa de fuentes"
+                aria-haspopup="dialog"
+                aria-controls="chat-coverage-dialog"
+                onClick={() => openCoverage()}
+              >
+                <Icono n="fuentes" size={20} />
+              </button>
             </div>
             {loading ? (
               <button
@@ -794,7 +717,7 @@ export default function Chat({
                 onClick={() => active.current?.abort()}
                 aria-label="Detener respuesta"
               >
-                <Square size={13} fill="currentColor" />
+                <Icono n="detener" size={13} />
               </button>
             ) : (
               <button
@@ -802,7 +725,7 @@ export default function Chat({
                 disabled={input.trim().length < 4 || attachmentBusy}
                 aria-label="Enviar pregunta"
               >
-                <ArrowUp size={20} />
+                <Icono n="enviar" size={20} />
               </button>
             )}
           </div>
@@ -829,7 +752,7 @@ export default function Chat({
             aria-label="Cerrar mapa de fuentes"
             onClick={() => coverageDialog.current?.close()}
           >
-            <X size={19} aria-hidden="true" />
+            <Icono n="cerrar" size={19} />
           </button>
           <SourcesMap selectedId={coverageRegionId} onSelect={setCoverageRegionId} />
         </div>

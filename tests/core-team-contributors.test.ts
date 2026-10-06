@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { getContributors } from '../apps/web/app/(search)/versiones/iniciativa/core-team/contributors';
+import { getContributors } from '../apps/web/app/(search)/equipo/contributors';
 
 afterEach(() => vi.unstubAllGlobals());
 

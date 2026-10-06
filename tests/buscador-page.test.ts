@@ -2,10 +2,9 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import { Buscador } from '../apps/web/app/(search)/versiones/iniciativa/buscador/buscador';
+import { Buscador } from '../apps/web/app/(search)/chat/buscador';
 import { protectMessages } from '../apps/web/lib/pii';
 
-vi.mock('../apps/web/components/sol/fuentes', () => ({ fuentesSol: '' }));
 vi.mock('../apps/web/lib/pii', () => ({
   protectMessages: vi.fn(),
   warm: vi.fn(),

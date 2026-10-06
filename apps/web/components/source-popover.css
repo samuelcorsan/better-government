@@ -10,7 +10,7 @@
   background: rgb(var(--bg-surface));
   color: rgb(var(--bg-ink));
   font: 14px/20px var(--bg-font);
-  box-shadow: 0 4px 16px rgb(var(--bg-ink) / 0.1);
+  box-shadow: var(--sombra-suave);
   overflow: auto;
   overscroll-behavior: contain;
   opacity: 0;
@@ -54,8 +54,8 @@
   gap: 6px;
   margin-bottom: 6px;
   color: rgb(var(--bg-ink-muted));
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 14px;
+  line-height: 20px;
 }
 .source-popover-agency .agency-badge {
   width: 22px;
@@ -74,7 +74,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: rgb(var(--bg-ink-subtle));
-  font-size: 11px;
+  font-size: 14px;
 }
 .source-popover-title {
   font-weight: 500;
@@ -93,12 +93,12 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-  max-height: 54px;
+  max-height: 60px;
   overflow: hidden;
   margin-top: 6px;
   color: rgb(var(--bg-ink-subtle));
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 20px;
 }
 .source-popover-excerpt > * {
   margin: 0;
@@ -109,7 +109,7 @@
 .source-popover-excerpt h4,
 .source-popover-excerpt h5,
 .source-popover-excerpt h6 {
-  font: 500 13px/18px var(--bg-font);
+  font: 500 14px/20px var(--bg-font);
   letter-spacing: 0;
 }
 .source-popover-excerpt ul,
