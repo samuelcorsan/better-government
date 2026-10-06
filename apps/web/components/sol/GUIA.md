@@ -98,12 +98,12 @@ Todas: radio 20 y relleno 24 (20 en móvil). El prefijo `caja-` está reservado.
 - Todos los botones tienen un área táctil mínima de 44 px, se encogen a 0,96 al pulsarlos y muestran el foco con `--foco`.
 - Para desactivarlos se usa el atributo `disabled`, no una clase.
 - Sobre el rojo del hero, el hover de `.boton` se confunde con el fondo. Ahí usa `.boton-claro` y pon `--foco: var(--blanco)` en el contenedor rojo.
-- El hover vive en una capa `::before` (opacity y transform). En `.boton` y `.boton-enviar` es un sol desenfocado (`blur(12px)`) que sube desde el borde inferior: entra en 420 ms y sale en 180 ms, y el texto queda siempre sobre tinta o rojo. No añadas `transition: all` ni animes colores.
+- El hover vive en una capa `::before` (opacity y transform). En `.boton` y `.boton-enviar` es un degradado radial de bordes suaves, sin `filter`, que sube desde el borde inferior: entra en 420 ms y sale en 180 ms, y el texto queda siempre sobre tinta o rojo. La capa ocupa el botón y hereda su radio para conservar el recorte en Safari. No añadas `transition: all` ni animes colores.
 - El selector global de `app/(search)/globals.css` sigue animando el color de fondo de los `<button>` sin clase. Dentro de Sol, dale clase a cada botón.
 
 ## Iconos
 
-`<Icono n="…" size={14–20} />` (por defecto 18). Una sola familia: Nucleo UI Essential outline 18. Los iconos son decorativos (`aria-hidden`); el nombre lo da el texto o el `aria-label` del control.
+`<Icono n="…" size={14–20} />` (por defecto 18). Los chevrons (`derecha`, `abajo`, `enviar`) son pixelados; el resto usa Nucleo UI Essential outline 18. Los iconos son decorativos (`aria-hidden`); el nombre lo da el texto o el `aria-label` del control.
 
 Nombres: enviar, detener, copiar, util, noUtil, reintentar, nueva · cerrar, abajo, derecha · buscar, fuentes, contacto, externo, descargar · protegido, info, error, nunca, hecho, candado · calendario, documento, ubicacion, usuario, tarjeta, telefono. Solo los que se usan: si necesitas otro, añádelo desde la misma familia.
 

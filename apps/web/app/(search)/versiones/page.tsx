@@ -11,6 +11,22 @@ export const metadata: Metadata = {
 // Índice de todas las versiones de la portada propuestas, para compararlas y decidir.
 const versiones = [
   {
+    href: '/versiones/iniciativa',
+    nombre: 'Sol · La iniciativa y sus proyectos',
+    texto:
+      'Portada centrada en la iniciativa: qué queremos mejorar, los proyectos y cómo participar.',
+  },
+  {
+    href: '/versiones/iniciativa/core-team',
+    nombre: 'Sol · Core team',
+    texto: 'Las personas detrás de Reforma Digital y una invitación a construir en comunidad.',
+  },
+  {
+    href: '/versiones/iniciativa/buscador',
+    nombre: 'Sol · Buscador y chatbot',
+    texto: 'Página propia para consultar trámites, con el chat actual y el nuevo diseño.',
+  },
+  {
     href: '/nueva',
     nombre: 'Sol v2 · Portada completa',
     texto:

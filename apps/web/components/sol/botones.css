@@ -46,23 +46,21 @@
   cursor: default;
 }
 
-/* Primario y enviar: tinta. Al pasar el ratón sale un sol desenfocado por el borde de abajo;
+/* Primario y enviar: tinta. Al pasar el ratón sale un sol de bordes suaves por debajo;
    el texto queda sobre tinta y rojo, nunca sobre amarillo (contraste). */
 :is(.boton, .boton-enviar) {
   background: var(--tinta);
   color: var(--blanco);
 }
 :is(.boton, .boton-enviar)::before {
-  inset: 45% -10% -75%;
-  border-radius: 50%;
+  /* La capa cabe en el botón para conservar el recorte redondeado en Safari. */
   background: radial-gradient(
-    closest-side,
+    ellipse 60% 65% at 50% 110%,
     var(--amarillo) 0%,
     var(--naranja) 38%,
     rgba(223, 23, 23, 0.9) 68%,
     rgba(223, 23, 23, 0) 100%
   );
-  filter: blur(12px);
   transform: translateY(40%) scale(0.75);
   transition:
     opacity 180ms var(--curva-salida),

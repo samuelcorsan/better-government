@@ -22,8 +22,8 @@
 }
 .pie-titulo {
   margin: 0;
-  max-width: 13ch;
-  font-size: clamp(44px, 6.4vw, 92px);
+  max-width: 20ch;
+  font-size: clamp(32px, 4vw, 56px);
   line-height: 1;
   letter-spacing: -0.03em;
 }
@@ -33,8 +33,9 @@
   gap: var(--e-12);
 }
 .pie-acciones :is(.boton, .boton-claro) {
-  min-height: 52px;
-  padding-inline: var(--e-24) 22px;
+  min-height: 44px;
+  padding-inline: var(--e-16);
+  font-size: 14px;
 }
 /* Sobre amarillo, el claro se separa con una sombra cálida y no con línea gris. */
 .pie-acciones .boton-claro {

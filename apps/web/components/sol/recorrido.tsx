@@ -2,12 +2,12 @@
 
 // Recorrido: cuatro pasos que se leen al bajar y un escenario fijo que los acompaña.
 // El paso activo es el que cruza la mitad de la pantalla: el scroll manda, nunca se secuestra.
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId } from 'react';
 import Image from 'next/image';
 import catalogo from '../../landing/assets/screens/original-2-catalogo.png';
 import { catalogo as cifras } from './catalogo';
 import { Icono } from './icono';
-import './recorrido.css';
+import { RecorridoScroll } from './recorrido-scroll';
 
 const pregunta = '¿Dónde pido cita para la renta?';
 const { resultadosRenta: resultados, renta: puestoRenta, total } = cifras;
@@ -51,7 +51,7 @@ function Navegador({ children }: { children: React.ReactNode }) {
 }
 
 // Escenas: piezas de la interfaz, decorativas. El texto de cada paso ya cuenta lo que muestran.
-function Escena({ n }: { n: number }) {
+export function EscenaRecorrido({ n }: { n: number }) {
   if (n === 0)
     return (
       <div className="rc-pieza rc-hero">
@@ -144,78 +144,29 @@ function Escena({ n }: { n: number }) {
 }
 
 export function Recorrido() {
-  const [activo, setActivo] = useState(0);
-  const lista = useRef<HTMLOListElement>(null);
   const titulo = useId();
 
-  useEffect(() => {
-    const items = lista.current?.querySelectorAll<HTMLElement>('[data-paso]');
-    if (!items) return;
-    // Una línea en la mitad de la pantalla: el paso que la cruza es el activo.
-    const observador = new IntersectionObserver(
-      (entradas) => {
-        for (const e of entradas) {
-          if (e.isIntersecting) setActivo(Number((e.target as HTMLElement).dataset.paso));
-        }
-      },
-      { rootMargin: '-50% 0px -50% 0px' },
-    );
-    items.forEach((el) => observador.observe(el));
-    return () => observador.disconnect();
-  }, []);
-
   return (
-    <section className="rc" aria-labelledby={titulo}>
-      <header className="rc-cabeza">
-        <p className="t-etiqueta">Cómo funciona</p>
-        <h2 id={titulo} className="t-titular-m">
-          De tu pregunta a la web oficial, ordenada
-        </h2>
-      </header>
-
-      <div className="rc-cuerpo">
-        <ol className="rc-pasos" ref={lista}>
-          {pasos.map((p, i) => (
-            <li
-              key={p.titulo}
-              className="rc-paso"
-              data-paso={i}
-              data-activo={activo === i ? '' : undefined}
-            >
-              <div className="rc-paso-texto">
-                <span className="rc-paso-num t-dato" aria-hidden="true">
-                  {dosCifras(i + 1)}
-                </span>
-                <h3 className="t-titular-s">{p.titulo}</h3>
-                <p className="t-texto-l">{p.texto}</p>
-              </div>
-              <div className="rc-marco rc-marco-movil" aria-hidden="true">
-                <Escena n={i} />
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        <div className="rc-fijo" aria-hidden="true">
-          <div className="rc-marco rc-escenario">
-            {pasos.map((p, i) => (
-              <div key={p.titulo} className="rc-escena" data-activa={activo === i ? '' : undefined}>
-                <Escena n={i} />
-              </div>
-            ))}
-          </div>
-          <div className="rc-progreso">
-            <span className="t-etiqueta">
-              Paso {dosCifras(activo + 1)} de {dosCifras(pasos.length)}
-            </span>
-            <span className="rc-progreso-barras">
-              {pasos.map((p, i) => (
-                <i key={p.titulo} data-lleno={i <= activo ? '' : undefined} />
-              ))}
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
+    <RecorridoScroll
+      tituloId={titulo}
+      cabecera={
+        <header className="rc-cabeza">
+          <p className="t-etiqueta">Cómo funciona</p>
+          <h2 id={titulo} className="t-titular-m">
+            De tu pregunta a la web oficial, ordenada
+          </h2>
+        </header>
+      }
+      pasos={pasos.map((p, i) => ({
+        titulo: p.titulo,
+        etiqueta: (
+          <span className="rc-paso-num t-dato" aria-hidden="true">
+            {dosCifras(i + 1)}
+          </span>
+        ),
+        texto: <p className="t-texto-l">{p.texto}</p>,
+        escena: <EscenaRecorrido n={i} />,
+      }))}
+    />
   );
 }

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -342,10 +342,14 @@ export default function Chat({
   initialQuestion,
   onNewConversation,
   onGoHome,
+  header,
+  footer,
 }: {
   initialQuestion: string;
   onNewConversation: () => void;
   onGoHome: () => void;
+  header?: ReactNode;
+  footer?: ReactNode;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
@@ -479,7 +483,7 @@ export default function Chat({
   }
   useEffect(() => {
     let cancelled = false;
-    if (!initialQuestion) inputRef.current?.focus();
+    if (!initialQuestion) inputRef.current?.focus({ preventScroll: true });
     if (initialQuestion)
       queueMicrotask(() => {
         if (!cancelled) {
@@ -576,42 +580,44 @@ export default function Chat({
     setSourceView({ evidence, selected });
   return (
     <div className="chat-page">
-      <header className="chat-header">
-        <Link
-          href="/"
-          onClick={(event) => {
-            event.preventDefault();
-            onGoHome();
-          }}
-          className="project-brand"
-          aria-label="Reforma Digital, inicio"
-        >
-          <ProjectBrand />
-        </Link>
-        <details ref={menu} className="chat-menu">
-          <summary>Menú</summary>
-          <nav aria-label="Navegación del chat">
-            <Link
-              href="/"
-              onClick={(event) => {
-                event.preventDefault();
-                onNewConversation();
-              }}
-            >
-              Nueva conversación
-            </Link>
-            <Link href="/#texto">La iniciativa</Link>
-            <Link href="/sources">Fuentes oficiales</Link>
-            <Link href="/how-it-works">Cómo funciona</Link>
-            <Link href="/privacy">Privacidad</Link>
-            <small>
-              Proyecto independiente.
-              <br />
-              No es una sede oficial.
-            </small>
-          </nav>
-        </details>
-      </header>
+      {header ?? (
+        <header className="chat-header">
+          <Link
+            href="/"
+            onClick={(event) => {
+              event.preventDefault();
+              onGoHome();
+            }}
+            className="project-brand"
+            aria-label="Reforma Digital, inicio"
+          >
+            <ProjectBrand />
+          </Link>
+          <details ref={menu} className="chat-menu">
+            <summary>Menú</summary>
+            <nav aria-label="Navegación del chat">
+              <Link
+                href="/"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onNewConversation();
+                }}
+              >
+                Nueva conversación
+              </Link>
+              <Link href="/#texto">La iniciativa</Link>
+              <Link href="/sources">Fuentes oficiales</Link>
+              <Link href="/how-it-works">Cómo funciona</Link>
+              <Link href="/privacy">Privacidad</Link>
+              <small>
+                Proyecto independiente.
+                <br />
+                No es una sede oficial.
+              </small>
+            </nav>
+          </details>
+        </header>
+      )}
       <a className="skip-link" href="#chat-input">
         Ir al cuadro de mensaje
       </a>
@@ -914,6 +920,7 @@ export default function Chat({
             )}
           </div>
         </form>
+        {footer}
         <span className="sr-only">
           Las respuestas se basan en fuentes oficiales. Comprueba las citas antes de realizar el
           trámite.
