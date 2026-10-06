@@ -27,13 +27,15 @@ Las instalaciones existentes aplican una migración que retira las tablas del an
 
 Toda la IA utiliza OpenRouter mediante Vercel AI SDK. El modelo por defecto es `openai/gpt-6-luna`, con razonamiento `high`, para búsqueda, generación, verificación de citas y evaluadores.
 
-1. Resolver referencias a preguntas anteriores y comprender el trámite, la ubicación y el año solicitado. Pedir contexto cuando sea imprescindible.
+1. Resolver referencias a preguntas anteriores con el modelo y clasificar la comunidad o ciudad autónoma del trámite mediante una salida estructurada. El código se valida contra las 19 zonas del mapa; `null` significa ámbito estatal, ubicación insuficiente o varias comunidades sin un destino claro. La comunidad identificada prevalece sobre las menciones del texto; un municipio reconocido solo se conserva si pertenece a ella. Comprender el trámite y el año solicitado y pedir contexto cuando sea imprescindible.
 2. Buscar mediante `openrouter:web_search` con el motor Parallel. La búsqueda se limita a los dominios oficiales registrados y al ámbito compatible.
 3. Convertir los fragmentos originales de las citas web en hasta ocho evidencias. Descartar dominios no autorizados, duplicados, ámbitos incompatibles y resultados sin fragmento original. No usar el resumen generado como evidencia.
 4. Generar afirmaciones estructuradas con referencias a esas evidencias. El servidor resuelve los enlaces y el texto citado.
 5. Comprobar formato, dominio, jurisdicción y respaldo de cada afirmación antes de publicarla. Si falta evidencia, abstenerse o indicar que la respuesta es parcial.
 
 La API transmite etapas, evidencias y afirmaciones completas mediante SSE. Detener una respuesta cancela las llamadas en curso. Las preguntas anteriores y los documentos del usuario sirven como contexto, nunca como evidencia oficial. Una fecha de consulta reciente no demuestra que un plazo o una norma sigan vigentes.
+
+La clasificación territorial comparte la llamada que resuelve el contexto y también se ejecuta en la primera consulta real, con su coste y latencia. Sin historial ni documento, la pregunta protegida se conserva intacta para la búsqueda. El aviso de cobertura muestra el recuento del registro para comunidades con 0–2 fuentes territoriales y permite abrir esa zona en el mapa. El modelo elige el territorio; no inventa el recuento ni habilita dominios. En `preview` no se llama al modelo ni se simula esta clasificación: el mapa sigue disponible desde el menú.
 
 ## Datos personales
 
@@ -44,6 +46,8 @@ Los límites originales del formulario (1.200 caracteres) y del PDF (6.000) se m
 El servidor repite las reglas de patrones, pero no ejecuta Rampart: una petición directa a la API solo recibe esa capa. Es reducción de daño, no anonimización.
 
 Tras proteger una pregunta, el chat subraya los fragmentos retirados del envío y muestra su cantidad. Cada marca explica, al pasar el cursor o enfocarla con el teclado, que ese dato no se ha enviado al modelo. Los originales y sus posiciones se conservan solo en el navegador; la API recibe el texto protegido, sin estos metadatos. El contador corresponde a la pregunta visible, no al historial ni al PDF. No se marca texto si no se puede reconstruir con certeza su correspondencia con el resultado protegido.
+
+Los favicons de las fuentes se cargan en el navegador desde Google S2, con carga diferida y sin cabecera `Referer`. El parámetro enviado es únicamente el hostname de la fuente, nunca la ruta, los parámetros, la pregunta ni los documentos. Google recibe el dominio solicitado y la dirección IP del visitante. Si falla la imagen, se muestran las iniciales del organismo.
 
 ## Credenciales
 

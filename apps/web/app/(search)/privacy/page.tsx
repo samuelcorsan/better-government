@@ -26,6 +26,11 @@ export default function Privacy() {
             vez se descargan el modelo de Hugging Face y su runtime de jsDelivr; el análisis del
             texto se realiza en tu dispositivo.
           </p>
+          <p>
+            Los iconos de las fuentes se cargan desde Google. Esta petición comunica el dominio de
+            la fuente y tu dirección IP; no incluye tu pregunta, el contenido del documento ni la
+            dirección de esta conversación.
+          </p>
           <h2>Documentos adjuntos</h2>
           <p>
             El PDF se lee en tu navegador. Al enviar una pregunta, se procesa un máximo de 6.000

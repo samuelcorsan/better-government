@@ -1,5 +1,27 @@
 import { z } from 'zod';
 export type Jurisdiction = string;
+export const regionSchema = z.enum([
+  'ES-AN',
+  'ES-AR',
+  'ES-AS',
+  'ES-IB',
+  'ES-CN',
+  'ES-CB',
+  'ES-CL',
+  'ES-CM',
+  'ES-CT',
+  'ES-VC',
+  'ES-EX',
+  'ES-GA',
+  'ES-MD',
+  'ES-MC',
+  'ES-NC',
+  'ES-PV',
+  'ES-RI',
+  'ES-CE',
+  'ES-ML',
+]);
+export type Region = z.infer<typeof regionSchema>;
 export type Source = {
   id: string;
   name: string;
@@ -34,6 +56,7 @@ export type QueryUnderstanding = {
   intent: string;
   location?: string;
   jurisdiction?: Jurisdiction;
+  region?: Region | null;
   likelyOrganizations: string[];
   keywords: string[];
   clarification?: string;

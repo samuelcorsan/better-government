@@ -1,12 +1,9 @@
 'use client';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import {
   ArrowUp,
   ArrowDown,
-  ArrowLeft,
   ArrowUpRight,
   Check,
   Copy,
@@ -21,7 +18,8 @@ import {
   Info,
   PencilLine,
 } from 'lucide-react';
-import type { Evidence, SearchResult, Stage, VerifiedClaim } from '@reforma-digital/core';
+import type { Evidence, Region, SearchResult, Stage, VerifiedClaim } from '@reforma-digital/core';
+import { sources } from '@reforma-digital/government';
 import { ProjectBrand } from './project-header';
 import { AttachmentPicker } from './attachment-picker';
 import type { PdfContext } from '../lib/attachment';
@@ -29,6 +27,9 @@ import { protectMessages, ProtectionTimeoutError, warm } from '../lib/pii';
 import type { HiddenRange, ProtectedText } from '../lib/pii-display';
 import { ProtectedQuestion } from './protected-question';
 import { readChatStream } from '../lib/chat-stream';
+import SourcesMap from './sources-map';
+import { AgencyBadge, SourcePopover } from './source-popover';
+import { limitedSourceCoverage } from '../lib/source-coverage';
 
 type Result = SearchResult & { feedbackToken: string | null };
 type Turn = {
@@ -44,173 +45,37 @@ type Turn = {
   error?: string;
   attachment?: PdfContext;
 };
-type SourceView = { evidence: Evidence[]; selected?: Evidence };
 const stages: Record<Stage, string> = {
   understandQuery: 'Entendiendo tu pregunta',
   retrieval: 'Consultando fuentes oficiales',
   generation: 'Redactando y verificando la respuesta',
   evaluation: 'Comprobando referencias',
 };
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter((s) => s.length > 3)
-    .slice(0, 2)
-    .map((s) => s[0])
-    .join('')
-    .toUpperCase() || 'ES';
-function Badge({ name }: { name: string }) {
+function CoverageNotice({
+  regionId,
+  openMap,
+}: {
+  regionId: Region | null | undefined;
+  openMap: (regionId: string) => void;
+}) {
+  const region = limitedSourceCoverage(sources, regionId);
+  if (!region) return null;
   return (
-    <span className="agency-badge" aria-hidden="true">
-      {initials(name)}
-    </span>
+    <p className="chat-coverage-note">
+      Nuestra cobertura territorial en {region.name} es limitada: {region.sources.length}{' '}
+      {region.sources.length === 1 ? 'fuente registrada' : 'fuentes registradas'}.{' '}
+      <button
+        className="chat-link-button"
+        aria-haspopup="dialog"
+        aria-controls="chat-coverage-dialog"
+        onClick={() => openMap(region.id)}
+      >
+        Ver mapa de fuentes
+      </button>
+    </p>
   );
 }
-function SourceDialog({
-  view,
-  close,
-  select,
-}: {
-  view: SourceView | null;
-  close: () => void;
-  select: (e?: Evidence) => void;
-}) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    if (view && !dialog.current?.open) dialog.current?.showModal();
-    if (!view) dialog.current?.close();
-  }, [view]);
-  const groups = new Map<string, Evidence[]>();
-  for (const e of view?.evidence ?? []) {
-    const host = new URL(e.canonicalUrl).hostname.replace(/^www\./, '');
-    groups.set(host, [...(groups.get(host) ?? []), e]);
-  }
-  return (
-    <dialog
-      ref={dialog}
-      className="chat-source-dialog"
-      aria-labelledby="source-modal-title"
-      onCancel={close}
-      onClose={close}
-      onClick={(event) => {
-        if (event.target === dialog.current) close();
-      }}
-    >
-      <div className="source-modal-inner">
-        <div className="source-modal-header">
-          {view?.selected && (
-            <button
-              className="chat-icon source-back"
-              onClick={() => select()}
-              aria-label="Todas las fuentes"
-            >
-              <ArrowLeft size={18} />
-            </button>
-          )}
-          <h2 id="source-modal-title">{view?.selected ? 'Fragmento citado' : 'Fuentes'}</h2>
-          <button className="chat-icon source-close" onClick={close} aria-label="Cerrar fuentes">
-            <X size={19} />
-          </button>
-        </div>
-        {view?.selected ? (
-          <div className="source-detail">
-            <div className="source-detail-agency">
-              <Badge name={view.selected.organization} />
-              {view.selected.organization}
-            </div>
-            <h3>{view.selected.title}</h3>
-            <p className="source-heading">{view.selected.heading}</p>
-            <blockquote>
-              <Markdown
-                remarkPlugins={[remarkGfm]}
-                skipHtml
-                components={{
-                  a: ({ children }) => <span>{children}</span>,
-                  img: () => null,
-                }}
-              >
-                {view.selected.content}
-              </Markdown>
-            </blockquote>
-            <dl>
-              <div>
-                <dt>Ámbito</dt>
-                <dd>{view.selected.jurisdiction}</dd>
-              </div>
-              <div>
-                <dt>Consultado</dt>
-                <dd>{new Date(view.selected.crawledAt).toLocaleDateString('es-ES')}</dd>
-              </div>
-              <div>
-                <dt>Actualización de origen</dt>
-                <dd>
-                  {view.selected.sourceUpdatedAt
-                    ? new Date(view.selected.sourceUpdatedAt).toLocaleDateString('es-ES')
-                    : 'No indicada'}
-                </dd>
-              </div>
-            </dl>
-            <a
-              href={view.selected.canonicalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="chat-official-link"
-            >
-              Abrir documento oficial <ArrowUpRight size={15} />
-            </a>
-          </div>
-        ) : (
-          <div className="source-groups">
-            {[...groups].map(([host, evidence]) => {
-              const documents = [...new Map(evidence.map((e) => [e.documentId, e])).values()];
-              return (
-                <details key={host} className="source-group">
-                  <summary>
-                    <Badge name={evidence[0]!.organization} />
-                    <span>
-                      {host}
-                      <small>
-                        {documents.length} {documents.length === 1 ? 'fuente' : 'fuentes'}
-                      </small>
-                    </span>
-                    <ChevronDown size={18} />
-                  </summary>
-                  <div className="source-documents">
-                    {documents.map((doc) => (
-                      <div key={doc.documentId}>
-                        <a href={doc.canonicalUrl} target="_blank" rel="noopener noreferrer">
-                          {doc.title} <ArrowUpRight size={14} />
-                        </a>
-                        {evidence
-                          .filter((e) => e.documentId === doc.documentId)
-                          .map((e, i) => (
-                            <button key={e.chunkId} onClick={() => select(e)}>
-                              Ver fragmento citado
-                              {evidence.filter((item) => item.documentId === doc.documentId)
-                                .length > 1
-                                ? ` ${i + 1}`
-                                : ''}
-                            </button>
-                          ))}
-                      </div>
-                    ))}
-                  </div>
-                </details>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </dialog>
-  );
-}
-function AnswerActions({
-  turn,
-  showSources,
-}: {
-  turn: Turn;
-  showSources: (evidence: Evidence[], selected?: Evidence) => void;
-}) {
+function AnswerActions({ turn }: { turn: Turn }) {
   const [copied, setCopied] = useState(false);
   const [rating, setRating] = useState<1 | -1>();
   const [busy, setBusy] = useState(false);
@@ -220,7 +85,9 @@ function AnswerActions({
   const evidence = turn.evidence.filter((e) =>
     turn.blocks.some((b) => b.citations.some((c) => c.chunkId === e.chunkId)),
   );
-  const agencies = [...new Set(evidence.map((e) => e.organization))];
+  const agencies = [
+    ...new Map(evidence.map((e) => [new URL(e.canonicalUrl).hostname, e])).values(),
+  ];
   async function vote(value: 1 | -1) {
     if (!turn.result?.feedbackToken) return;
     setBusy(true);
@@ -265,14 +132,18 @@ function AnswerActions({
     <>
       <div className="chat-actions">
         {evidence.length > 0 && (
-          <button className="chat-sources-pill" onClick={() => showSources(evidence)}>
+          <SourcePopover className="chat-sources-pill" evidence={evidence}>
             <span className="agency-stack">
-              {agencies.slice(0, 3).map((name) => (
-                <Badge key={name} name={name} />
+              {agencies.slice(0, 3).map((source) => (
+                <AgencyBadge
+                  key={new URL(source.canonicalUrl).hostname}
+                  name={source.organization}
+                  url={source.canonicalUrl}
+                />
               ))}
             </span>
             Fuentes
-          </button>
+          </SourcePopover>
         )}
         {turn.result?.feedbackToken && (
           <div className="chat-votes">
@@ -353,7 +224,6 @@ export default function Chat({
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
-  const [sourceView, setSourceView] = useState<SourceView | null>(null);
   const [showJump, setShowJump] = useState(false);
   const [attachment, setAttachment] = useState<PdfContext>();
   const [attachmentBusy, setAttachmentBusy] = useState(false);
@@ -364,6 +234,8 @@ export default function Chat({
   const bottom = useRef<HTMLDivElement>(null);
   const dock = useRef<HTMLDivElement>(null);
   const menu = useRef<HTMLDetailsElement>(null);
+  const coverageDialog = useRef<HTMLDialogElement>(null);
+  const [coverageRegionId, setCoverageRegionId] = useState<string | null>(null);
   const nearBottom = useRef(true);
   const loading = turns.some((t) => t.state === 'loading');
   function update(id: string, change: Partial<Turn> | ((turn: Turn) => Partial<Turn>)) {
@@ -576,8 +448,10 @@ export default function Chat({
     e?.preventDefault();
     void send(input);
   }
-  const showSources = (evidence: Evidence[], selected?: Evidence) =>
-    setSourceView({ evidence, selected });
+  function openCoverage(regionId: string | null = null) {
+    setCoverageRegionId(regionId);
+    coverageDialog.current?.showModal();
+  }
   return (
     <div className="chat-page">
       {header ?? (
@@ -607,6 +481,20 @@ export default function Chat({
               </Link>
               <Link href="/#texto">La iniciativa</Link>
               <Link href="/sources">Fuentes oficiales</Link>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-controls="chat-coverage-dialog"
+                onClick={() => {
+                  if (menu.current) {
+                    menu.current.open = false;
+                    menu.current.querySelector('summary')?.focus();
+                  }
+                  openCoverage();
+                }}
+              >
+                Mapa de fuentes
+              </button>
               <Link href="/how-it-works">Cómo funciona</Link>
               <Link href="/privacy">Privacidad</Link>
               <small>
@@ -667,6 +555,7 @@ export default function Chat({
                     ]),
                   ).values(),
                 ].filter((e): e is Evidence => !!e);
+                const sourceCount = new Set(citations.map((source) => source.documentId)).size;
                 const previousKind = turn.blocks[index - 1]?.claim.kind;
                 const heading =
                   block.claim.kind !== previousKind
@@ -693,28 +582,23 @@ export default function Chat({
                       )}
                       <p>
                         {block.claim.text}
-                        {citations.map((e) => (
-                          <span key={e.chunkId}>
+                        {citations.length > 0 && (
+                          <>
                             {' '}
-                            <button
+                            <SourcePopover
                               className="chat-inline-citation"
-                              onClick={() =>
-                                showSources(
-                                  turn.evidence.filter((source) =>
-                                    turn.blocks.some((b) =>
-                                      b.citations.some((c) => c.chunkId === source.chunkId),
-                                    ),
-                                  ),
-                                  e,
-                                )
-                              }
-                              title={`Ver evidencia: ${e.title}`}
+                              evidence={citations}
+                              href={citations[0]!.canonicalUrl}
                             >
-                              {e.organization}
-                              <ArrowUpRight size={13} />
-                            </button>
-                          </span>
-                        ))}
+                              <AgencyBadge
+                                name={citations[0]!.organization}
+                                url={citations[0]!.canonicalUrl}
+                              />
+                              <span>{citations[0]!.organization}</span>
+                              {sourceCount > 1 && <small>+{sourceCount - 1}</small>}
+                            </SourcePopover>
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -752,12 +636,9 @@ export default function Chat({
                           </button>
                         )}
                         {turn.evidence.length > 0 && (
-                          <button
-                            className="chat-link-button"
-                            onClick={() => showSources(turn.evidence)}
-                          >
+                          <SourcePopover className="chat-link-button" evidence={turn.evidence}>
                             Ver lo consultado ({turn.evidence.length})
-                          </button>
+                          </SourcePopover>
                         )}
                       </div>
                     </div>
@@ -768,6 +649,12 @@ export default function Chat({
                   Las fuentes no permiten confirmar todos los detalles. Aquí aparecen únicamente los
                   que hemos podido verificar.
                 </p>
+              )}
+              {turn.result && (
+                <CoverageNotice
+                  regionId={turn.result.understanding.region}
+                  openMap={openCoverage}
+                />
               )}
               {turn.state === 'stopped' && (
                 <div className="chat-stopped">
@@ -805,7 +692,7 @@ export default function Chat({
                   </div>
                 </div>
               )}
-              {turn.state !== 'loading' && <AnswerActions turn={turn} showSources={showSources} />}
+              {turn.state !== 'loading' && <AnswerActions turn={turn} />}
               {turn.state === 'done' &&
                 turn.result?.answer.status === 'answered' &&
                 turnIndex === turns.length - 1 && (
@@ -926,11 +813,27 @@ export default function Chat({
           trámite.
         </span>
       </div>
-      <SourceDialog
-        view={sourceView}
-        close={() => setSourceView(null)}
-        select={(selected) => setSourceView((view) => (view ? { ...view, selected } : null))}
-      />
+      <dialog
+        ref={coverageDialog}
+        id="chat-coverage-dialog"
+        className="chat-source-dialog chat-coverage-dialog"
+        aria-labelledby="sources-map-title"
+        onClick={(event) => {
+          if (event.target === coverageDialog.current) coverageDialog.current.close();
+        }}
+      >
+        <div className="source-modal-inner">
+          <button
+            type="button"
+            className="chat-icon source-close"
+            aria-label="Cerrar mapa de fuentes"
+            onClick={() => coverageDialog.current?.close()}
+          >
+            <X size={19} aria-hidden="true" />
+          </button>
+          <SourcesMap selectedId={coverageRegionId} onSelect={setCoverageRegionId} />
+        </div>
+      </dialog>
     </div>
   );
 }

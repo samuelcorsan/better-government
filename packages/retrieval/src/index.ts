@@ -3,6 +3,7 @@ import {
   compatibleJurisdiction,
   type Evidence,
   type QueryUnderstanding,
+  type Region,
 } from '@reforma-digital/core';
 import { approvedSource } from '@reforma-digital/government';
 const stop = new Set(
@@ -18,7 +19,7 @@ const genericRequestWords = new Set([
     ' ',
   ),
 ]);
-export function understandQuery(query: string): QueryUnderstanding {
+export function understandQuery(query: string, region?: Region | null): QueryUnderstanding {
   const q = normalizeText(query);
   const limitedCompany =
     /\b(?:sl|s l|srl|s r l|slu|s l u)\b|sociedad (?:de responsabilidad )?limitada/.test(q);
@@ -49,6 +50,17 @@ export function understandQuery(query: string): QueryUnderstanding {
   if (/para toda espana/.test(q)) {
     jurisdiction = 'ES';
     location = 'España';
+  }
+  if (region !== undefined) {
+    if (region === null) {
+      if (jurisdiction !== 'ES') {
+        jurisdiction = undefined;
+        location = undefined;
+      }
+    } else if (!jurisdiction?.startsWith(`${region}-`)) {
+      jurisdiction = region;
+      location = undefined;
+    }
   }
   const likelyOrganizations: string[] = [];
   const mapping: [RegExp, string][] = [
@@ -117,6 +129,7 @@ export function understandQuery(query: string): QueryUnderstanding {
           : 'procedure',
     ...(location ? { location } : {}),
     ...(jurisdiction ? { jurisdiction } : {}),
+    ...(region !== undefined ? { region } : {}),
     likelyOrganizations,
     keywords: [...new Set(keywords)],
     ...(clarification ? { clarification } : {}),

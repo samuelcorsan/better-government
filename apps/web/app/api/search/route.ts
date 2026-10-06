@@ -88,6 +88,7 @@ export async function POST(request: Request) {
           send('result', {
             id: result.id,
             query: result.query,
+            understanding: result.understanding,
             evidence: result.evidence,
             answer: result.answer,
             mode: result.mode,

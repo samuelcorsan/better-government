@@ -1,0 +1,12 @@
+{
+  "source": "geoBoundaries gbOpen ESP ADM1",
+  "sourceUrl": "https://github.com/wmgeolab/geoBoundaries/blob/9469f09/releaseData/gbOpen/ESP/ADM1/geoBoundaries-ESP-ADM1_simplified.geojson",
+  "sourceCommit": "9469f09",
+  "sourceSha256": "b61a1bf661b90883763f633f5e9dbc27e7356309e42cbe56b60d2ceab5112f63",
+  "boundaryID": "ESP-ADM1-25490228",
+  "boundaryYear": "2017",
+  "attribution": "Instituto Geográfico Nacional; geoBoundaries (William & Mary geoLab)",
+  "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "adaptation": "SVG paths derived from the simplified GeoJSON. Equirectangular projection with longitude scaled by cos(40°), local Canarias inset, Douglas–Peucker simplification at 0.2 SVG units and coordinates rounded to 0.1 units. Region names mapped to the repository ISO territorial identifiers."
+}
