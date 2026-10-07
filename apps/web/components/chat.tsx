@@ -712,7 +712,7 @@ export default function Chat({
             </div>
             {loading ? (
               <button
-                className="chat-send"
+                className="boton-enviar"
                 type="button"
                 onClick={() => active.current?.abort()}
                 aria-label="Detener respuesta"
@@ -721,7 +721,7 @@ export default function Chat({
               </button>
             ) : (
               <button
-                className="chat-send"
+                className="boton-enviar"
                 disabled={input.trim().length < 4 || attachmentBusy}
                 aria-label="Enviar pregunta"
               >

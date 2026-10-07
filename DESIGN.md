@@ -218,6 +218,7 @@ El layout monta `.sol-raiz` y las fuentes una sola vez. Las páginas añaden su 
 - Los proyectos acompañan el scroll, sin controlarlo: el texto sigue el flujo normal y la escena cambia mediante `IntersectionObserver`. En móvil, la representación aparece con cada proyecto.
 - Animar solo `transform` y `opacity`, con los tiempos y curvas de Sol. Las secuencias decorativas de más de cinco segundos tienen pausa; con `prefers-reduced-motion`, quedan quietas. La maqueta de contribución se identifica como ejemplo y enlaza a una issue real; no publica nada por sí misma.
 - Las respuestas no se animan al entrar. El indicador de trabajo puede conservar su brillo discreto mientras hay una consulta, con alternativa quieta.
+- Al cambiar de página, como de la portada al buscador, el navegador funde los dos documentos en 200 ms (`@view-transition` en `tokens.css`), sin librerías. En el chat, enviar usa `.boton-enviar`, los controles se encogen al pulsarlos y el botón de bajar, los avisos y el mapa de fuentes entran con un fundido y se van en el acto, también con Esc. Con `prefers-reduced-motion` no hay fundido de página ni pulsación.
 
 ### 8.5 Cambios posteriores
 

@@ -189,6 +189,19 @@
   outline: none;
 }
 
+/* Cambio de página (portada → chat y el resto): fundido nativo entre documentos. Sus capas
+   cuelgan de <html>, fuera de .sol-raiz, así que llevan --t-medio y --curva-salida en valor. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 200ms;
+    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+
 /* Salto al contenido compartido por todas las páginas. */
 .sol-salto {
   position: fixed;

@@ -433,9 +433,6 @@ html:has(.chat-page) {
   box-shadow: none;
   padding: 12px 10px 10px 16px;
   cursor: text;
-  transition:
-    border-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .chat-composer:focus-within {
   outline: none;
@@ -484,35 +481,6 @@ html:has(.chat-page) {
   gap: 2px;
   min-width: 0;
 }
-.chat-send {
-  border: 0;
-  color: rgb(var(--bg-surface));
-  background: rgb(var(--bg-ink));
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
-  transition:
-    background-color 150ms ease,
-    color 150ms ease,
-    transform 160ms ease-out;
-}
-.chat-send:disabled {
-  background: rgb(var(--bg-surface-muted));
-  color: rgb(var(--bg-ink-subtle));
-}
-@media (hover: hover) and (pointer: fine) {
-  .chat-send:not(:disabled):hover {
-    background: rgb(var(--bg-brand-700));
-  }
-}
-.chat-send:not(:disabled):active {
-  transform: scale(0.97);
-}
 .chat-jump {
   display: flex;
   align-items: center;
@@ -526,6 +494,40 @@ html:has(.chat-page) {
   border: 1px solid rgb(var(--bg-brand-100));
   background: rgb(var(--bg-surface));
   box-shadow: none;
+}
+/* Los controles del chat se encogen al pulsar, como los botones Sol (botones.css).
+   Lo que aparece (bajar al último mensaje, avisos y mapa de fuentes) entra con un fundido
+   y sale en el acto, también con Esc. */
+.chat-icon,
+.chat-sources-pill,
+.chat-inline-citation,
+.chat-followups button,
+.chat-jump,
+.chat-action-message,
+.chat-source-dialog[open],
+.chat-source-dialog[open]::backdrop {
+  transition:
+    opacity var(--t-medio) var(--curva-salida),
+    transform var(--t-rapido) var(--curva-salida);
+}
+@starting-style {
+  .chat-jump,
+  .chat-action-message,
+  .chat-source-dialog[open],
+  .chat-source-dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+      .chat-icon,
+      .chat-sources-pill,
+      .chat-inline-citation,
+      .chat-followups button,
+      .chat-jump
+    ):active:not(:disabled) {
+    transform: scale(0.96);
+  }
 }
 .chat-error {
   border-color: rgb(var(--bg-danger-line));
@@ -730,13 +732,6 @@ html:has(.chat-coverage-dialog[open]) {
   }
   .chat-claim {
     animation: none;
-  }
-  .chat-composer,
-  .chat-send {
-    transition-duration: 0ms;
-  }
-  .chat-send:not(:disabled):active {
-    transform: none;
   }
 }
 
