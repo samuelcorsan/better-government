@@ -47,19 +47,6 @@
   border-color: var(--tinta);
   box-shadow: var(--sombra-flota);
 }
-.buscador .chat-send {
-  width: 52px;
-  height: 52px;
-  background: var(--tinta);
-  color: var(--blanco);
-}
-.buscador .chat-send:disabled {
-  background: var(--apagado);
-  color: var(--apagado-texto);
-}
-.buscador .chat-send:not(:disabled):hover {
-  background: var(--atardecer-boton);
-}
 .bs-pie {
   display: grid;
   gap: var(--e-4);

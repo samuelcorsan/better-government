@@ -152,9 +152,14 @@
   }
 }
 
-/* Sin movimiento: el atardecer aparece en su sitio, solo con opacity. */
+/* Sin movimiento: el atardecer aparece en su sitio, solo con opacity, y nada se encoge al pulsar. */
 @media (prefers-reduced-motion: reduce) {
   :is(.boton, .boton-enviar)::before {
+    transform: none;
+  }
+  :is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar, .pildora):active:not(
+      :disabled
+    ) {
     transform: none;
   }
 }
