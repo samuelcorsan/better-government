@@ -1,4 +1,7 @@
+import { renderToStaticMarkup } from 'react-dom/server';
+import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
+import { Laboratorio } from '../apps/web/app/(search)/elecciones/laboratorio';
 import { dhondt } from '../apps/web/lib/congreso';
 import results2023 from '../apps/web/lib/congreso-2023.json';
 import { poblacionReparto, provincias, resultado2023 } from '../apps/web/lib/elecciones';
@@ -171,6 +174,28 @@ describe('neutralidad del laboratorio', () => {
       const despues = e.despues(antes, { escanos: 2, validos: validosDe('42') });
       for (const etiqueta of [...antes.etiquetas, ...despues.etiquetas]) {
         expect(etiqueta).toMatch(/^([A-D](\+[A-D])*)?$/);
+      }
+    }
+  });
+
+  it('no muestra siglas ni nombres de partidos reales', () => {
+    const html = renderToStaticMarkup(
+      createElement(Laboratorio, {
+        nombre: 'Madrid',
+        escanos: 38,
+        validos: validosDe('28'),
+        otra: { nombre: 'Soria', escanos: 2, validos: validosDe('42') },
+      }),
+    );
+    const texto = html.replace(/<[^>]+>/g, ' ');
+    for (const { acronym, name } of Object.values(results2023.parties)) {
+      for (const real of [acronym, name]) {
+        expect(texto).not.toMatch(
+          new RegExp(
+            `(^|[^\\p{L}])${real.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}])`,
+            'u',
+          ),
+        );
       }
     }
   });

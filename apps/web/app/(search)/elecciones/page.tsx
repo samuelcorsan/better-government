@@ -7,16 +7,21 @@ import {
   averagePerSeat,
   bands,
   cartograma,
+  poblacionReparto,
   provinciaDe,
   provincias,
   recuadroCanarias,
+  resultado2023,
   SEATS,
   type Provincia,
 } from '../../../lib/elecciones';
 import { EligeProvincia } from './elige-provincia';
 import { InfoDato } from './info-dato';
+import { Laboratorio } from './laboratorio';
+import { DhondtPasoAPaso, Hemiciclo, OrigenEscanos, VotosPerdidos } from './reparto';
 import { TablaProvincias } from './tabla-provincias';
 import './elecciones.css';
+import './reparto.css';
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -249,6 +254,8 @@ export default async function Elecciones({ searchParams }: Props) {
         />
       </details>
 
+      {provincia && <RepartoProvincia key={provincia.id} p={provincia} />}
+
       <div className="info-prosa">
         <h2>Cómo se reparten los escaños.</h2>
         <p>
@@ -352,5 +359,108 @@ function Ficha({ p }: { p: Provincia }) {
         .
       </p>
     </>
+  );
+}
+
+const validosDe = (r: ReturnType<typeof resultado2023>) =>
+  r.candidaturas.reduce((sum, c) => sum + c.votos, r.blanco);
+
+const escenas = [
+  { id: 'rp-origen', titulo: 'De dónde salen sus escaños' },
+  { id: 'rp-dhondt', titulo: "D'Hondt paso a paso" },
+  { id: 'rp-sin-escano', titulo: 'Votos sin escaño' },
+  { id: 'rp-laboratorio', titulo: 'Laboratorio con partidos ficticios' },
+  { id: 'rp-hemiciclo', titulo: 'Sus escaños entre los 350' },
+];
+
+function Escena({ n, intro, children }: { n: number; intro: ReactNode; children: ReactNode }) {
+  const { id, titulo } = escenas[n]!;
+  return (
+    <section className="rp-seccion" id={id} aria-labelledby={`${id}-titulo`}>
+      <span className="t-etiqueta info-etiqueta">
+        {n + 1} de {escenas.length}
+      </span>
+      <h3 id={`${id}-titulo`} className="t-titular-s">
+        {titulo}
+      </h3>
+      <p className="rp-intro">{intro}</p>
+      {children}
+    </section>
+  );
+}
+
+// Cinco escenas animadas sobre la provincia elegida. Cada una tiene pasos, pausa y una tabla o un
+// texto con la misma información; sin JavaScript o con movimiento reducido se ve el estado final.
+function RepartoProvincia({ p }: { p: Provincia }) {
+  const r = resultado2023(p.id);
+  // Pequeña frente a grande: Soria si esta provincia es grande; Madrid si no.
+  const otra = provincias.find((x) => x.id === (p.seats >= 10 ? '42' : '28'))!;
+  const indice = provincias.indexOf(p);
+  const poblacion = provincias.reduce((sum, x) => sum + x.population, 0);
+  return (
+    <section className="rp" aria-labelledby="rp-titulo">
+      <h2 id="rp-titulo">Cómo se reparte el voto en {p.name}</h2>
+      <nav aria-label="Escenas">
+        <ol className="rp-indice">
+          {escenas.map((e) => (
+            <li key={e.id}>
+              <a href={`#${e.id}`}>{e.titulo}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <Escena
+        n={0}
+        intro="Cada provincia tiene un mínimo de escaños por ley y el resto depende de su población."
+      >
+        <OrigenEscanos nombre={p.name} provincia={p} poblacionReparto={poblacionReparto} />
+      </Escena>
+
+      <Escena
+        n={1}
+        intro={
+          <>
+            Cómo se convirtieron en escaños los votos de {p.name} en las generales de 2023, con los{' '}
+            <a className="enlace" href={fuentes.resultados2023}>
+              resultados oficiales
+            </a>{' '}
+            (art. 163 de la LOREG). Son datos de solo lectura.
+          </>
+        }
+      >
+        <DhondtPasoAPaso nombre={p.name} resultado={r} nulos={r.nulos} />
+      </Escena>
+
+      <Escena n={2} intro={`Votos de 2023 en ${p.name} que no eligieron a ningún diputado.`}>
+        <VotosPerdidos nombre={p.name} resultado={r} />
+      </Escena>
+
+      <Escena
+        n={3}
+        intro={`Cuatro partidos inventados, A, B, C y D, con ${p.seats === 1 ? 'el escaño' : `los ${p.seats} escaños`} de ${p.name} en 2026 y sus votos válidos de 2023. No representan a ningún partido real ni son una encuesta o una proyección: sirven para ver cómo funciona la regla.`}
+      >
+        <Laboratorio
+          nombre={p.name}
+          escanos={p.seats}
+          validos={validosDe(r)}
+          otra={{
+            nombre: otra.name,
+            escanos: otra.seats,
+            validos: validosDe(resultado2023(otra.id)),
+          }}
+        />
+      </Escena>
+
+      <Escena n={4} intro="Los escaños de la provincia dentro del Congreso.">
+        <Hemiciclo
+          nombre={p.name}
+          escanos={p.seats}
+          bloques={provincias.map((x) => x.seats)}
+          inicio={provincias.slice(0, indice).reduce((sum, x) => sum + x.seats, 0)}
+          poblacion={p.population / poblacion}
+        />
+      </Escena>
+    </section>
   );
 }
