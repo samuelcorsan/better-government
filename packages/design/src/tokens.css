@@ -1,6 +1,9 @@
 /*
  * Reforma Digital · tokens de diseño (fuente única, ver DESIGN.md).
  *
+ * Neutros, forma y tipografía usan los valores de Sol, el sistema de la web
+ * pública (apps/web/components/sol/tokens.css).
+ *
  * Los colores se guardan como canales RGB ("R G B") para que Tailwind pueda
  * aplicar opacidad: rgb(var(--bg-brand-600) / 0.5).
  *
@@ -8,22 +11,22 @@
  *   :host                  → interfaces dentro de Shadow DOM (runtime)
  *   :root[data-bg-site]    → la web oficial mientras la interfaz está activa
  *   :root[data-bg-popup]   → el popup de la extensión
- *   :root[data-bg-landing] → la web pública (apps/landing)
+ *   :root[data-bg-landing] → la web pública (apps/web; .sol-raiz ajusta lienzo y fuente)
  */
 :host,
 :root[data-bg-site],
 :root[data-bg-popup],
 :root[data-bg-landing] {
   /* Texto */
-  --bg-ink: 20 20 20;
-  --bg-ink-muted: 85 85 85;
-  --bg-ink-subtle: 105 105 105;
+  --bg-ink: 34 34 34;
+  --bg-ink-muted: 77 77 77;
+  --bg-ink-subtle: 107 107 107;
   --bg-ink-inverse: 255 255 255;
 
   /* Superficies */
-  --bg-canvas: 247 247 248;
+  --bg-canvas: 242 242 242;
   --bg-surface: 255 255 255;
-  --bg-surface-muted: 244 244 245;
+  --bg-surface-muted: 242 242 242;
 
   /* Líneas */
   --bg-line: 235 235 235;
@@ -35,9 +38,9 @@
   --bg-brand-100: 238 238 238;
   --bg-brand-200: 205 205 205;
   --bg-brand-500: 64 64 64;
-  --bg-brand-600: 20 20 20;
-  --bg-brand-700: 45 45 45;
-  --bg-brand-900: 20 20 20;
+  --bg-brand-600: 34 34 34;
+  --bg-brand-700: 77 77 77;
+  --bg-brand-900: 34 34 34;
 
   /* Estados: fondo · borde · texto */
   --bg-info-bg: 239 246 255;
@@ -57,14 +60,18 @@
   --bg-success-fg: 5 96 58;
 
   /* Forma */
-  --bg-radius-control: 16px;
-  --bg-radius-card: 24px;
+  --bg-radius-control: 12px;
+  --bg-radius-card: 20px;
   --bg-shadow-card: none;
-  --bg-shadow-raised: 0 10px 30px -12px rgb(20 20 20 / 0.25);
+  --bg-shadow-raised:
+    0 0 0 1px rgb(120 40 0 / 0.06), 0 2px 4px rgb(120 40 0 / 0.08),
+    0 18px 40px -12px rgb(120 40 0 / 0.16);
 
-  /* Tipografía: fuentes del sistema (sin fuentes remotas, ver DESIGN.md §Privacidad) */
-  --bg-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --bg-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Tipografía: las familias de Sol si están instaladas; si no, las del sistema.
+     La extensión no empaqueta ni descarga fuentes (DESIGN.md §2.2). */
+  --bg-font: 'Timeless Sans', 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --bg-font-titular: 'Timeless Serif', Georgia, serif;
+  --bg-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Layout */
   --bg-content-max: 1120px;
