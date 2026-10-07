@@ -51,6 +51,30 @@ export const provincias = constituencies2026.map((c) => {
 
 export type Provincia = (typeof provincias)[number];
 
+/** Población de las 50 provincias, que se reparten 248 escaños (art. 162.3 LOREG). */
+export const poblacionReparto = constituencies2026
+  .filter((c) => c.id !== '51' && c.id !== '52')
+  .reduce((sum, c) => sum + c.population, 0);
+
+const partidos = new Map(Object.entries(results2023.parties));
+
+/** Resultado oficial de 2023 de una circunscripción, con las siglas de cada candidatura. */
+export function resultado2023(id: string) {
+  const r = results2023.constituencies.find((c) => c.id === id);
+  if (!r) throw new Error(`Faltan resultados de 2023 de la circunscripción ${id}`);
+  return {
+    escanos: r.seats,
+    blanco: r.blank,
+    nulos: r.invalid,
+    candidaturas: r.candidatures.map((c) => ({
+      sigla: partidos.get(c.code)?.acronym ?? c.code,
+      nombre: partidos.get(c.code)?.name ?? c.code,
+      votos: c.votes,
+      escanos: c.seats,
+    })),
+  };
+}
+
 /** Valor de `?provincia=`: un código INE de las 52 circunscripciones o nada. */
 export function provinciaDe(param: string | string[] | undefined): Provincia | undefined {
   return typeof param === 'string' ? provincias.find((p) => p.id === param) : undefined;
