@@ -11,3 +11,14 @@ body {
   font-family: var(--bg-font);
   color: rgb(var(--bg-ink));
 }
+
+/* Enlaces sueltos en listas (portales, fuentes): al menos 44 px de área táctil sin cambiar
+   la maqueta, como la .pildora de Sol (DESIGN.md §6). */
+li > a.bg-link {
+  position: relative;
+}
+li > a.bg-link::after {
+  content: '';
+  position: absolute;
+  inset: -14px 0;
+}
