@@ -19,7 +19,7 @@ export function Buscador({ mode }: { mode: 'preview' | 'live' }) {
           <Cabecera
             accion={
               <button
-                className="bs-nueva"
+                className="boton-claro bs-nueva"
                 type="button"
                 onClick={nueva}
                 aria-label="Nueva conversación"

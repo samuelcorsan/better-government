@@ -63,9 +63,25 @@ const iconos = {
   telefono: IconPhoneOutline18,
 } satisfies Record<string, Svg>;
 
-export type NombreIcono = keyof typeof iconos | 'enviar' | 'abajo' | 'derecha';
+export type NombreIcono = keyof typeof iconos | 'enviar' | 'abajo' | 'derecha' | 'mas';
 
 export function Icono({ n, size = 18 }: { n: NombreIcono; size?: number }) {
+  // «Más»: cinco puntos en cruz; girado 45° hace de cierre.
+  if (n === 'mas') {
+    return (
+      <svg
+        className="icono"
+        width={size}
+        height={size}
+        viewBox="0 0 15 15"
+        fill="currentColor"
+        shapeRendering="crispEdges"
+        aria-hidden="true"
+      >
+        <path d="M6 0h3v3H6zM0 6h3v3H0zM6 6h3v3H6zM12 6h3v3h-3zM6 12h3v3H6z" />
+      </svg>
+    );
+  }
   if (n === 'enviar' || n === 'abajo' || n === 'derecha') {
     return (
       <svg

@@ -196,7 +196,7 @@ El layout monta `.sol-raiz` y las fuentes una sola vez. Las páginas añaden su 
 - Titulares en `--font-titular` (Timeless Serif, alternativa Georgia); cuerpo, descripción del hero, interfaz y botones en `--font-texto` (Timeless Sans, alternativa Geist). Los textos editoriales `.t-texto-l` usan `--font-lectura` (Timeless Serif Text, alternativa Georgia). Datos y etiquetas usan Geist Mono. Las fuentes Timeless son opcionales: su licencia impide incluir los archivos en este repositorio público. Viven, cuando están disponibles, en `public/fonts/timeless/`; las alternativas mantienen la página usable sin ellos. Next empaqueta Geist y Geist Mono para servirlos desde la propia web.
 - Portada: titular centrado de 36–72 px; buscador, de 36–64 px; páginas informativas, de 36–60 px. Titulares de sección de 32–52 px, tarjetas de 24–30 px. Texto de lectura desde 16 px; ayudas y metadatos desde 14 px. Solo las etiquetas cortas en mayúsculas pueden medir 12 px.
 - Retícula común de 1200 px, con márgenes laterales de 20–24 px. Los artículos informativos limitan la lectura a 760 px y los párrafos a unas 65 letras de ancho. Las rejillas de fuentes y colaboradores se separan con bordes compartidos, sin huecos ni sombras por celda. El equipo conserva cinco tarjetas por fila en escritorio.
-- La cabecera tiene bordes entre marca y enlaces. En la portada vive dentro del hero; en las páginas interiores, sobre blanco. En móvil, la marca ocupa la primera fila y la navegación la segunda, con objetivos de al menos 44 px.
+- La cabecera mide 80 px, sin bordes: los enlaces son `.boton-fantasma` (píldora al pasar el ratón) y «Participar», `.boton-claro`. En la portada vive dentro del hero; en las páginas interiores, sobre blanco. Hasta 640 px, la navegación pasa a un `<dialog>` modal a pantalla completa (`menu-movil.tsx`) que se abre con un círculo blanco con «+» y se despliega hacia abajo; la acción propia de la página, como «Nueva conversación», sigue a la vista. Objetivos de al menos 44 px.
 
 ### 8.2 Color y superficies
 
@@ -216,7 +216,7 @@ El layout monta `.sol-raiz` y las fuentes una sola vez. Las páginas añaden su 
 ### 8.4 Movimiento
 
 - Los proyectos acompañan el scroll, sin controlarlo: el texto sigue el flujo normal y la escena cambia mediante `IntersectionObserver`. En móvil, la representación aparece con cada proyecto.
-- Animar solo `transform` y `opacity`, con los tiempos y curvas de Sol. Las secuencias decorativas de más de cinco segundos tienen pausa; con `prefers-reduced-motion`, quedan quietas. La maqueta de contribución se identifica como ejemplo y enlaza a una issue real; no publica nada por sí misma.
+- Animar solo `transform` y `opacity`, con los tiempos y curvas de Sol. Las secuencias decorativas de más de cinco segundos se pausan al señalarlas o enfocarlas; con `prefers-reduced-motion`, quedan quietas. La maqueta de contribución enlaza a una issue real; no publica nada por sí misma.
 - Las respuestas no se animan al entrar. El indicador de trabajo puede conservar su brillo discreto mientras hay una consulta, con alternativa quieta.
 
 ### 8.5 Cambios posteriores

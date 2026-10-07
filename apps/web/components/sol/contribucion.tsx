@@ -7,7 +7,6 @@ import { links } from '../../lib/site';
 export function Contribucion() {
   const escena = useRef<HTMLDivElement>(null);
   const [animada, setAnimada] = useState(false);
-  const [pausada, setPausada] = useState(false);
 
   useEffect(() => {
     const elemento = escena.current;
@@ -33,12 +32,7 @@ export function Contribucion() {
           href={`${links.repo}/issues/new`}
           aria-label="Proponer una mejora: abrir una nueva issue en GitHub"
         >
-          <div
-            className="in-issue-demo"
-            data-animada={animada ? '' : undefined}
-            data-pausada={pausada ? '' : undefined}
-            aria-hidden="true"
-          >
+          <div className="in-issue-demo" data-animada={animada ? '' : undefined} aria-hidden="true">
             <div className="in-issue-repo">
               <Icono n="documento" size={18} />
               <strong>reforma-digital</strong>
@@ -112,17 +106,6 @@ export function Contribucion() {
             </div>
           </div>
         </a>
-        <div className="in-issue-pie">
-          <span>Ejemplo de una propuesta</span>
-          <button
-            className="in-enlace in-issue-control"
-            type="button"
-            aria-pressed={pausada}
-            onClick={() => setPausada((anterior) => !anterior)}
-          >
-            {pausada ? 'Reanudar' : 'Pausar'}
-          </button>
-        </div>
       </div>
     </div>
   );
