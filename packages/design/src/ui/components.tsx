@@ -188,7 +188,7 @@ export function Actions({ children }: { children: ReactNode }) {
 
 export function LinkButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="bg-link text-left">
+    <button type="button" onClick={onClick} className="bg-link min-h-[44px] text-left">
       {children}
     </button>
   );

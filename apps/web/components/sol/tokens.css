@@ -52,18 +52,10 @@
   font-display: swap;
 }
 .sol-raiz {
-  /* Compatibilidad del chat, las fuentes y el mapa con los tokens compartidos de la extensión. */
+  /* Los tokens --bg-* compartidos (packages/design) ya usan los neutros y radios de Sol.
+     El chat, las fuentes y el mapa solo cambian el lienzo y la fuente de la web. */
   --bg-font: var(--font-texto);
   --bg-canvas: 255 255 255;
-  --bg-surface: 255 255 255;
-  --bg-ink: 34 34 34;
-  --bg-ink-muted: 77 77 77;
-  --bg-ink-subtle: 107 107 107;
-  --bg-surface-muted: 242 242 242;
-  --bg-brand-600: 34 34 34;
-  --bg-brand-700: 77 77 77;
-  --bg-radius-card: var(--r-20);
-  --bg-radius-control: var(--r-12);
 
   /* Color. Pares medidos en GUIA.md. */
   --rojo: #df1717;

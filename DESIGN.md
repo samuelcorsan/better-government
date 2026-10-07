@@ -28,23 +28,23 @@ Los componentes se definen **una sola vez** en el preset. Los paneles los usan c
 
 ### 2.1 Color
 
-Los valores están en `packages/design/src/tokens.css` como canales RGB (`--bg-brand-600: 20 20 20`). El contraste está medido sobre blanco salvo que se indique otra cosa.
+Los valores están en `packages/design/src/tokens.css` como canales RGB (`--bg-brand-600: 34 34 34`). Los neutros son los de Sol (§8): `ink` es `--tinta`, `ink-muted` es `--tinta-2`, `ink-subtle` es `--tinta-3` y `canvas` es `--superficie`. El contraste está medido sobre blanco salvo que se indique otra cosa.
 
 | Token              | Hex                               | Uso                                                                      | Contraste             |
 | ------------------ | --------------------------------- | ------------------------------------------------------------------------ | --------------------- |
-| `ink`              | `#141414`                         | Texto principal, títulos                                                 | 18.4:1 sobre blanco   |
-| `ink-muted`        | `#555555`                         | Texto secundario, ayudas                                                 | 7.5:1 sobre blanco    |
-| `ink-subtle`       | `#696969`                         | Metadatos, eyebrow                                                       | 5.5:1 sobre blanco    |
-| `canvas`           | `#F7F7F8`                         | Fondo de página                                                          | —                     |
+| `ink`              | `#222222`                         | Texto principal, títulos                                                 | 15.9:1 sobre blanco   |
+| `ink-muted`        | `#4D4D4D`                         | Texto secundario, ayudas                                                 | 8.5:1 sobre blanco    |
+| `ink-subtle`       | `#6B6B6B`                         | Metadatos, eyebrow                                                       | 5.3:1 · 4.8:1 en gris |
+| `canvas`           | `#F2F2F2`                         | Fondo de página                                                          | —                     |
 | `surface`          | `#FFFFFF`                         | Tarjetas, campos                                                         | —                     |
-| `surface-muted`    | `#F4F4F5`                         | Zonas secundarias, avisos neutros                                        | —                     |
+| `surface-muted`    | `#F2F2F2`                         | Zonas secundarias, avisos neutros                                        | —                     |
 | `line`             | `#EBEBEB`                         | Bordes de tarjeta, separadores                                           | decorativo            |
 | `line-strong`      | `#DCDCDC`                         | Borde de opciones seleccionables                                         | decorativo            |
 | `line-control`     | `#808080`                         | Borde de campos y botón secundario                                       | 3.9:1 sobre blanco    |
-| `brand-600`        | `#141414`                         | **Acción principal**, enlaces, foco                                      | 18.4:1 sobre blanco   |
-| `brand-700`        | `#2D2D2D`                         | Hover de acción/enlace                                                   | 13.8:1 sobre blanco   |
+| `brand-600`        | `#222222`                         | **Acción principal**, enlaces, foco                                      | 15.9:1 sobre blanco   |
+| `brand-700`        | `#4D4D4D`                         | Hover de acción/enlace                                                   | 8.5:1 sobre blanco    |
 | `brand-50/100/200` | `#F7F7F7` `#EEEEEE` `#CDCDCD`     | Badge, selección y paso actual (`100`), anillo de foco de campos (`200`) | —                     |
-| `brand-900`        | `#141414`                         | Texto sobre `brand-50`                                                   | 17.2:1 sobre brand-50 |
+| `brand-900`        | `#222222`                         | Texto sobre `brand-50`                                                   | 14.9:1 sobre brand-50 |
 | `info-*`           | `#EFF6FF` · `#BFDBFE` · `#1E3A8A` | Aviso informativo (fondo · borde · texto)                                | 9.5:1                 |
 | `warning-*`        | `#FFFBEB` · `#FCD34D` · `#78350F` | «Lee esto antes de continuar»                                            | 8.8:1                 |
 | `danger-*`         | `#FEF2F2` · `#FCA5A5` · `#991B1B` | Errores y énfasis rojo de la web oficial                                 | 7.6:1                 |
@@ -56,19 +56,21 @@ Reglas:
 - El color nunca es el único indicador: la selección lleva borde, fondo **y** peso de fuente; el estado del paso lleva número o ✓ **y** texto oculto para lectores de pantalla.
 - Modo oscuro: **no** en la v1. El contenido oficial (tablas, imágenes, estilos inline) no se puede invertir con garantías.
 
+Los estados (`info`, `warning`, `danger`, `success`) no cambian: el mapa de fuentes de la web los usa como escala de cobertura.
+
 ### 2.2 Tipografía
 
-Fuente: Helvetica Neue, Helvetica y Arial como alternativa. No se cargan fuentes remotas (§1.6).
+Las familias son las de Sol (§8.1), con su misma cadena de alternativas: texto en `--bg-font` (Timeless Sans, Geist y la fuente del sistema), titulares `bg-h1` y `bg-h2` en `--bg-font-titular` (Timeless Serif y Georgia) y rótulos en `--bg-font-mono` (Geist Mono y la monoespaciada del sistema). La extensión no empaqueta ni descarga fuentes (§1.6): la licencia de Timeless no permite distribuirla, Chrome ignora `@font-face` dentro del Shadow DOM y servir un archivo empaquetado a la página oficial exigiría `web_accessible_resources`, que `scripts/audit-bundle.mjs` prohíbe. Si la familia está instalada, se usa; si no, se ve la del sistema, igual en el popup y en las páginas.
 
-| Clase                  | Tamaño / interlineado       | Peso | Uso                                                 |
-| ---------------------- | --------------------------- | ---- | --------------------------------------------------- |
-| `bg-h1`                | 28/1.2 (24 en móvil)        | 500  | Título del panel, uno por página                    |
-| `bg-h2`                | 20/1.3                      | 650  | Secciones, títulos oficiales re‑maquetados          |
-| `bg-h3`                | 17/1.4                      | 600  | Subsecciones, grupos de opciones                    |
-| `bg-lead`              | 17/1.6                      | 400  | Entradilla bajo el título                           |
-| `bg-text`              | 16/1.6                      | 400  | Cuerpo. **Mínimo absoluto para lectura**            |
-| `bg-small` / `bg-hint` | 14/1.5                      | 400  | Ayudas y metadatos. Nunca para información esencial |
-| `bg-eyebrow`           | 12/1.4, mayúsculas, +0.06em | 600  | Rótulos («Información oficial», «Paso 2 de 5»)      |
+| Clase                  | Tamaño / interlineado             | Peso | Uso                                                 |
+| ---------------------- | --------------------------------- | ---- | --------------------------------------------------- |
+| `bg-h1`                | 30/1.15 (26 en móvil), serif      | 400  | Título del panel, uno por página                    |
+| `bg-h2`                | 22/1.25, serif                    | 400  | Secciones, títulos oficiales re‑maquetados          |
+| `bg-h3`                | 17/1.4                            | 600  | Subsecciones, grupos de opciones                    |
+| `bg-lead`              | 17/1.6                            | 400  | Entradilla bajo el título                           |
+| `bg-text`              | 16/1.6                            | 400  | Cuerpo. **Mínimo absoluto para lectura**            |
+| `bg-small` / `bg-hint` | 14/1.5                            | 400  | Ayudas y metadatos. Nunca para información esencial |
+| `bg-eyebrow`           | 12/1.4, mono, mayúsculas, +0.08em | 500  | Rótulos («Información oficial», «Paso 2 de 5»)      |
 
 - Las líneas de lectura no pasan de unos 75 caracteres (`max-width: 70ch` en el cuerpo).
 - Los textos oficiales en MAYÚSCULAS se muestran tal cual: no se reescriben.
@@ -77,8 +79,8 @@ Fuente: Helvetica Neue, Helvetica y Arial como alternativa. No se cargan fuentes
 
 - Retícula de **4 px**. Escala habitual: 4, 8, 12, 16, 20, 24, 32, 48.
 - Entre bloques de un panel: 20 px. Relleno de tarjeta: 16 px en móvil y 24 px desde 640 px.
-- `--bg-radius-control`: **16 px** (campos, opciones, avisos, pasos). `--bg-radius-card`: **24 px** (tarjetas y panel). Píldora (`999px`) para botones, buscador y badge.
-- Tarjetas **sin borde ni sombra**: una superficie blanca sobre el `canvas` gris. La línea (`line`) solo separa elementos dentro de una tarjeta. `shadow-raised` queda para el aviso flotante de fallback; nada más flota.
+- `--bg-radius-control`: **12 px** (campos, opciones, avisos, pasos). `--bg-radius-card`: **20 px** (tarjetas y panel), los radios de Sol. Píldora (`999px`) para botones, buscador y badge.
+- Tarjetas **sin borde ni sombra**: una superficie blanca sobre el `canvas` gris. La línea (`line`) solo separa elementos dentro de una tarjeta. `shadow-raised` (la `--sombra-flota` de Sol) queda para el aviso flotante de fallback; nada más flota.
 - Ancho máximo del contenido: **1120 px** (`--bg-content-max`).
 - Puntos de corte: `sm` 640 px (una a varias columnas) y `lg` 1024 px (aparece la barra lateral oficial). Todo se diseña primero a **375 px**.
 
@@ -163,7 +165,7 @@ Si un panel ofrece un control sincronizado con uno oficial (el desplegable de pr
 
 - [ ] Contraste AA en texto (4.5:1) y bordes de controles (3:1).
 - [ ] Foco visible: contorno de 3 px `brand-600` con separación de 2 px en botones y enlaces, y anillo de 3 px `brand-200` más borde `brand-600` en campos.
-- [ ] Objetivos táctiles de al menos 44 × 44 px.
+- [ ] Objetivos táctiles de al menos 44 × 44 px. Un enlace suelto en una lista puede conservar su tamaño visual si su área táctil llega a 44 px, como la `.pildora` de Sol; los enlaces dentro de una frase siguen la excepción de WCAG 2.5.8.
 - [ ] Controles nativos (`button`, `select`, `input[type=radio]`, `fieldset`/`legend`).
 - [ ] Un solo `h1` visual por panel; en el HTML el panel usa `h2`, porque la página oficial ya tiene su `h1`.
 - [ ] Cambios dinámicos anunciados con `aria-live` o `role="alert"` (errores oficiales).
@@ -189,7 +191,7 @@ Sol es el diseño definitivo de `apps/web`, no una variante de portada. Las ruta
 | Navegación, pie y estructura informativa                     | [`cabecera.tsx`](apps/web/components/sol/cabecera.tsx), [`pie.tsx`](apps/web/components/sol/pie.tsx), [`pagina-informativa.tsx`](apps/web/components/sol/pagina-informativa.tsx) |
 | Guía detallada de componentes y contraste                    | [`GUIA.md`](apps/web/components/sol/GUIA.md)                                                                                                                                     |
 
-El layout monta `.sol-raiz` y las fuentes una sola vez. Las páginas añaden su composición, sin volver a montar otro tema ni definir una segunda paleta. Los tokens `--bg-*` que necesita el chat y el mapa se adaptan a Sol dentro de `tokens.css`; no se cambian los tokens de la extensión.
+El layout monta `.sol-raiz` y las fuentes una sola vez. Las páginas añaden su composición, sin volver a montar otro tema ni definir una segunda paleta. Los tokens `--bg-*` que usan el chat y el mapa vienen de `packages/design`, que ya tiene los neutros, radios y familias de Sol; `.sol-raiz` solo cambia el lienzo (blanco) y la fuente (la Geist que empaqueta Next).
 
 ### 8.1 Tipografía y retícula
 

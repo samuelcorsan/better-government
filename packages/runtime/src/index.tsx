@@ -63,11 +63,7 @@ function Shell({
         <div className="min-w-0 flex-1">
           <CommunityBadge host={host} />
         </div>
-        <button
-          type="button"
-          className="bg-btn bg-btn-secondary min-h-[36px] px-3 py-1.5 text-[14px] print:hidden"
-          onClick={restore}
-        >
+        <button type="button" className="bg-btn bg-btn-secondary print:hidden" onClick={restore}>
           Ver original
         </button>
       </div>
