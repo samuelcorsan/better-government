@@ -1,0 +1,558 @@
+/* Escenas del reparto. Solo se animan transform y opacity; los tonos son neutros, sin colores que
+   recuerden a un partido. El amarillo de Sol marca la provincia y el escaño actual. */
+.rp {
+  --rp-t: 420ms;
+  --rp-con: color-mix(in srgb, var(--tinta) 82%, var(--blanco));
+  --rp-medio: color-mix(in srgb, var(--tinta) 48%, var(--blanco));
+  --rp-claro: color-mix(in srgb, var(--tinta) 22%, var(--blanco));
+  --rp-suave: color-mix(in srgb, var(--tinta) 14%, var(--blanco));
+  margin-top: var(--e-64);
+}
+.rp > h2 {
+  margin-bottom: var(--e-16);
+  font-size: clamp(28px, 3.4vw, 40px);
+  line-height: 1.15;
+}
+.rp-indice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+  margin: 0 0 var(--e-16);
+  padding: 0;
+  list-style: none;
+  counter-reset: rp;
+}
+.rp-indice a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+  min-height: 44px;
+  padding-inline: var(--e-16);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-pildora);
+  background: var(--blanco);
+  font-size: 15px;
+}
+.rp-indice li {
+  counter-increment: rp;
+}
+.rp-indice a::before {
+  content: counter(rp);
+  color: var(--tinta-2);
+  font: 500 13px var(--font-mono);
+}
+.rp-seccion {
+  margin-top: var(--e-48);
+  padding-top: var(--e-32);
+  border-top: 1px solid var(--linea);
+  scroll-margin-top: var(--e-24);
+}
+.rp-seccion h3 {
+  margin-bottom: var(--e-12);
+}
+.rp-intro {
+  max-width: 65ch;
+  margin-bottom: var(--e-24);
+  color: var(--tinta-2);
+}
+.rp-escenario {
+  display: grid;
+  gap: var(--e-16);
+  padding: var(--e-24);
+  border-radius: var(--r-20);
+  background: var(--superficie);
+}
+.rp-lienzo {
+  display: grid;
+  gap: var(--e-16);
+  min-width: 0;
+  padding: var(--e-20);
+  border-radius: var(--r-16);
+  background: var(--blanco);
+}
+.rp-aparece {
+  transition:
+    opacity var(--rp-t) var(--curva-salida),
+    transform var(--rp-t) var(--curva-salida);
+}
+.rp-aparece:not([data-visible]) {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* Controles */
+.rp-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-8);
+}
+.rp-controles [aria-disabled='true'] {
+  background: var(--apagado);
+  color: var(--apagado-texto);
+  box-shadow: none;
+  cursor: default;
+}
+.rp-controles [aria-disabled='true']::before {
+  opacity: 0 !important;
+}
+.rp-contador {
+  margin-left: auto;
+  color: var(--tinta-2);
+}
+.rp-narracion {
+  max-width: 65ch;
+  min-height: 3.2em;
+  margin: 0;
+  font-family: var(--font-lectura);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* Puntos de escaño */
+.rp-fila-escanos {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--e-12);
+}
+.rp-fila-escanos .t-etiqueta {
+  color: var(--tinta-2);
+}
+.rp-puntos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+:is(.rp-puntos, .rp-leyenda) i {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--tinta);
+  border-radius: 50%;
+  background: var(--tinta);
+  transition:
+    opacity var(--rp-t) var(--curva-salida),
+    transform var(--rp-t) var(--curva-salida);
+}
+:is(.rp-puntos, .rp-leyenda) i[data-tipo='minimo'] {
+  background: var(--blanco);
+  box-shadow:
+    inset 0 0 0 3px var(--blanco),
+    inset 0 0 0 9px var(--tinta);
+}
+:is(.rp-puntos, .rp-leyenda) i[data-tipo='nuevo'] {
+  background: var(--amarillo);
+}
+:is(.rp-puntos, .rp-leyenda) i[data-tipo='perdido'] {
+  border-style: dashed;
+  border-color: var(--tinta-3);
+  background: transparent;
+}
+.rp-puntos i[data-tipo='antes'] {
+  border-color: var(--rp-medio);
+  background: var(--rp-medio);
+}
+.rp-puntos i[data-tipo='oculto'] {
+  opacity: 0;
+  transform: scale(0.4);
+}
+.rp-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8) var(--e-24);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+.rp-leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+}
+.rp-leyenda i {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Cifras de D'Hondt */
+.rp-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--e-12);
+  margin: 0;
+}
+.rp-cifras > div {
+  padding: var(--e-16);
+  border-radius: var(--r-16);
+  background: var(--blanco);
+}
+.rp-cifras dt {
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.rp-cifras dd {
+  margin: var(--e-4) 0 0;
+  font-size: 22px;
+}
+
+/* Tablas */
+.rp .table-scroll {
+  border-radius: var(--r-16);
+  background: var(--blanco);
+}
+.rp .rp-tabla {
+  margin: 0;
+}
+.rp .rp-tabla-corta {
+  width: auto;
+  min-width: min(100%, 560px);
+}
+.rp-tabla abbr {
+  text-decoration: none;
+}
+.rp-tabla tfoot th,
+.rp-tabla tfoot td {
+  font-weight: 500;
+}
+.rp-dhondt th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--blanco);
+}
+.rp-dhondt td {
+  position: relative;
+  white-space: nowrap;
+}
+/* El fondo del cociente elegido es una capa: aparece con opacity. */
+.rp-dhondt td::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: 0;
+  border-radius: var(--r-12);
+  background: color-mix(in srgb, var(--amarillo) 32%, var(--blanco));
+  opacity: 0;
+  transition: opacity var(--rp-t) var(--curva-salida);
+}
+.rp-dhondt td[data-elegido]::before {
+  opacity: 1;
+}
+.rp-dhondt td[data-actual]::before {
+  background: var(--amarillo);
+  box-shadow: inset 0 0 0 2px var(--tinta);
+}
+.rp-dhondt td > * {
+  position: relative;
+}
+.rp-orden {
+  margin-left: var(--e-8);
+  font: 500 12px/1 var(--font-mono);
+}
+.rp-dhondt tr[data-fuera] :is(th, td) {
+  color: var(--apagado-texto);
+}
+.rp-nota {
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.rp-escanos {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+}
+.rp-escanos .rp-mini {
+  width: 88px;
+  margin: 0;
+}
+.rp-mini {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-width: 120px;
+  margin-left: var(--e-8);
+  vertical-align: middle;
+}
+.rp-mini i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tinta);
+  transition:
+    opacity var(--rp-t) var(--curva-salida),
+    transform var(--rp-t) var(--curva-salida);
+}
+.rp-mini i:not([data-visible]) {
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+/* Barra de votos sin escaño: la base son los votos a candidaturas con escaño. */
+.rp-barra {
+  position: relative;
+  height: 44px;
+  overflow: hidden;
+  border-radius: var(--r-12);
+  background: var(--rp-con);
+}
+:is(.rp-barra, .rp-leyenda)
+  i:is([data-tipo='con'], [data-tipo='cociente'], [data-tipo='barrera'], [data-tipo='blanco']) {
+  border: 0;
+  border-radius: 3px;
+}
+.rp-barra i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left;
+  transition:
+    opacity var(--rp-t) var(--curva-salida),
+    transform var(--rp-t) var(--curva-salida);
+}
+.rp-barra i:not([data-visible]) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+:is(.rp-barra, .rp-leyenda) i[data-tipo='con'] {
+  background: var(--rp-con);
+}
+:is(.rp-barra, .rp-leyenda) i[data-tipo='cociente'] {
+  background: var(--rp-medio);
+}
+:is(.rp-barra, .rp-leyenda) i[data-tipo='barrera'] {
+  background: var(--rp-claro);
+}
+/* En blanco, rayado: no depende solo del tono. */
+:is(.rp-barra, .rp-leyenda) i[data-tipo='blanco'] {
+  background: repeating-linear-gradient(135deg, var(--blanco) 0 3px, var(--rp-medio) 3px 5px);
+}
+
+/* Hemiciclo */
+.rp-hemiciclo {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  margin-inline: auto;
+  padding: var(--e-16);
+  border-radius: var(--r-16);
+  background: var(--blanco);
+}
+.rp-hemiciclo circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.rp-asiento {
+  fill: var(--rp-suave);
+}
+.rp-franja {
+  fill: var(--rp-claro);
+}
+.rp-tuyo {
+  fill: var(--amarillo);
+  stroke: var(--tinta);
+  stroke-width: 1.4px;
+  transition:
+    opacity var(--rp-t) var(--curva-salida),
+    transform var(--rp-t) var(--curva-salida);
+}
+.rp-tuyo:not([data-visible]) {
+  opacity: 0;
+  transform: scale(0.3);
+}
+.rp-total {
+  fill: var(--tinta);
+  font: 500 22px var(--font-mono);
+  text-anchor: middle;
+}
+
+/* Laboratorio */
+.rp-experimentos,
+.rp-mandos {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.rp-experimentos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+}
+.rp-experimentos legend,
+.rp-mandos legend {
+  margin-bottom: var(--e-8);
+  padding: 0;
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.rp-experimentos .pildora {
+  min-height: 44px;
+  background: var(--blanco);
+  font-size: 15px;
+  white-space: normal;
+  cursor: pointer;
+}
+.rp-experimentos .pildora:has(input:checked) {
+  background: var(--tinta);
+  color: var(--blanco);
+}
+.rp-experimentos .pildora:has(input:focus-visible) {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+.rp-experimentos input {
+  margin: 0;
+  accent-color: var(--amarillo);
+}
+.rp-lab-filas {
+  display: grid;
+  gap: var(--e-12);
+}
+.rp-lab-fila {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) 5.5rem;
+  align-items: center;
+  gap: var(--e-4) var(--e-12);
+}
+.rp-lab-letra {
+  font: 500 18px var(--font-mono);
+}
+.rp-lab-pista {
+  position: relative;
+  height: 26px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--superficie);
+}
+.rp-lab-pista i {
+  position: absolute;
+  inset: 0;
+  background: var(--rp-con);
+  transform-origin: left;
+  transition: transform 600ms var(--curva-salida);
+}
+.rp-lab-fila[data-fuera] .rp-lab-pista i {
+  background: repeating-linear-gradient(135deg, var(--rp-claro) 0 4px, var(--superficie) 4px 7px);
+}
+.rp-lab-barrera {
+  position: absolute;
+  inset: 0;
+  transition: transform 600ms var(--curva-salida);
+}
+.rp-lab-barrera::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 3px;
+  background: var(--amarillo);
+  box-shadow: 0 0 0 1px var(--tinta);
+}
+.rp-lab-dato {
+  display: grid;
+  font-size: 14px;
+  text-align: right;
+}
+.rp-lab-dato small {
+  color: var(--tinta-2);
+  font: inherit;
+}
+.rp-lab-fila .rp-mini {
+  grid-column: 2 / -1;
+  gap: 4px;
+  max-width: none;
+  min-height: 10px;
+  margin: 0;
+}
+.rp-lab-fila .rp-mini i {
+  width: 10px;
+  height: 10px;
+}
+.rp-lab-leyenda {
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.rp-mandos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--e-12) var(--e-24);
+}
+.rp-mandos label {
+  display: grid;
+  gap: var(--e-4);
+  font-size: 15px;
+  font-weight: 500;
+}
+.rp-mandos output {
+  display: grid;
+  color: var(--tinta-2);
+  font-size: 14px;
+  font-weight: 400;
+}
+.rp-mandos input {
+  width: 100%;
+  min-height: 44px;
+  accent-color: var(--tinta);
+}
+.rp-mandos .rp-nota {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .rp-escenario {
+    padding: var(--e-12);
+  }
+  /* Las tres cifras, en una sola tarjeta de filas. */
+  .rp-cifras {
+    gap: 0;
+    padding-inline: var(--e-16);
+    border-radius: var(--r-16);
+    background: var(--blanco);
+  }
+  .rp-cifras > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--e-12);
+    padding: var(--e-12) 0;
+    border-radius: 0;
+  }
+  .rp-cifras > div + div {
+    border-top: 1px solid var(--linea);
+  }
+  .rp-cifras dd {
+    margin: 0;
+    font-size: 18px;
+  }
+  .rp-lienzo {
+    padding: var(--e-16);
+  }
+  .rp-controles {
+    gap: 6px;
+  }
+  .rp-controles .boton-claro {
+    padding-inline: var(--e-12);
+  }
+  .rp-contador {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+  .rp-lab-fila {
+    grid-template-columns: 2.5rem minmax(0, 1fr) 4.5rem;
+  }
+}
+
+/* Sin movimiento: cada paso es un estado quieto con la misma información. */
+@media (prefers-reduced-motion: reduce) {
+  .rp *,
+  .rp *::before {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}

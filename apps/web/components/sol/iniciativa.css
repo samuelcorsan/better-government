@@ -133,15 +133,6 @@
   flex-wrap: wrap;
   gap: var(--e-8) var(--e-24);
 }
-.in-proximo {
-  padding: var(--e-8) var(--e-12);
-  border-radius: var(--r-pildora);
-  background: var(--ambar-claro);
-  color: var(--ambar-texto);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-}
 .in-elecciones {
   background: var(--atardecer);
   color: var(--blanco);
