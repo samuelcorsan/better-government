@@ -113,16 +113,6 @@
   max-width: 360px;
   margin-top: var(--e-24);
 }
-.info-pagina input,
-.info-pagina select {
-  min-height: 44px;
-  max-width: 100%;
-  padding: var(--e-12);
-  border: 1px solid var(--tinta-3);
-  border-radius: var(--r-12);
-  background: var(--blanco);
-  color: var(--tinta);
-}
 .info-pagina form:has(select) {
   display: flex;
   align-items: center;

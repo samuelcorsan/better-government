@@ -1,9 +1,8 @@
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { fuentesSol } from '../components/sol/fuentes';
+import { RouteFocus } from '../components/route-focus';
 import './(search)/globals.css';
-import '../components/sol/tokens.css';
-import '../components/sol/botones.css';
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_ORIGIN || 'http://localhost:3000'),
   title: 'Reforma Digital · Lo público, a la altura de las personas',
@@ -22,11 +21,12 @@ export const metadata: Metadata = {
 };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" data-bg-landing="">
+    <html lang="es" data-bg-landing="" data-scroll-behavior="smooth">
       <body className={`sol-raiz ${fuentesSol}`}>
         <a className="sol-salto" href="#main">
           Saltar al contenido
         </a>
+        <RouteFocus />
         {children}
         <Analytics />
       </body>

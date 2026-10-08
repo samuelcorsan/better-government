@@ -1,6 +1,6 @@
 'use client';
 import { useRef } from 'react';
-import { Icono } from './sol/icono';
+import { Icon } from './sol/icon';
 import { readPdfContext, type PdfContext } from '../lib/attachment';
 export function AttachmentPicker({
   busy,
@@ -48,7 +48,7 @@ export function AttachmentPicker({
         aria-label="Adjuntar PDF"
         title="Adjuntar PDF · Hasta 5 MB y 20 páginas"
       >
-        <Icono n="documento" size={21} />
+        <Icon name="documento" size={21} />
       </button>
     </>
   );

@@ -1,55 +1,14 @@
-/* Sistema Sol: única fuente de tokens de la web pública. Uso en GUIA.md.
-   Timeless Serif, Serif Text y Sans (timeless.co, gratis): su licencia prohíbe subirlas a un
-   repositorio público, así que viven en public/fonts/timeless/ (ignorado por git). Quien no las
-   tenga ve Georgia y Geist. El logotipo usa Timeless Sans Bold. */
-@font-face {
-  font-family: 'Timeless Serif';
-  src: url('/fonts/timeless/TimelessSerifVF.woff2') format('woff2');
-  font-weight: 100 900;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Timeless Serif';
-  src: url('/fonts/timeless/TimelessSerifItalicVF.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Timeless Serif Text';
-  src: url('/fonts/timeless/TimelessSerif-TextRegular.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Timeless Serif Text';
-  src: url('/fonts/timeless/TimelessSerif-TextMedium.woff2') format('woff2');
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Timeless Sans';
-  src: url('/fonts/timeless/TimelessSans-SansRegular.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Timeless Sans';
-  src: url('/fonts/timeless/TimelessSans-SansMedium.woff2') format('woff2');
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Timeless Sans';
-  src: url('/fonts/timeless/TimelessSans-SansSemibold.woff2') format('woff2');
-  font-weight: 600;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Timeless Sans';
-  src: url('/fonts/timeless/TimelessSans-SansBold.woff2') format('woff2');
-  font-weight: 700;
-  font-display: swap;
+/* Sistema Sol: única fuente de tokens de la web pública (apps/web). Uso en
+   apps/web/components/sol/GUIA.md; utilidades de Tailwind en tailwind.css.
+   Las fuentes las carga la app: Geist y Geist Mono con next/font (--font-geist, --font-geist-mono).
+   FFF Tool Serif Text y Ufficio son de pago y no se sirven: sin sus archivos se ven Georgia y Geist
+   (DESIGN.md §8.1). */
+/* Movimiento en :root: los pseudoelementos ::view-transition-* cuelgan de <html>. */
+:root {
+  --t-rapido: 160ms;
+  --t-medio: 200ms;
+  --curva-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --curva-cajon: cubic-bezier(0.32, 0.72, 0, 1);
 }
 .sol-raiz {
   /* Compatibilidad del chat, las fuentes y el mapa con los tokens compartidos de la extensión. */
@@ -105,16 +64,16 @@
     var(--rojo);
 
   /* Tipografía */
-  --font-titular: 'Timeless Serif', Georgia, serif;
-  --font-lectura: 'Timeless Serif Text', 'Timeless Serif', Georgia, serif; /* párrafos de lectura */
-  --font-texto: 'Timeless Sans', var(--font-geist), 'Geist', ui-sans-serif, system-ui, sans-serif;
+  /* Serif solo en titulares y cifras grandes; nunca en botones, menús ni texto corrido. */
+  --font-titular: 'FFF Tool Serif Text', Georgia, serif;
+  --font-texto: var(--font-geist), 'Geist', ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), 'Geist Mono', ui-monospace, monospace;
   /* Cifras grandes de marca (89, 83, 20). Para probarlas en mono: var(--font-mono). */
   --font-cifra: var(--font-titular);
   --marca-color: var(
     --rojo
   ); /* la R: roja sobre claro; los fondos rojos y tinta la ponen en currentColor */
-  --font-logo: var(--font-texto); /* logotipo: Timeless Sans Bold, en .marca */
+  --font-logo: 'Ufficio', 'Ufficio Display', var(--font-texto); /* solo el logotipo, en .marca */
 
   /* Radios */
   --r-12: 12px;
@@ -150,12 +109,6 @@
     0 0 0 1px rgba(120, 40, 0, 0.06), 0 2px 4px rgba(120, 40, 0, 0.08),
     0 18px 40px -12px rgba(120, 40, 0, 0.16);
 
-  /* Movimiento */
-  --t-rapido: 160ms;
-  --t-medio: 200ms;
-  --curva-salida: cubic-bezier(0.23, 1, 0.32, 1);
-  --curva-cajon: cubic-bezier(0.32, 0.72, 0, 1);
-
   background: var(--blanco);
   color: var(--tinta);
   font-family: var(--font-texto);
@@ -189,42 +142,6 @@
   outline: none;
 }
 
-/* Salto al contenido compartido por todas las páginas. */
-.sol-salto {
-  position: fixed;
-  top: 8px;
-  left: 8px;
-  z-index: 100;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 var(--e-16);
-  border-radius: var(--r-12);
-  background: var(--tinta);
-  color: var(--blanco);
-  font-size: 15px;
-  font-weight: 500;
-  text-decoration: none;
-  transform: translateY(calc(-100% - 16px));
-}
-.sol-salto:focus-visible {
-  transform: none;
-}
-
-/* Logotipo: la R y «Reforma / Digital» en Timeless Sans Bold (componente Logotipo). */
-.marca {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  font-family: var(--font-logo);
-  font-weight: 700;
-  line-height: 0.92;
-  letter-spacing: -0.01em;
-}
-.marca-texto {
-  display: block;
-}
-
 /* Texto */
 .t-titular-xl,
 .t-titular-m,
@@ -251,7 +168,7 @@
   letter-spacing: -0.01em;
 }
 .t-texto-l {
-  font-family: var(--font-lectura);
+  font-family: var(--font-texto);
   font-size: clamp(17px, 1.4vw, 19px);
   line-height: 1.6;
   text-wrap: pretty;
@@ -286,14 +203,6 @@
   text-decoration-line: underline;
   text-decoration-thickness: from-font;
   text-underline-offset: 0.2em;
-}
-
-/* Iconos: ver icono.tsx */
-.icono {
-  flex-shrink: 0;
-}
-.icono-girado {
-  transform: rotate(180deg);
 }
 
 /* Cajas (superficies). El prefijo `caja-` queda reservado para ellas.

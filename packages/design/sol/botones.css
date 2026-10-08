@@ -1,4 +1,4 @@
-/* Botones Sol. Requieren tokens.css dentro de .sol-raiz. Uso en GUIA.md.
+/* Botones Sol. Requieren tokens.css dentro de .sol-raiz. Uso en GUIA.md; en React, <Button>.
    El hover vive en una capa ::before: solo cambian su opacity y su transform. */
 :is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar) {
   position: relative;
@@ -16,11 +16,25 @@
   font-weight: 500;
   line-height: 1.2;
   white-space: nowrap;
-  text-decoration: none;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform var(--t-rapido) var(--curva-salida);
+}
+/* Los botones nunca se subrayan. Con .sol-raiz delante (0,2,0) gana a los subrayados de
+   enlace de una clase, como .in-enlace, o de clase y etiqueta, como .pie-legal a. */
+.sol-raiz
+  :is(
+    button,
+    [role='button'],
+    .boton,
+    .boton-claro,
+    .boton-fantasma,
+    .boton-icono,
+    .boton-enviar,
+    .pildora
+  ) {
+  text-decoration-line: none;
 }
 :is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar)::before {
   content: '';
@@ -54,17 +68,22 @@
 }
 :is(.boton, .boton-enviar)::before {
   /* La capa cabe en el botón para conservar el recorte redondeado en Safari. */
+  /* El degradado se dibuja en al menos 134 px de ancho y centrado: en botones cortos el sol
+     sigue siendo una franja, no una bola. (max() no vale en el tamaño del degradado en Chrome.) */
   background: radial-gradient(
-    ellipse 60% 65% at 50% 110%,
-    var(--amarillo) 0%,
-    var(--naranja) 38%,
-    rgba(223, 23, 23, 0.9) 68%,
-    rgba(223, 23, 23, 0) 100%
-  );
-  transform: translateY(40%) scale(0.75);
+      ellipse 60% 65% at 50% 110%,
+      var(--amarillo) 0%,
+      var(--naranja) 38%,
+      rgba(223, 23, 23, 0.9) 68%,
+      rgba(223, 23, 23, 0) 100%
+    )
+    50% 0 / max(100%, 134px) 100% no-repeat;
+  /* En reposo el sol queda entero bajo el borde (empieza al 45 % del alto). Al salir se pone:
+     baja mientras se apaga en lineal, así no pasa por tonos pardos a la vista. */
+  transform: translateY(55%);
   transition:
-    opacity 180ms var(--curva-salida),
-    transform 180ms var(--curva-salida);
+    opacity var(--t-medio) linear,
+    transform var(--t-medio) ease;
 }
 .boton-enviar {
   width: 52px;
@@ -100,18 +119,34 @@
   flex-shrink: 0;
 }
 
+/* Tarjeta enlace: si toda la tarjeta es el enlace, el botón que contiene es decorativo y
+   responde al hover, al foco y a la pulsación de la tarjeta. */
+.tarjeta-enlace:focus-visible :is(.boton, .boton-enviar, .boton-claro)::before {
+  opacity: 1;
+  transform: none;
+}
+.tarjeta-enlace:focus-visible :is(.boton-fantasma, .boton-icono)::before {
+  opacity: 0.08;
+}
+.tarjeta-enlace:active :is(.boton, .boton-claro, .boton-fantasma, .boton-icono, .boton-enviar) {
+  transform: scale(0.96);
+}
+
 @media (hover: hover) and (pointer: fine) {
-  :is(.boton, .boton-enviar, .boton-claro):hover:not(:disabled)::before {
+  :is(.boton, .boton-enviar, .boton-claro):hover:not(:disabled)::before,
+  .tarjeta-enlace:hover :is(.boton, .boton-enviar, .boton-claro)::before {
     opacity: 1;
     transform: none;
   }
   /* La entrada del sol dura algo más que la salida: sube despacio y se va rápido. */
-  :is(.boton, .boton-enviar):hover:not(:disabled)::before {
+  :is(.boton, .boton-enviar):hover:not(:disabled)::before,
+  .tarjeta-enlace:hover :is(.boton, .boton-enviar)::before {
     transition:
       opacity 280ms var(--curva-salida),
       transform 420ms var(--curva-salida);
   }
-  :is(.boton-fantasma, .boton-icono):hover:not(:disabled)::before {
+  :is(.boton-fantasma, .boton-icono):hover:not(:disabled)::before,
+  .tarjeta-enlace:hover :is(.boton-fantasma, .boton-icono)::before {
     opacity: 0.08;
   }
 }
@@ -132,7 +167,6 @@
   font-size: 14px;
   line-height: 1.2;
   white-space: nowrap;
-  text-decoration: none;
 }
 :is(a, button).pildora {
   cursor: pointer;

@@ -1,7 +1,23 @@
 @import '@reforma-digital/design/tokens.css';
+@import '@reforma-digital/design/sol/tokens.css';
+@import '@reforma-digital/design/sol/botones.css';
+@import '@reforma-digital/design/sol/campos.css';
+@import 'tailwindcss/theme.css' layer(theme);
+@import '@reforma-digital/design/sol/tailwind.css';
+/* Sin capa y después de Sol: una utilidad puede ajustar una clase del sistema. Solo se buscan
+   clases en el código: los .css nombran propiedades (hidden, transform…) que no son utilidades. */
+@import 'tailwindcss/utilities.css' source(none);
+@source '../../**/*.{ts,tsx}';
 
 * {
   box-sizing: border-box;
+}
+/* Solo dentro de la página (#proyectos, #participar); data-scroll-behavior en <html> hace
+   que Next lo anule al cambiar de ruta. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 body {
   margin: 0;
@@ -62,4 +78,88 @@ a svg {
 }
 .skip-link:focus {
   transform: none;
+}
+
+/* Salto al contenido compartido por todas las páginas. */
+.sol-salto {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--e-16);
+  border-radius: var(--r-12);
+  background: var(--tinta);
+  color: var(--blanco);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 16px));
+}
+.sol-salto:focus-visible {
+  transform: none;
+}
+
+/* Logotipo: la R y «Reforma / Digital» en --font-logo (Ufficio; sin sus archivos, Geist). */
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-logo);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+}
+.marca-texto {
+  display: block;
+}
+
+/* Iconos: ver icon.tsx */
+.icono {
+  flex-shrink: 0;
+}
+.icono-girado {
+  transform: rotate(180deg);
+}
+
+/* <ViewTransition> de equipo/page.tsx: solo se anima el contenido de /equipo; el resto de la
+   página cambia al instante. React solo anima entradas y salidas sin un elemento DOM nuevo por
+   encima, así que envuelve la página entera y la cabecera se saca con su propio nombre. */
+.in-nav {
+  view-transition-name: sol-cabecera;
+}
+::view-transition-old(root),
+::view-transition-old(sol-cabecera) {
+  display: none;
+}
+::view-transition-group(root),
+::view-transition-new(root),
+::view-transition-group(sol-cabecera),
+::view-transition-new(sol-cabecera) {
+  animation: none;
+}
+::view-transition-new(.equipo-entra) {
+  animation: var(--t-medio) var(--curva-salida) both sol-pagina-entra;
+}
+::view-transition-old(.equipo-sale) {
+  animation: var(--t-rapido) var(--curva-salida) both sol-pagina-sale;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(.equipo-entra),
+  ::view-transition-old(.equipo-sale) {
+    animation: none;
+  }
+}
+@keyframes sol-pagina-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes sol-pagina-sale {
+  to {
+    opacity: 0;
+  }
 }

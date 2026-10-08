@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
+import { Button, Field } from '@reforma-digital/design/sol';
 import { listReports, compareReports, type Report } from '@reforma-digital/evals/reports';
-import { PaginaInformativa } from '../../../../components/sol/pagina-informativa';
+import { InfoPage } from '../../../../components/sol/info-page';
 import { authorized } from '../../../../lib/security';
 import { login, logout } from './actions';
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ export default async function Evals({
   const baseline = reports.find((r) => r.id === params.baseline) ?? reports.find((r) => r.approved);
   const latest = reports[0];
   return (
-    <PaginaInformativa>
+    <InfoPage>
       <span className="t-etiqueta info-etiqueta">LABORATORIO DE CALIDAD</span>
       <h1>Menos intuición. Más evidencia.</h1>
       <p className="info-entradilla">
@@ -55,7 +56,7 @@ export default async function Evals({
           {process.env.ADMIN_TOKEN && (
             <form action={login}>
               <label htmlFor="token">Clave de administrador</label>
-              <input
+              <Field
                 id="token"
                 name="token"
                 type="password"
@@ -63,16 +64,14 @@ export default async function Evals({
                 required
               />
               {params.error && <p role="alert">Clave incorrecta.</p>}
-              <button className="boton" type="submit">
-                Entrar
-              </button>
+              <Button type="submit">Entrar</Button>
             </form>
           )}
         </div>
       ) : (
         <>
           <form action={logout}>
-            <button className="boton-fantasma">Cerrar sesión</button>
+            <Button variant="ghost">Cerrar sesión</Button>
           </form>
           {storageError && (
             <p role="alert">No se ha podido acceder al almacenamiento de experimentos.</p>
@@ -126,7 +125,12 @@ export default async function Evals({
           {reports.length > 1 && (
             <form method="get">
               <label htmlFor="baseline-run">Comparar con experimento </label>
-              <select id="baseline-run" name="baseline" defaultValue={baseline?.id ?? ''}>
+              <select
+                className="campo"
+                id="baseline-run"
+                name="baseline"
+                defaultValue={baseline?.id ?? ''}
+              >
                 <option value="">Baseline aprobado</option>
                 {reports.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -135,9 +139,9 @@ export default async function Evals({
                   </option>
                 ))}
               </select>
-              <button className="boton-fantasma" type="submit">
+              <Button variant="ghost" type="submit">
                 Comparar
-              </button>
+              </Button>
             </form>
           )}
           {reports.map((r) => {
@@ -235,6 +239,6 @@ export default async function Evals({
           })}
         </>
       )}
-    </PaginaInformativa>
+    </InfoPage>
   );
 }

@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { sources } from '@reforma-digital/government';
-import { Icono } from '../../components/sol/icono';
-import { Cabecera } from '../../components/sol/cabecera';
-import { Pie } from '../../components/sol/pie';
-import { EscenaRecorrido } from '../../components/sol/recorrido';
-import { RecorridoScroll } from '../../components/sol/recorrido-scroll';
+import { Button } from '@reforma-digital/design/sol';
+import { Icon } from '../../components/sol/icon';
+import { Header } from '../../components/sol/header';
+import { Footer } from '../../components/sol/footer';
+import { ProjectScene } from '../../components/sol/project-scene';
+import { ProjectTour } from '../../components/sol/project-tour';
 import { links } from '../../lib/site';
-import { Contribucion } from '../../components/sol/contribucion';
+import { Contribution } from '../../components/sol/contribution';
 import '../../components/sol/iniciativa.css';
 
 export const metadata: Metadata = {
@@ -16,12 +18,12 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function IniciativaPage() {
+export default function HomePage() {
   return (
     <div className="iniciativa">
       <main id="main" tabIndex={-1}>
         <section className="in-hero" aria-labelledby="in-titulo">
-          <Cabecera />
+          <Header />
           <div className="in-hero-interior">
             <h1 id="in-titulo" className="t-titular-xl">
               Lo público, a la altura de las personas.
@@ -31,9 +33,9 @@ export default function IniciativaPage() {
               Creamos herramientas y propuestas para que relacionarnos con ella sea más claro,
               accesible y sencillo. Lo hacemos en comunidad y con código abierto.
             </p>
-            <a className="in-hero-enlace" href="#proyectos">
-              Conoce los proyectos <Icono n="abajo" size={16} />
-            </a>
+            <Button variant="secondary" className="in-hero-enlace" href="#proyectos">
+              Conoce los proyectos <Icon name="abajo" size={16} />
+            </Button>
           </div>
         </section>
 
@@ -43,9 +45,9 @@ export default function IniciativaPage() {
             <h2 id="in-idea" className="t-titular-m">
               Que hacer un trámite no sea otro trámite.
             </h2>
-            <a className="in-enlace" href="/equipo">
-              Conoce al equipo <Icono n="derecha" size={16} />
-            </a>
+            <Link className="in-enlace" href="/equipo">
+              Conoce al equipo <Icon name="derecha" size={16} />
+            </Link>
           </div>
           <div className="in-lectura t-texto-l">
             <p>
@@ -62,10 +64,10 @@ export default function IniciativaPage() {
         </section>
 
         <div id="proyectos" className="in-proyectos">
-          <RecorridoScroll
-            tituloId="in-proyectos-titulo"
-            unidad="Proyecto"
-            cabecera={
+          <ProjectTour
+            titleId="in-proyectos-titulo"
+            unit="Proyecto"
+            header={
               <header className="in-seccion-cabecera">
                 <div>
                   <p className="t-etiqueta in-etiqueta">Los proyectos</p>
@@ -80,61 +82,61 @@ export default function IniciativaPage() {
                 </p>
               </header>
             }
-            pasos={[
+            steps={[
               {
-                titulo: 'Encuentra por dónde empezar.',
-                etiqueta: <span className="in-proyecto-tipo">01 · Buscador de trámites</span>,
-                texto: (
+                title: 'Encuentra por dónde empezar.',
+                label: <span className="in-proyecto-tipo">01 · Buscador de trámites</span>,
+                text: (
                   <>
                     <p className="t-texto-l">
                       Pregunta con tus palabras. El buscador te orienta con respuestas, enlaces y
                       fragmentos de fuentes oficiales que puedes consultar.
                     </p>
-                    <a className="boton" href="/chat">
-                      Abrir el buscador <Icono n="derecha" size={16} />
-                    </a>
+                    <Link className="boton" href="/chat">
+                      Abrir el buscador <Icon name="derecha" size={16} />
+                    </Link>
                   </>
                 ),
-                escena: <EscenaRecorrido proyecto="buscador" />,
+                scene: <ProjectScene project="search" />,
               },
               {
-                titulo: 'La web oficial, más fácil de usar.',
-                etiqueta: <span className="in-proyecto-tipo">02 · Extensión para Chrome</span>,
-                texto: (
+                title: 'La web oficial, más fácil de usar.',
+                label: <span className="in-proyecto-tipo">02 · Extensión para Chrome</span>,
+                text: (
                   <>
                     <p className="t-texto-l">
                       Prueba otra interfaz en pantallas de DNI, Extranjería, Hacienda y Registro de
                       asociaciones. Los formularios y los envíos siguen en la sede oficial.
                     </p>
                     <div className="in-acciones">
-                      <a className="boton" href={links.install}>
-                        Descargar la extensión <Icono n="descargar" size={16} />
-                      </a>
+                      <Button href={links.install}>
+                        Descargar la extensión <Icon name="descargar" size={16} />
+                      </Button>
                     </div>
                   </>
                 ),
-                escena: (
+                scene: (
                   <div className="rc-pieza in-proyecto-sol">
-                    <EscenaRecorrido proyecto="extension" />
+                    <ProjectScene project="extension" />
                   </div>
                 ),
               },
               {
-                titulo: 'La información tiene un origen.',
-                etiqueta: <span className="in-proyecto-tipo">03 · Mapa de fuentes</span>,
-                texto: (
+                title: 'La información tiene un origen.',
+                label: <span className="in-proyecto-tipo">03 · Mapa de fuentes</span>,
+                text: (
                   <>
                     <p className="t-texto-l">
                       Explora los organismos oficiales que consulta el buscador y accede a sus webs.
                       Un punto de partida para conocer su cobertura y comprobar la información.
                     </p>
-                    <a className="in-enlace" href="/sources">
-                      Explorar las fuentes <Icono n="derecha" size={16} />
-                    </a>
+                    <Link className="in-enlace" href="/sources">
+                      Explorar las fuentes <Icon name="derecha" size={16} />
+                    </Link>
                   </>
                 ),
-                escena: (
-                  <div className="rc-pieza rc-sobre-sol">
+                scene: (
+                  <div className="rc-pieza rc-sobre-sol" aria-hidden="true">
                     <div className="rc-respuesta caja-flota">
                       <span className="t-etiqueta">Fuentes oficiales</span>
                       {sources.slice(0, 3).map((source) => (
@@ -144,15 +146,15 @@ export default function IniciativaPage() {
                         </span>
                       ))}
                       <span className="rc-abrir">
-                        Consulta el origen de cada dato <Icono n="fuentes" size={16} />
+                        Consulta el origen de cada dato <Icon name="fuentes" size={16} />
                       </span>
                     </div>
                   </div>
                 ),
               },
               {
-                titulo: 'Participar empieza por entender.',
-                etiqueta: (
+                title: 'Participar empieza por entender.',
+                label: (
                   <div className="in-acciones">
                     <span className="in-proyecto-tipo">04 · Elecciones</span>
                     <span className="in-proximo" lang="en">
@@ -160,14 +162,14 @@ export default function IniciativaPage() {
                     </span>
                   </div>
                 ),
-                texto: (
+                text: (
                   <p className="t-texto-l">
                     Elegir también requiere información clara. Estamos preparando nuevos proyectos
                     para acercar las elecciones a las personas. Pronto te contaremos más.
                   </p>
                 ),
-                escena: (
-                  <div className="rc-pieza in-elecciones">
+                scene: (
+                  <div className="rc-pieza in-elecciones" aria-hidden="true">
                     <p className="in-elecciones-lema">Lo público también se elige.</p>
                     <svg viewBox="120 40 390 430" fill="none" aria-hidden="true">
                       <ellipse
@@ -249,7 +251,7 @@ export default function IniciativaPage() {
                     conocer los proyectos y cómo se organizan.
                   </p>
                   <a className="in-enlace" href={links.repo}>
-                    Abrir el repositorio <Icono n="externo" size={16} />
+                    Abrir el repositorio <Icon name="externo" size={16} />
                   </a>
                 </div>
               </li>
@@ -264,7 +266,7 @@ export default function IniciativaPage() {
                     cuenta qué ocurre, dónde y qué te gustaría que cambiara.
                   </p>
                   <a className="in-enlace" href={`${links.repo}/issues`}>
-                    Ver ideas y propuestas <Icono n="externo" size={16} />
+                    Ver ideas y propuestas <Icon name="externo" size={16} />
                   </a>
                 </div>
               </li>
@@ -280,16 +282,16 @@ export default function IniciativaPage() {
                     comunidad.
                   </p>
                   <a className="in-enlace" href={links.contributing}>
-                    Leer la guía de contribución <Icono n="externo" size={16} />
+                    Leer la guía de contribución <Icon name="externo" size={16} />
                   </a>
                 </div>
               </li>
             </ol>
-            <Contribucion />
+            <Contribution />
           </div>
         </section>
       </main>
-      <Pie />
+      <Footer />
     </div>
   );
 }

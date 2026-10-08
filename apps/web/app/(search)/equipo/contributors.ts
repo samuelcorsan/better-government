@@ -9,6 +9,16 @@ const contributorsSchema = z.array(
   }),
 );
 
+export const coreTeam = [
+  { name: 'Leo', login: 'mrloldev', id: 65485999 },
+  { name: 'Samu', login: 'samuelcorsan', id: 120322525 },
+  { name: 'Pablo', login: 'pdepablocom', id: 262992558 },
+  { name: 'Alex Cerezo', login: 'alexcerezo', id: 92682715 },
+  { name: 'Roger', login: 'rogerkernel', id: 45967941 },
+];
+
+const coreLogins = new Set(coreTeam.map(({ login }) => login.toLowerCase()));
+
 export async function getContributors() {
   try {
     // Hasta 100 perfiles en esta vista; el enlace a GitHub permite consultar la lista completa.
@@ -22,7 +32,9 @@ export async function getContributors() {
     );
     if (!response.ok) return null;
     if (response.status === 204) return [];
-    return contributorsSchema.parse(await response.json()).filter(({ type }) => type === 'User');
+    return contributorsSchema
+      .parse(await response.json())
+      .filter(({ type, login }) => type === 'User' && !coreLogins.has(login.toLowerCase()));
   } catch {
     return null;
   }

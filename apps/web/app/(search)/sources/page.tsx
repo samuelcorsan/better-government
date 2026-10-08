@@ -1,23 +1,23 @@
 import type { Metadata } from 'next';
 import { sources } from '@reforma-digital/government';
-import { PaginaInformativa } from '../../../components/sol/pagina-informativa';
-import { Icono } from '../../../components/sol/icono';
-import { FuentesMapa } from '../../../components/fuentes-mapa';
+import { InfoPage } from '../../../components/sol/info-page';
+import { Icon } from '../../../components/sol/icon';
+import { SourcesMapPanel } from '../../../components/sources-map-panel';
 export const metadata: Metadata = { title: 'Fuentes oficiales · Reforma Digital' };
 export default function Sources() {
   return (
-    <PaginaInformativa>
+    <InfoPage>
       <span className="t-etiqueta info-etiqueta">INFORMACIÓN CON ORIGEN</span>
       <h1>Las fuentes importan.</h1>
       <p className="info-entradilla">
         Un registro limitado de organismos oficiales. No buscamos en toda Internet: cada respuesta
         se construye a partir de documentos de estas fuentes aprobadas.
       </p>
-      <FuentesMapa />
+      <SourcesMapPanel />
       <div className="registry-grid">
         {sources.map((s) => (
           <article className="registry-card" key={s.id}>
-            <Icono n="fuentes" size={24} />
+            <Icon name="fuentes" size={24} />
             <h2>{s.name}</h2>
             <p>
               {s.jurisdictionType === 'country'
@@ -32,7 +32,7 @@ export default function Sources() {
               Consultada mediante búsqueda web
             </span>
             <a href={s.baseUrl} target="_blank" rel="noopener noreferrer">
-              Visitar organismo <Icono n="derecha" size={16} />
+              Visitar organismo <Icon name="derecha" size={16} />
             </a>
           </article>
         ))}
@@ -45,6 +45,6 @@ export default function Sources() {
           cada cita.
         </p>
       </div>
-    </PaginaInformativa>
+    </InfoPage>
   );
 }

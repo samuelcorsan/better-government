@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { PaginaInformativa } from '../../../components/sol/pagina-informativa';
+import { InfoPage } from '../../../components/sol/info-page';
 export const metadata: Metadata = { title: 'Privacidad · Reforma Digital' };
 export default function Privacy() {
   return (
-    <PaginaInformativa lectura>
+    <InfoPage narrow>
       <span className="t-etiqueta info-etiqueta">TUS DATOS, CON CUIDADO</span>
       <h1>Pregunta sin identificarte.</h1>
       <p className="info-entradilla">
@@ -31,9 +31,10 @@ export default function Privacy() {
         de esta conversación.
       </p>
       <p>
-        Las fotos de la página del equipo se cargan desde GitHub y los contributors se consultan en
-        su API pública. GitHub recibe tu dirección IP al servir las imágenes, sin la dirección de la
-        página que estás visitando. Esas peticiones no incluyen preguntas ni documentos del chat.
+        Las fotos de la página del equipo vienen de GitHub y los contributors se consultan en su API
+        pública. Nuestro servidor descarga y optimiza esas imágenes, así que tu navegador no se
+        conecta con GitHub para verlas. Esas peticiones no incluyen preguntas ni documentos del
+        chat.
       </p>
       <h2>Documentos adjuntos</h2>
       <p>
@@ -59,6 +60,6 @@ export default function Privacy() {
         expresamente en tu pregunta. No instalamos cookies publicitarias. El área interna utiliza
         una cookie de sesión protegida para el acceso del administrador.
       </p>
-    </PaginaInformativa>
+    </InfoPage>
   );
 }

@@ -1,13 +1,12 @@
 'use client';
-import { PaginaInformativa } from '../../components/sol/pagina-informativa';
+import { Button } from '@reforma-digital/design/sol';
+import { InfoPage } from '../../components/sol/info-page';
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
-    <PaginaInformativa lectura>
+    <InfoPage narrow>
       <h1>No hemos podido cargar esta página.</h1>
       <p className="info-entradilla">Inténtalo de nuevo en un momento.</p>
-      <button className="boton" onClick={reset}>
-        Volver a intentar
-      </button>
-    </PaginaInformativa>
+      <Button onClick={reset}>Volver a intentar</Button>
+    </InfoPage>
   );
 }
