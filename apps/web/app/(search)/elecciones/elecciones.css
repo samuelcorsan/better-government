@@ -1,0 +1,487 @@
+/* Tonos neutros por habitantes por escaño: sin colores que recuerden a un partido. */
+.el-mapa [data-band='0'] {
+  fill: color-mix(in srgb, var(--tinta) 12%, var(--blanco));
+  background: color-mix(in srgb, var(--tinta) 12%, var(--blanco));
+}
+.el-mapa [data-band='1'] {
+  fill: color-mix(in srgb, var(--tinta) 35%, var(--blanco));
+  background: color-mix(in srgb, var(--tinta) 35%, var(--blanco));
+}
+.el-mapa [data-band='2'] {
+  fill: color-mix(in srgb, var(--tinta) 68%, var(--blanco));
+  background: color-mix(in srgb, var(--tinta) 68%, var(--blanco));
+}
+.el-mapa [data-band='3'] {
+  fill: color-mix(in srgb, var(--tinta) 90%, var(--blanco));
+  background: color-mix(in srgb, var(--tinta) 90%, var(--blanco));
+}
+.el-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-16);
+  margin-bottom: var(--e-24);
+}
+.el-barra form:has(select) {
+  margin: 0;
+}
+/* Flecha propia en vez de la nativa, que no se separa del borde con el relleno. */
+.el-desplegable {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.el-desplegable select {
+  appearance: none;
+  padding-right: 44px;
+}
+.el-desplegable .icono {
+  position: absolute;
+  right: var(--e-16);
+  pointer-events: none;
+}
+.el-vistas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+}
+.el-vistas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--e-16);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-pildora);
+  background: var(--blanco);
+}
+.el-vistas a[aria-current] {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: var(--blanco);
+}
+.el-contenido {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--e-32);
+}
+.el-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.el-provincia :is(path, circle) {
+  stroke: var(--tinta);
+  stroke-width: 1px;
+}
+.el-provincia circle {
+  stroke-width: 0.6px;
+}
+.el-provincia [data-band='3'] {
+  stroke: var(--blanco);
+}
+/* La provincia elegida, en amarillo de Sol: también la nombra la ficha. */
+.el-mapa .el-provincia[aria-current] :is(path, circle) {
+  fill: var(--amarillo);
+  stroke: var(--tinta);
+  stroke-width: 2px;
+}
+.el-mapa .el-provincia[aria-current] .el-cifra {
+  fill: var(--tinta);
+}
+.el-provincia:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+.el-provincia:focus-visible :is(path, circle) {
+  stroke-width: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .el-provincia:hover :is(path, circle) {
+    stroke-width: 3px;
+  }
+}
+/* En la vista de escaños, la silueta de España sitúa los círculos. */
+.el-silueta {
+  fill: var(--blanco);
+  stroke: var(--tinta-3);
+  stroke-width: 0.5px;
+  vector-effect: non-scaling-stroke;
+}
+.el-recuadro {
+  fill: none;
+  stroke: var(--tinta-3);
+}
+.el-rotulo {
+  fill: var(--tinta-2);
+  font-size: 14px;
+}
+.el-provincia .el-rotulo {
+  text-decoration: underline;
+}
+/* Sin el borde de la banda, que comparte data-band con el círculo. */
+.el-provincia .el-cifra {
+  stroke: none;
+  font: 500 13px var(--font-mono);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.el-mapa .el-cifra:is([data-band='0'], [data-band='1']) {
+  fill: var(--tinta);
+}
+.el-mapa .el-cifra:is([data-band='2'], [data-band='3']) {
+  fill: var(--blanco);
+}
+.el-leyenda-titulo {
+  margin-top: var(--e-16);
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.el-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-12) var(--e-24);
+  margin: var(--e-8) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+.el-leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+}
+.el-muestra {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--tinta-3);
+}
+.el-credito {
+  margin-top: var(--e-16);
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.el-mapa a:not(.el-provincia, .el-vistas a) {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.el-ficha {
+  padding: var(--e-24);
+  border-radius: var(--r-20);
+  background: var(--blanco);
+}
+.el-ficha h3 {
+  margin-bottom: var(--e-16);
+  font: 400 30px/1.2 var(--font-titular);
+}
+.el-ficha dl {
+  display: grid;
+  gap: var(--e-16);
+  margin: 0;
+}
+/* La explicación se abre bajo la etiqueta, con el ancho de la ficha. */
+.el-ficha dt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.el-ficha dd {
+  margin: 0;
+}
+/* Área táctil de 44 px sin alargar la línea de la etiqueta. */
+.el-info-boton {
+  margin-block: -12px;
+  color: var(--tinta-2);
+}
+.el-info {
+  position: absolute;
+  z-index: 2;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding-top: var(--e-8);
+  color: var(--tinta);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.el-info > span {
+  display: block;
+  padding: var(--e-16);
+  border-radius: var(--r-16);
+}
+.el-ficha strong {
+  margin-right: var(--e-4);
+  font-size: 22px;
+  font-weight: 500;
+}
+.el-ficha .el-fuentes {
+  font-size: 14px;
+}
+.el-ficha > p {
+  margin-top: var(--e-16);
+  color: var(--tinta-2);
+}
+.el-tabla summary {
+  display: list-item;
+  min-height: 44px;
+  padding-block: var(--e-8);
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.el-tabla summary:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+.el-tabla[open] summary {
+  margin-bottom: var(--e-16);
+}
+@media (max-width: 800px) {
+  .el-contenido {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--e-24);
+  }
+  .el-ficha {
+    padding: var(--e-16);
+  }
+}
+@media (max-width: 640px) {
+  .el-rotulo {
+    font-size: 28px;
+  }
+  /* A este ancho la cifra quedaría por debajo de 14 px; los escaños siguen en la ficha y la tabla. */
+  .el-cifra {
+    display: none;
+  }
+}
+.el-controles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-16);
+}
+.el-controles label {
+  display: grid;
+  gap: var(--e-8);
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.el-controles input {
+  width: min(320px, 100%);
+}
+.el-recuento {
+  min-height: 1.5em;
+  margin-top: var(--e-12);
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+
+/* Reparto paso a paso de la provincia elegida: texto a la izquierda y figura a la derecha. */
+.el-reparto {
+  margin-top: var(--e-48);
+}
+.el-reparto > h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.2;
+}
+.el-bloque {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: start;
+  gap: var(--e-32);
+  padding-block: var(--e-32);
+  border-bottom: 1px solid var(--linea);
+}
+.el-bloque-texto {
+  display: grid;
+  gap: var(--e-12);
+  max-width: 65ch;
+  color: var(--tinta-2);
+}
+.el-bloque-texto h3 {
+  color: var(--tinta);
+}
+.el-pasos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-12);
+  margin-top: var(--e-16);
+}
+.el-pasos > span {
+  font-size: 14px;
+  color: var(--tinta-2);
+}
+.el-paso {
+  margin-top: var(--e-12);
+  color: var(--tinta-2);
+}
+.el-escanos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+}
+.el-escano {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+.el-escano[data-tipo='ley'] {
+  background: var(--tinta);
+}
+.el-escano[data-tipo='poblacion'] {
+  background: var(--tinta-3);
+}
+.el-escano[data-tipo='nuevo'] {
+  background: var(--amarillo);
+  box-shadow: inset 0 0 0 2px var(--tinta);
+}
+.el-escano[data-tipo='perdido'] {
+  border: 2px dashed var(--tinta-3);
+}
+.el-reparto .el-leyenda {
+  margin-top: var(--e-16);
+}
+/* Una fila por candidatura: siglas y escaños arriba; la barra del cociente debajo. */
+.el-dhondt {
+  display: grid;
+  gap: var(--e-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.el-dhondt li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--e-4) var(--e-12);
+  padding: var(--e-8) var(--e-12);
+  border-radius: var(--r-12);
+}
+.el-dhondt li[data-gana] {
+  background: var(--amarillo);
+}
+.el-siglas {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.el-dhondt-escanos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 3px;
+  max-width: 12rem;
+  font: 500 14px var(--font-mono);
+}
+.el-dhondt-escanos i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tinta);
+}
+.el-dhondt-barra {
+  height: 12px;
+  overflow: hidden;
+  border-radius: var(--r-pildora);
+  background: var(--superficie);
+}
+.el-dhondt li[data-gana] .el-dhondt-barra {
+  background: var(--blanco);
+}
+.el-dhondt-barra i {
+  display: block;
+  height: 100%;
+  background: var(--tinta-3);
+  transform-origin: left;
+  transition: transform var(--t-medio) var(--curva-salida);
+}
+.el-dhondt-cociente {
+  font-size: 14px;
+}
+.el-dhondt-fuera {
+  margin-top: var(--e-12);
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+.el-reparto .el-tabla {
+  margin-top: var(--e-16);
+}
+.el-divisores caption {
+  color: var(--tinta-2);
+  text-align: left;
+}
+.el-divisores td {
+  transition: background-color var(--t-medio) var(--curva-salida);
+}
+.el-divisores [data-escano] {
+  background: color-mix(in srgb, var(--amarillo) 35%, var(--blanco));
+  font-weight: 600;
+}
+.el-divisores [data-gana] {
+  background: var(--amarillo);
+}
+/* Votos emitidos según su destino: una barra en tonos neutros y la tabla, que sirve de leyenda. */
+.el-votos-cifra {
+  margin-bottom: var(--e-16);
+}
+.el-votos {
+  display: flex;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--r-12);
+  box-shadow: 0 0 0 1px var(--tinta-3);
+}
+.el-votos span {
+  flex: 0 0 0;
+}
+.el-reparto [data-tono='escano'] {
+  background: var(--tinta);
+}
+.el-reparto [data-tono='sin'] {
+  background: var(--tinta-3);
+}
+.el-reparto [data-tono='bajo'] {
+  background: color-mix(in srgb, var(--tinta) 35%, var(--blanco));
+}
+.el-reparto [data-tono='blanco'] {
+  background: var(--superficie);
+}
+.el-reparto [data-tono='nulo'] {
+  background: var(--blanco);
+}
+.el-reparto th .el-muestra {
+  display: inline-block;
+  margin-right: var(--e-8);
+  vertical-align: -4px;
+}
+.el-hemiciclo circle {
+  fill: color-mix(in srgb, var(--tinta) 15%, var(--blanco));
+}
+.el-hemiciclo [data-tuyo] {
+  fill: var(--amarillo);
+  stroke: var(--tinta);
+  stroke-width: 0.6px;
+}
+.el-hemiciclo line {
+  stroke: var(--tinta);
+  stroke-width: 0.6px;
+  stroke-dasharray: 2 2;
+}
+@media (max-width: 800px) {
+  .el-bloque {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--e-16);
+  }
+}
+/* Sin movimiento: los mismos pasos cambian en el acto. */
+@media (prefers-reduced-motion: reduce) {
+  .el-dhondt-barra i,
+  .el-divisores td {
+    transition: none;
+  }
+}
