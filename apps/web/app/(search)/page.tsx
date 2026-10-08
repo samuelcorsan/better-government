@@ -152,19 +152,18 @@ export default function IniciativaPage() {
               },
               {
                 titulo: 'Participar empieza por entender.',
-                etiqueta: (
-                  <div className="in-acciones">
-                    <span className="in-proyecto-tipo">04 · Elecciones</span>
-                    <span className="in-proximo" lang="en">
-                      Coming soon
-                    </span>
-                  </div>
-                ),
+                etiqueta: <span className="in-proyecto-tipo">04 · Elecciones</span>,
                 texto: (
-                  <p className="t-texto-l">
-                    Elegir también requiere información clara. Estamos preparando nuevos proyectos
-                    para acercar las elecciones a las personas. Pronto te contaremos más.
-                  </p>
+                  <>
+                    <p className="t-texto-l">
+                      Elegir también requiere información clara. Para las generales del 29 de
+                      noviembre, mira cuántos escaños elige tu provincia y cuántos habitantes hay
+                      por escaño, con datos oficiales.
+                    </p>
+                    <a className="in-enlace" href="/elecciones">
+                      ¿Cuánto vale tu voto? <Icono n="derecha" size={16} />
+                    </a>
+                  </>
                 ),
                 escena: (
                   <div className="rc-pieza in-elecciones">
