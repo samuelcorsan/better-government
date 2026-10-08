@@ -37,7 +37,7 @@
   }
 }
 
-/* Menú móvil: un círculo blanco con «+» que despliega una hoja roja a pantalla completa. */
+/* Menú móvil: un círculo blanco con «+» que despliega una hoja amarilla a pantalla completa. */
 .in-menu-boton {
   width: 44px;
   padding: 0;
@@ -58,7 +58,7 @@ html:has(.in-menu[open]) {
 }
 .in-menu {
   --marca-color: currentColor;
-  --foco: var(--blanco);
+  --foco: var(--tinta);
   position: fixed;
   inset: 0;
   width: auto;
@@ -69,8 +69,9 @@ html:has(.in-menu[open]) {
   padding: 0;
   border: 0;
   border-radius: var(--r-28);
-  background: var(--atardecer);
-  color: var(--blanco);
+  background:
+    radial-gradient(120% 70% at 100% 0%, #ffd34d 0%, rgba(255, 211, 77, 0) 60%), var(--amarillo);
+  color: var(--tinta);
   clip-path: inset(0 0 100% 0 round var(--r-28));
   transition:
     clip-path 200ms var(--curva-salida),
@@ -108,15 +109,17 @@ html:has(.in-menu[open]) {
 }
 .in-menu nav {
   display: grid;
-  padding: var(--e-40) var(--margen) 0;
+  margin: var(--e-32) var(--margen) 0;
+  border-top: 1px solid rgb(34 34 34 / 0.16);
 }
 .in-menu nav a {
   display: flex;
-  align-items: baseline;
-  gap: var(--e-16);
-  padding-block: var(--e-12);
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  border-bottom: 1px solid rgb(34 34 34 / 0.16);
   font-family: var(--font-titular);
-  font-size: 44px;
+  font-size: 36px;
   line-height: 1.05;
   letter-spacing: -0.02em;
   text-decoration: none;
@@ -129,10 +132,6 @@ html:has(.in-menu[open]) {
 }
 .in-menu nav a:nth-child(3) {
   transition-delay: 80ms;
-}
-.in-menu nav .t-dato {
-  color: color-mix(in oklch, var(--blanco) 75%, transparent);
-  font-size: 13px;
 }
 .in-menu-participar {
   min-height: 52px;

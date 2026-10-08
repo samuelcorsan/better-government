@@ -6,7 +6,8 @@ import { Logotipo } from './marca';
 
 type Enlace = { href: string; texto: string; actual: boolean };
 
-// Menú de pantalla completa para móvil. <dialog> modal: Esc, foco atrapado y devuelto al cerrar.
+// Menú de pantalla completa para móvil, en amarillo para no confundirse con el rojo de la web.
+// <dialog> modal: Esc, foco atrapado y devuelto al cerrar.
 export function MenuMovil({ enlaces }: { enlaces: readonly Enlace[] }) {
   const menu = useRef<HTMLDialogElement>(null);
   const cerrar = () => menu.current?.close();
@@ -28,7 +29,7 @@ export function MenuMovil({ enlaces }: { enlaces: readonly Enlace[] }) {
             <Logotipo size={36} />
           </a>
           <button
-            className="boton-claro in-menu-boton in-menu-cerrar"
+            className="boton in-menu-boton in-menu-cerrar"
             type="button"
             aria-label="Cerrar el menú"
             onClick={cerrar}
@@ -37,16 +38,14 @@ export function MenuMovil({ enlaces }: { enlaces: readonly Enlace[] }) {
           </button>
         </div>
         <nav aria-label="Menú">
-          {enlaces.map(({ href, texto, actual }, i) => (
+          {enlaces.map(({ href, texto, actual }) => (
             <a key={href} href={href} aria-current={actual ? 'page' : undefined} onClick={cerrar}>
-              <span className="t-dato" aria-hidden="true">
-                0{i + 1}
-              </span>
               {texto}
+              <Icono n="derecha" size={18} />
             </a>
           ))}
         </nav>
-        <a className="boton-claro in-menu-participar" href="/#participar" onClick={cerrar}>
+        <a className="boton in-menu-participar" href="/#participar" onClick={cerrar}>
           Participar <Icono n="derecha" size={16} />
         </a>
       </dialog>
