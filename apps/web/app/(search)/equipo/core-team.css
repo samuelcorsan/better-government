@@ -33,6 +33,7 @@
   overflow: hidden;
   background: var(--atardecer);
   color: var(--blanco);
+  transition: transform var(--t-medio) var(--curva-salida);
 }
 .ct-retrato img {
   position: absolute;
@@ -64,17 +65,10 @@
   color: var(--tinta-2);
 }
 .ct-persona-flecha {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--linea);
-  border-radius: 50%;
-  flex-shrink: 0;
+  box-shadow: 0 0 0 1px var(--linea);
 }
-.ct-persona:is(:hover, :focus-visible) .ct-persona-flecha {
-  background: var(--tinta);
-  color: var(--blanco);
+.ct-persona-flecha svg {
+  transition: transform var(--t-medio) var(--curva-salida);
 }
 .ct-contributors {
   padding-block: var(--e-48) var(--e-64);
@@ -117,8 +111,50 @@
   text-align: center;
   overflow-wrap: anywhere;
 }
-.ct-contributor:is(:hover, :focus-visible) {
+/* El enlace es la tarjeta entera: hover y foco de teclado dan la misma señal. La capa y la
+   pulsación del botón vienen de .tarjeta-enlace (botones.css).
+   Solo se mueve con transform; sin movimiento quedan la capa del botón y el subrayado. */
+.core-team {
+  --ct-mov: 1;
+}
+.ct-persona:focus-visible .ct-retrato {
+  transform: translateY(calc(-4px * var(--ct-mov)));
+}
+.ct-persona:focus-visible .ct-persona-flecha svg {
+  transform: rotate(calc(-15deg * var(--ct-mov)));
+}
+.ct-persona:focus-visible h2 {
+  text-decoration: underline 1px;
+  text-underline-offset: 0.15em;
+}
+.ct-contributor:focus-visible {
   background: var(--superficie);
+}
+.ct-contributor:focus-visible img {
+  transform: translateY(calc(-2px * var(--ct-mov)));
+}
+@media (hover: hover) and (pointer: fine) {
+  .ct-persona:hover .ct-retrato {
+    transform: translateY(calc(-4px * var(--ct-mov)));
+  }
+  .ct-persona:hover .ct-persona-flecha svg {
+    transform: rotate(calc(-15deg * var(--ct-mov)));
+  }
+  .ct-persona:hover h2 {
+    text-decoration: underline 1px;
+    text-underline-offset: 0.15em;
+  }
+  .ct-contributor:hover {
+    background: var(--superficie);
+  }
+  .ct-contributor:hover img {
+    transform: translateY(calc(-2px * var(--ct-mov)));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .core-team {
+    --ct-mov: 0;
+  }
 }
 .ct-contributor img {
   display: block;
@@ -129,6 +165,7 @@
   object-fit: cover;
   border-radius: var(--r-12);
   background: var(--superficie);
+  transition: transform var(--t-medio) var(--curva-salida);
 }
 @media (max-width: 800px) {
   .ct-contributors-lista {

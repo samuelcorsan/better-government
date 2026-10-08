@@ -43,10 +43,9 @@
 
 .pie-legal {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--e-8) var(--e-32);
-  margin-top: var(--e-40);
   padding-top: var(--e-24);
   border-top: 1px solid rgba(34, 34, 34, 0.18);
   font-size: 15px;
@@ -62,7 +61,8 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0 var(--e-4);
-  margin: 0;
+  /* El relleno del enlace queda fuera para que el texto llegue a los bordes de la retícula. */
+  margin: 0 calc(-1 * var(--e-8));
   padding: 0;
   list-style: none;
 }
@@ -78,11 +78,9 @@
   text-decoration-thickness: from-font;
   text-underline-offset: 0.25em;
 }
-.pie-legal p {
-  grid-column: 1 / -1;
+.pie-nota {
   margin: 0;
   font-size: 14px;
-  color: var(--tinta);
 }
 @media (hover: hover) and (pointer: fine) {
   .pie-legal a:hover {
@@ -99,10 +97,8 @@
   }
   .pie-legal {
     grid-template-columns: minmax(0, 1fr);
-    margin-top: var(--e-16);
   }
   .pie-legal ul {
     justify-content: flex-start;
-    margin-inline: calc(-1 * var(--e-8));
   }
 }

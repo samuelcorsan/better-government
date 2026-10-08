@@ -63,10 +63,10 @@ const iconos = {
   telefono: IconPhoneOutline18,
 } satisfies Record<string, Svg>;
 
-export type NombreIcono = keyof typeof iconos | 'enviar' | 'abajo' | 'derecha';
+export type IconName = keyof typeof iconos | 'enviar' | 'abajo' | 'derecha';
 
-export function Icono({ n, size = 18 }: { n: NombreIcono; size?: number }) {
-  if (n === 'enviar' || n === 'abajo' || n === 'derecha') {
+export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
+  if (name === 'enviar' || name === 'abajo' || name === 'derecha') {
     return (
       <svg
         className="icono"
@@ -78,14 +78,14 @@ export function Icono({ n, size = 18 }: { n: NombreIcono; size?: number }) {
         aria-hidden="true"
       >
         <path
-          transform={`rotate(${n === 'abajo' ? 90 : n === 'enviar' ? -90 : 0} 8 8)`}
+          transform={`rotate(${name === 'abajo' ? 90 : name === 'enviar' ? -90 : 0} 8 8)`}
           d="M4 0h3v3H4zM7 3h3v3H7zM10 6h3v3h-3zM7 9h3v3H7zM4 12h3v3H4z"
         />
       </svg>
     );
   }
-  const Componente: Svg = iconos[n];
+  const Componente: Svg = iconos[name];
   // «No útil» es el pulgar de «útil» girado: Nucleo UI no trae pulgar abajo.
-  const clase = n === 'noUtil' ? 'icono icono-girado' : 'icono';
+  const clase = name === 'noUtil' ? 'icono icono-girado' : 'icono';
   return <Componente size={size} className={clase} aria-hidden />;
 }

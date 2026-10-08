@@ -2,7 +2,7 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import { Buscador } from '../apps/web/app/(search)/chat/buscador';
+import { ChatView } from '../apps/web/app/(search)/chat/chat-view';
 import { protectMessages } from '../apps/web/lib/pii';
 
 vi.mock('../apps/web/lib/pii', () => ({
@@ -39,7 +39,9 @@ it('usa el chat real y al empezar de nuevo borra la conversación y cancela la c
   document.body.append(container);
   const root = createRoot(container);
   try {
-    await act(async () => root.render(createElement(Buscador, { mode: 'preview' })));
+    await act(async () =>
+      root.render(createElement(ChatView, { mode: 'preview', limitedRegions: [] })),
+    );
     const nueva = () =>
       container.querySelector<HTMLButtonElement>('[aria-label="Nueva conversación"]')!.click();
     const pregunta = () =>

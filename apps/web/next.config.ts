@@ -13,6 +13,12 @@ const config: NextConfig = {
   ],
   serverExternalPackages: ['postgres', '@langfuse/otel', '@opentelemetry/sdk-node'],
   poweredByHeader: false,
+  images: {
+    remotePatterns: [
+      new URL('https://avatars.githubusercontent.com/u/*?s=640'),
+      new URL('https://avatars.githubusercontent.com/u/*?s=160'),
+    ],
+  },
   redirects() {
     return [
       { source: '/explorar', destination: '/chat', permanent: true },

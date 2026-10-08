@@ -45,6 +45,8 @@ async function render(items: Evidence[] = [evidence], href?: string) {
       }),
     );
   });
+  // El extracto en Markdown se carga aparte (next/dynamic).
+  await act(() => vi.dynamicImportSettled());
   const trigger = container.querySelector<HTMLElement>('button, a')!;
   const panel = document.querySelector<HTMLDivElement>('[popover]')!;
   return { container, trigger, panel };

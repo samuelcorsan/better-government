@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { PaginaInformativa } from '../../../components/sol/pagina-informativa';
+import { InfoPage } from '../../../components/sol/info-page';
 export const metadata: Metadata = { title: 'Cómo funciona · Reforma Digital' };
 export default function How() {
   return (
-    <PaginaInformativa lectura>
+    <InfoPage narrow>
       <span className="t-etiqueta info-etiqueta">MENOS BUROCRACIA. MÁS CLARIDAD.</span>
       <h1>De la pregunta al trámite.</h1>
       <p className="info-entradilla">
@@ -46,6 +46,6 @@ export default function How() {
         información o explicamos la limitación. Una respuesta con IA puede contener errores:
         comprueba el documento oficial antes de presentar tu trámite.
       </p>
-    </PaginaInformativa>
+    </InfoPage>
   );
 }

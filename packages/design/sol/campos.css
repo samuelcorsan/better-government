@@ -1,0 +1,25 @@
+/* Campos Sol: input, select y textarea. Requieren tokens.css dentro de .sol-raiz. Uso en GUIA.md;
+   en React, <Field>. El borde va en --tinta-3 (5,33 sobre blanco) porque --linea no llega a 3:1.
+   El foco es el anillo común de .sol-raiz (2 px de --foco, separado 2 px). */
+.campo {
+  box-sizing: border-box;
+  min-height: 44px;
+  max-width: 100%;
+  padding: var(--e-12);
+  border: 1px solid var(--tinta-3);
+  border-radius: var(--r-12);
+  background: var(--blanco);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 16px;
+}
+.campo::placeholder {
+  color: var(--tinta-3);
+  opacity: 1;
+}
+.campo:disabled {
+  border-color: var(--apagado);
+  background: var(--apagado);
+  color: var(--apagado-texto);
+  cursor: default;
+}

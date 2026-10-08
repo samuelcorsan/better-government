@@ -1,0 +1,56 @@
+/* Utilidades de Tailwind v4 para Sol. Los valores viven en tokens.css; aquí solo se nombran.
+   Se importa después de tailwindcss/theme.css y antes de tailwindcss/utilities.css (ver GUIA.md).
+   `inline` hace que cada utilidad use la variable de Sol (bg-rojo → var(--rojo)) y `reference`
+   evita copiar esas variables en :root, donde --font-texto aún no tiene --font-geist.
+   Se vacían la paleta, las familias, los radios, las sombras y las curvas por defecto: solo
+   existen los de Sol. El naranja no tiene utilidad porque solo vive dentro de los degradados. */
+@theme inline reference {
+  --color-*: initial;
+  --color-rojo: var(--rojo);
+  --color-doblez: var(--doblez);
+  --color-amarillo: var(--amarillo);
+  --color-tinta: var(--tinta);
+  --color-tinta-2: var(--tinta-2);
+  --color-tinta-3: var(--tinta-3);
+  --color-superficie: var(--superficie);
+  --color-blanco: var(--blanco);
+  --color-linea: var(--linea);
+  --color-ambar-claro: var(--ambar-claro);
+  --color-ambar-texto: var(--ambar-texto);
+  --color-azul: var(--azul);
+  --color-azul-claro: var(--azul-claro);
+  --color-apagado: var(--apagado);
+  --color-apagado-texto: var(--apagado-texto);
+  --color-foco: var(--foco);
+
+  --font-*: initial;
+  --font-titular: var(--font-titular);
+  --font-texto: var(--font-texto);
+  --font-mono: var(--font-mono);
+  --font-cifra: var(--font-cifra);
+  --font-logo: var(--font-logo);
+
+  --radius-*: initial;
+  --radius-12: var(--r-12);
+  --radius-16: var(--r-16);
+  --radius-20: var(--r-20);
+  --radius-28: var(--r-28);
+  --radius-pildora: var(--r-pildora);
+
+  --shadow-*: initial;
+  --shadow-suave: var(--sombra-suave);
+  --shadow-flota: var(--sombra-flota);
+
+  --ease-*: initial;
+  --ease-salida: var(--curva-salida);
+  --ease-cajon: var(--curva-cajon);
+
+  --container-ancho: var(--ancho);
+}
+
+@utility bg-atardecer {
+  background: var(--atardecer);
+}
+@utility bg-atardecer-boton {
+  background: var(--atardecer-boton);
+}

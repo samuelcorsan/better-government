@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import SourcesMap from './sources-map';
 
-export function FuentesMapa() {
+export function SourcesMapPanel() {
   const [selectedId, onSelect] = useState<string | null>(null);
   return (
     <div className="info-mapa">

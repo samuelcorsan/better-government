@@ -1,18 +1,26 @@
 'use client';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Icono } from './sol/icono';
+import { Icon } from './sol/icon';
 import './chat.css';
 import type { Evidence, Region, SearchResult, Stage, VerifiedClaim } from '@reforma-digital/core';
-import { sources } from '@reforma-digital/government';
+import { Button } from '@reforma-digital/design/sol';
 import { AttachmentPicker } from './attachment-picker';
 import type { PdfContext } from '../lib/attachment';
 import { protectMessages, ProtectionTimeoutError, warm } from '../lib/pii';
 import type { HiddenRange, ProtectedText } from '../lib/pii-display';
 import { ProtectedQuestion } from './protected-question';
 import { readChatStream } from '../lib/chat-stream';
-import SourcesMap from './sources-map';
+import dynamic from 'next/dynamic';
+import './sources-map.css';
 import { AgencyBadge, SourcePopover } from './source-popover';
-import { limitedSourceCoverage } from '../lib/source-coverage';
+// La geometría del mapa solo se descarga al abrir el diálogo de cobertura.
+const SourcesMap = dynamic(() => import('./sources-map'), {
+  loading: () => (
+    <section className="sources-map sources-map-cargando" aria-labelledby="sources-map-title">
+      <h2 id="sources-map-title">Fuentes por territorio</h2>
+    </section>
+  ),
+});
 
 type Result = SearchResult & { feedbackToken: string | null };
 type Turn = {
@@ -34,27 +42,28 @@ const stages: Record<Stage, string> = {
   generation: 'Redactando y verificando la respuesta',
   evaluation: 'Comprobando referencias',
 };
+export type LimitedRegion = { id: Region; name: string; sourceCount: number };
+
 function CoverageNotice({
-  regionId,
+  region,
   openMap,
 }: {
-  regionId: Region | null | undefined;
+  region: LimitedRegion | undefined;
   openMap: (regionId: string) => void;
 }) {
-  const region = limitedSourceCoverage(sources, regionId);
   if (!region) return null;
   return (
     <p className="chat-coverage-note">
-      Nuestra cobertura territorial en {region.name} es limitada: {region.sources.length}{' '}
-      {region.sources.length === 1 ? 'fuente registrada' : 'fuentes registradas'}.{' '}
-      <button
-        className="chat-link-button"
+      Nuestra cobertura territorial en {region.name} es limitada: {region.sourceCount}{' '}
+      {region.sourceCount === 1 ? 'fuente registrada' : 'fuentes registradas'}.{' '}
+      <Button
+        variant="secondary"
         aria-haspopup="dialog"
         aria-controls="chat-coverage-dialog"
         onClick={() => openMap(region.id)}
       >
         Ver mapa de fuentes
-      </button>
+      </Button>
     </p>
   );
 }
@@ -137,7 +146,7 @@ function AnswerActions({ turn }: { turn: Turn }) {
               aria-pressed={rating === 1}
               onClick={() => void vote(1)}
             >
-              <Icono n="util" size={16} />
+              <Icon name="util" size={16} />
             </button>
             <button
               className="chat-icon"
@@ -146,7 +155,7 @@ function AnswerActions({ turn }: { turn: Turn }) {
               aria-pressed={rating === -1}
               onClick={() => setNegative(!negative)}
             >
-              <Icono n="noUtil" size={16} />
+              <Icon name="noUtil" size={16} />
             </button>
           </div>
         )}
@@ -155,7 +164,7 @@ function AnswerActions({ turn }: { turn: Turn }) {
           onClick={() => void copy()}
           aria-label={copied ? 'Copiado' : 'Copiar respuesta'}
         >
-          {copied ? <Icono n="hecho" size={16} /> : <Icono n="copiar" size={16} />}
+          {copied ? <Icon name="hecho" size={16} /> : <Icon name="copiar" size={16} />}
         </button>
       </div>
       {negative && (
@@ -196,10 +205,12 @@ export default function Chat({
   initialQuestion,
   header,
   footer,
+  limitedRegions,
 }: {
   initialQuestion: string;
   header: ReactNode;
   footer?: ReactNode;
+  limitedRegions: readonly LimitedRegion[];
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
@@ -214,6 +225,7 @@ export default function Chat({
   const dock = useRef<HTMLDivElement>(null);
   const coverageDialog = useRef<HTMLDialogElement>(null);
   const [coverageRegionId, setCoverageRegionId] = useState<string | null>(null);
+  const [coverageOpened, setCoverageOpened] = useState(false);
   const nearBottom = useRef(true);
   const loading = turns.some((t) => t.state === 'loading');
   function update(id: string, change: Partial<Turn> | ((turn: Turn) => Partial<Turn>)) {
@@ -414,6 +426,7 @@ export default function Chat({
   }
   function openCoverage(regionId: string | null = null) {
     setCoverageRegionId(regionId);
+    setCoverageOpened(true);
     coverageDialog.current?.showModal();
   }
   return (
@@ -431,7 +444,7 @@ export default function Chat({
               {['¿Cómo me hago autónomo?', '¿Cómo me empadrono en Madrid?'].map((q) => (
                 <button key={q} onClick={() => void send(q)}>
                   {q}
-                  <Icono n="derecha" size={17} />
+                  <Icon name="derecha" size={17} />
                 </button>
               ))}
             </div>
@@ -443,7 +456,7 @@ export default function Chat({
               <p>
                 {turn.attachment && (
                   <span className="chat-attached-message">
-                    <Icono n="documento" size={16} /> {turn.attachment.name}
+                    <Icon name="documento" size={16} /> {turn.attachment.name}
                   </span>
                 )}
                 <ProtectedQuestion text={turn.query} ranges={turn.hiddenData ?? []} id={turn.id} />
@@ -533,7 +546,7 @@ export default function Chat({
                   <p>{turn.result.answer.answer}</p>
                 ) : (
                   <div className="chat-notice" role="status">
-                    <Icono n="info" size={20} />
+                    <Icon name="info" size={20} />
                     <div>
                       <h2>
                         {turn.result.answer.status === 'needs_clarification'
@@ -543,13 +556,13 @@ export default function Chat({
                       <p>{turn.result.answer.answer}</p>
                       <div className="chat-notice-actions">
                         {turnIndex === turns.length - 1 && (
-                          <button className="chat-link-button" onClick={() => rephrase(turn.query)}>
-                            <Icono n="nueva" size={15} />
+                          <Button variant="secondary" onClick={() => rephrase(turn.query)}>
+                            <Icon name="nueva" size={15} />
                             Reformular la pregunta
-                          </button>
+                          </Button>
                         )}
                         {turn.evidence.length > 0 && (
-                          <SourcePopover className="chat-link-button" evidence={turn.evidence}>
+                          <SourcePopover className="boton-claro" evidence={turn.evidence}>
                             Ver lo consultado ({turn.evidence.length})
                           </SourcePopover>
                         )}
@@ -565,7 +578,9 @@ export default function Chat({
               )}
               {turn.result && (
                 <CoverageNotice
-                  regionId={turn.result.understanding.region}
+                  region={limitedRegions.find(
+                    (region) => region.id === turn.result?.understanding.region,
+                  )}
                   openMap={openCoverage}
                 />
               )}
@@ -576,19 +591,19 @@ export default function Chat({
                     {turn.blocks.length > 0 && ' Los fragmentos mostrados ya están verificados.'}
                   </p>
                   {turnIndex === turns.length - 1 && (
-                    <button
-                      className="chat-retry"
+                    <Button
+                      variant="secondary"
                       disabled={loading}
                       onClick={() => void send(turn.query, turn.id)}
                     >
-                      <Icono n="reintentar" size={14} /> Volver a intentar
-                    </button>
+                      <Icon name="reintentar" size={14} /> Volver a intentar
+                    </Button>
                   )}
                 </div>
               )}
               {turn.state === 'error' && (
                 <div className="chat-notice chat-error" role="alert">
-                  <Icono n="error" size={20} />
+                  <Icon name="error" size={20} />
                   <div>
                     <h2>No se ha podido completar la respuesta</h2>
                     <p>{turn.error}</p>
@@ -598,9 +613,15 @@ export default function Chat({
                       </p>
                     )}
                     {turnIndex === turns.length - 1 && (
-                      <button disabled={loading} onClick={() => void send(turn.query, turn.id)}>
-                        <Icono n="reintentar" size={15} /> Volver a intentar
-                      </button>
+                      <div className="chat-notice-actions">
+                        <Button
+                          variant="secondary"
+                          disabled={loading}
+                          onClick={() => void send(turn.query, turn.id)}
+                        >
+                          <Icon name="reintentar" size={15} /> Volver a intentar
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -613,7 +634,7 @@ export default function Chat({
                     {['¿Qué documentación necesito?', '¿Dónde lo puedo tramitar?'].map((q) => (
                       <button key={q} onClick={() => void send(q)}>
                         {q}
-                        <Icono n="derecha" size={17} />
+                        <Icon name="derecha" size={17} />
                       </button>
                     ))}
                   </div>
@@ -626,7 +647,7 @@ export default function Chat({
       <div ref={dock} className="chat-composer-dock">
         {showJump && (
           <button className="chat-jump" onClick={jump} aria-label="Ir al último mensaje">
-            <Icono n="abajo" size={18} />
+            <Icon name="abajo" size={18} />
           </button>
         )}
         {attachmentError && (
@@ -637,7 +658,7 @@ export default function Chat({
         {(attachment || attachmentBusy) && (
           <div className="chat-attachment-preview">
             <div>
-              <Icono n="documento" size={20} />
+              <Icon name="documento" size={20} />
               <span>{attachmentBusy ? 'Leyendo PDF…' : attachment?.name}</span>
               {attachment && !attachmentBusy && (
                 <button
@@ -645,7 +666,7 @@ export default function Chat({
                   onClick={() => setAttachment(undefined)}
                   aria-label="Quitar PDF"
                 >
-                  <Icono n="cerrar" size={16} />
+                  <Icon name="cerrar" size={16} />
                 </button>
               )}
             </div>
@@ -707,7 +728,7 @@ export default function Chat({
                 aria-controls="chat-coverage-dialog"
                 onClick={() => openCoverage()}
               >
-                <Icono n="fuentes" size={20} />
+                <Icon name="fuentes" size={20} />
               </button>
             </div>
             {loading ? (
@@ -717,7 +738,7 @@ export default function Chat({
                 onClick={() => active.current?.abort()}
                 aria-label="Detener respuesta"
               >
-                <Icono n="detener" size={13} />
+                <Icon name="detener" size={13} />
               </button>
             ) : (
               <button
@@ -725,7 +746,7 @@ export default function Chat({
                 disabled={input.trim().length < 4 || attachmentBusy}
                 aria-label="Enviar pregunta"
               >
-                <Icono n="enviar" size={20} />
+                <Icon name="enviar" size={20} />
               </button>
             )}
           </div>
@@ -752,9 +773,11 @@ export default function Chat({
             aria-label="Cerrar mapa de fuentes"
             onClick={() => coverageDialog.current?.close()}
           >
-            <Icono n="cerrar" size={19} />
+            <Icon name="cerrar" size={19} />
           </button>
-          <SourcesMap selectedId={coverageRegionId} onSelect={setCoverageRegionId} />
+          {coverageOpened && (
+            <SourcesMap selectedId={coverageRegionId} onSelect={setCoverageRegionId} />
+          )}
         </div>
       </dialog>
     </div>

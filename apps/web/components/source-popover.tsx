@@ -10,11 +10,13 @@ import {
   type FocusEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Icono } from './sol/icono';
+import dynamic from 'next/dynamic';
+import { Icon } from './sol/icon';
 import type { Evidence } from '@reforma-digital/core';
 import './source-popover.css';
+
+// react-markdown solo hace falta cuando hay citas: no entra en la carga inicial de /chat.
+const SourceExcerpt = dynamic(() => import('./source-excerpt'));
 
 export function AgencyBadge({ name, url }: { name: string; url: string }) {
   const domain = new URL(url).hostname;
@@ -197,20 +199,10 @@ export function SourcePopover({
                       </span>
                     </div>
                     <strong className="source-popover-title">
-                      {source.title} <Icono n="derecha" size={14} />
+                      {source.title} <Icon name="derecha" size={14} />
                     </strong>
                     <div className="source-popover-excerpt">
-                      <Markdown
-                        remarkPlugins={[remarkGfm]}
-                        skipHtml
-                        components={{
-                          a: ({ children: text }) => <span>{text}</span>,
-                          img: () => null,
-                          input: () => null,
-                        }}
-                      >
-                        {source.content}
-                      </Markdown>
+                      <SourceExcerpt content={source.content} />
                     </div>
                   </a>
                 </li>

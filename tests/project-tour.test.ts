@@ -2,7 +2,7 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import { RecorridoScroll } from '../apps/web/components/sol/recorrido-scroll';
+import { ProjectTour } from '../apps/web/components/sol/project-tour';
 
 it('acompaña el scroll en ambos sentidos y conserva los enlaces de cada proyecto', async () => {
   const observados: Element[] = [];
@@ -26,15 +26,15 @@ it('acompaña el scroll en ambos sentidos y conserva los enlaces de cada proyect
   try {
     await act(async () =>
       root.render(
-        createElement(RecorridoScroll, {
-          tituloId: 'proyectos',
-          cabecera: createElement('h2', { id: 'proyectos' }, 'Los proyectos'),
-          unidad: 'Proyecto',
-          pasos: ['Buscador', 'Extensión', 'Fuentes'].map((titulo, i) => ({
-            titulo,
-            etiqueta: titulo,
-            texto: createElement('a', { href: `/proyecto/${i}` }, `Abrir ${titulo}`),
-            escena: createElement('span', null, `Vista de ${titulo}`),
+        createElement(ProjectTour, {
+          titleId: 'proyectos',
+          header: createElement('h2', { id: 'proyectos' }, 'Los proyectos'),
+          unit: 'Proyecto',
+          steps: ['Buscador', 'Extensión', 'Fuentes'].map((title, i) => ({
+            title,
+            label: title,
+            text: createElement('a', { href: `/proyecto/${i}` }, `Abrir ${title}`),
+            scene: createElement('span', null, `Vista de ${title}`),
           })),
         }),
       ),

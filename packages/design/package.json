@@ -15,7 +15,9 @@
       "types": "./postcss.d.ts",
       "default": "./postcss.js"
     },
-    "./themes/*": "./themes/*"
+    "./themes/*": "./themes/*",
+    "./sol": "./sol/components.tsx",
+    "./sol/*": "./sol/*"
   },
   "peerDependencies": {
     "react": "19.2.8"

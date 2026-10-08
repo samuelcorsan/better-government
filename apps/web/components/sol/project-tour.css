@@ -57,8 +57,9 @@
   inset: 0;
 }
 
-/* Escena 1: la portada con el compositor. */
+/* Escena 1: la portada con un compositor real (borde de tinta; enviar apagado hasta 4 caracteres). */
 .rc-hero {
+  --foco: var(--blanco);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -81,33 +82,45 @@
   align-items: center;
   gap: var(--e-12);
   width: min(100%, 440px);
-  min-height: 60px;
-  padding: 6px 6px 6px var(--e-20);
+  min-height: 64px;
+  padding: 5px 5px 5px var(--e-20);
+  border: 1px solid var(--tinta);
   border-radius: var(--r-pildora);
   background: var(--blanco);
   box-shadow: var(--sombra-flota);
   color: var(--tinta);
   text-align: left;
+  /* El marco es decorativo y no recibe el puntero; el compositor sí. */
+  pointer-events: auto;
 }
+.rc-compositor:has(.rc-compositor-texto:focus-visible) {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+.rc-compositor .boton-enviar {
+  --foco: var(--tinta);
+}
+/* 16 px: con menos, Safari en iOS amplía la página al enfocar. */
 .rc-compositor-texto {
   flex: 1;
+  align-self: stretch;
   min-width: 0;
-  overflow: hidden;
-  font-size: clamp(15px, 4.4cqi, 16px);
-  white-space: nowrap;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
   text-overflow: ellipsis;
+  user-select: text;
 }
-.rc-enviar {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--tinta);
-  color: var(--blanco);
+.rc-compositor-texto::placeholder {
+  color: var(--tinta-2);
+  opacity: 1;
 }
-
+.rc-compositor-texto:focus-visible {
+  outline: none;
+}
 /* Representación de la extensión sobre el sol. */
 .rc-sobre-sol {
   display: flex;
@@ -289,37 +302,49 @@
   .rc-cabeza {
     margin-bottom: var(--e-40);
   }
+  /* Más aire entre pasos que dentro de cada uno: la escena cierra su paso y no roza el siguiente. */
   .rc-pasos {
     display: grid;
-    gap: var(--e-48);
+    gap: var(--e-64);
   }
   .rc-marco-movil {
-    max-width: 480px;
-    margin-top: var(--e-20);
+    margin-top: var(--e-24);
     aspect-ratio: 3 / 4;
   }
   .rc-fijo {
     display: none;
   }
 }
+/* Tableta: la escena ocupa todo el ancho en el formato de escritorio para no pasar de la pantalla. */
+@media (min-width: 640px) and (max-width: 959px) {
+  .rc-marco-movil {
+    aspect-ratio: 5 / 4;
+  }
+}
 
-/* Escritorio: los pasos se leen a la izquierda; el escenario se queda fijo a la derecha. */
+/* Escritorio: los pasos se leen a la izquierda; el escenario se queda fijo a la derecha.
+   Al entrar, el escenario empieza a la altura del primer paso y sube hasta
+   quedar centrado en la pantalla. Su alto sale de la columna en 5:4 y nunca pasa de la
+   pantalla menos los márgenes y la fila de progreso (--e-32: 16 de hueco y 16 de texto). */
 @media (min-width: 960px) {
   .rc-cuerpo {
+    --rc-alto: min((100cqi - var(--e-64)) * 7 / 12 * 4 / 5, 100svh - 2 * var(--e-24) - var(--e-32));
+    container-type: inline-size;
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     gap: var(--e-64);
+    padding-top: var(--e-40);
   }
-  .rc-pasos {
-    padding-block: 18vh;
-  }
+  /* Mismo aire arriba y abajo de cada texto: el cambio de paso cae a mitad de camino entre dos
+     textos, en el centro de la pantalla, que es también el centro del escenario. */
   .rc-paso {
-    display: flex;
-    align-items: center;
-    min-height: 64vh;
+    padding-block: 20svh;
     /* 0,64 deja la tinta inactiva en 4,8:1 sobre blanco. */
     opacity: 0.64;
     transition: opacity var(--t-medio) var(--curva-salida);
+  }
+  .rc-paso:first-child {
+    padding-top: 0;
   }
   .rc-paso[data-activo] {
     opacity: 1;
@@ -346,21 +371,21 @@
   .rc-marco-movil {
     display: none;
   }
+  .rc-pasos {
+    grid-area: 1 / 1;
+  }
   .rc-fijo {
+    grid-area: 1 / 2;
     position: sticky;
-    top: 0;
+    top: calc((100svh - var(--rc-alto) - var(--e-32)) / 2);
     align-self: start;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid;
     gap: var(--e-16);
-    height: 100vh;
-    height: 100svh;
   }
   .rc-escenario,
   .rc-progreso {
-    width: 100%;
-    max-width: calc((100svh - 140px) * 5 / 4);
+    width: calc(var(--rc-alto) * 5 / 4);
+    max-width: 100%;
   }
   .rc-escena {
     opacity: 0;

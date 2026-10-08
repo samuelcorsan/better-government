@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
+import { regionSchema } from '@reforma-digital/core';
+import { sources } from '@reforma-digital/government';
 import { searchMode } from '../../../lib/search-mode';
-import { Buscador } from './buscador';
+import { limitedSourceCoverage } from '../../../lib/source-coverage';
+import { ChatView } from './chat-view';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -9,6 +12,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function BuscadorPage() {
-  return <Buscador mode={searchMode()} />;
+// Se calcula en el servidor: la geometría del mapa solo viaja al cliente al abrirlo.
+const limitedRegions = regionSchema.options.flatMap((id) => {
+  const region = limitedSourceCoverage(sources, id);
+  return region ? [{ id, name: region.name, sourceCount: region.sources.length }] : [];
+});
+
+export default function ChatPage() {
+  return <ChatView mode={searchMode()} limitedRegions={limitedRegions} />;
 }

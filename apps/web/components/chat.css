@@ -243,20 +243,6 @@ html:has(.chat-page) {
 .chat-notice-actions:empty {
   display: none;
 }
-.chat-link-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  border: 0;
-  background: none;
-  padding: 0;
-  color: rgb(var(--bg-brand-600));
-  font-size: 14px !important;
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .chat-partial {
   font-size: 14px;
   color: rgb(var(--bg-ink-subtle));
@@ -511,7 +497,7 @@ html:has(.chat-page) {
   }
 }
 .chat-send:not(:disabled):active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 .chat-jump {
   display: flex;
@@ -536,17 +522,6 @@ html:has(.chat-page) {
 .chat-error > svg,
 .chat-error p {
   color: inherit;
-}
-.chat-error button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: 0;
-  padding: 0;
-  margin-top: 12px;
-  color: rgb(var(--bg-brand-600));
-  text-decoration: underline;
 }
 .chat-composer-error {
   font-size: 14px;
@@ -609,6 +584,10 @@ html:has(.chat-page) {
 .chat-coverage-dialog .source-close {
   top: 24px;
   right: 24px;
+}
+/* Más alto que el diálogo: llega a su altura máxima y no cambia de tamaño al cargar el mapa. */
+.sources-map-cargando {
+  min-height: 100dvh;
 }
 html:has(.chat-coverage-dialog[open]) {
   overflow: hidden;
@@ -690,9 +669,7 @@ html:has(.chat-coverage-dialog[open]) {
     padding: 12px 16px;
     min-height: 44px;
   }
-  .chat-feedback button,
-  .chat-retry,
-  .chat-error button {
+  .chat-feedback button {
     min-height: 44px;
   }
   .chat-empty {
@@ -740,17 +717,6 @@ html:has(.chat-coverage-dialog[open]) {
   }
 }
 
-.chat-retry {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 0;
-  background: none;
-  color: rgb(var(--bg-brand-600));
-  font-size: 14px !important;
-  text-decoration: underline;
-  padding: 0;
-}
 .chat-attach {
   color: rgb(var(--bg-ink-subtle));
 }
