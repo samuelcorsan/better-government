@@ -1,36 +1,29 @@
 .in-nav {
-  width: 100%;
-  max-width: none;
   display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 0;
-  padding: 0 max(0px, calc((100% - var(--ancho)) / 2));
-  border-bottom: 1px solid var(--in-linea, var(--linea));
+  align-items: center;
+  gap: var(--e-16);
+  min-height: 80px;
+  padding: var(--e-16) max(var(--margen), calc((100% - var(--ancho)) / 2 + var(--margen)));
 }
 .in-nav > a {
   display: flex;
   align-items: center;
-  padding: var(--e-12) var(--e-24);
-  border-inline: 1px solid var(--in-linea, var(--linea));
-}
-.in-nav nav a {
-  padding-inline: var(--e-24);
-  border-left: 1px solid var(--in-linea, var(--linea));
-}
-.in-nav nav a:last-child {
-  border-right: 1px solid var(--in-linea, var(--linea));
+  margin-right: auto;
 }
 .in-nav nav,
-.in-nav nav a,
 .in-enlace {
   display: flex;
   align-items: center;
   gap: var(--e-8);
 }
 .in-nav nav {
-  align-items: stretch;
-  gap: 0;
+  gap: var(--e-4);
+}
+/* El hover de .boton-fantasma (8 %) se pierde sobre el rojo del hero. */
+@media (hover: hover) and (pointer: fine) {
+  .in-nav .boton-fantasma:hover::before {
+    opacity: 0.16;
+  }
 }
 .in-nav a,
 .in-enlace {
@@ -38,37 +31,129 @@
 }
 
 @media (max-width: 800px) {
-  .in-nav nav {
+  .in-nav nav > * {
+    padding-inline: var(--e-12);
     font-size: 14px;
   }
-  .in-nav nav a {
-    padding-inline: var(--e-16);
-  }
 }
-@media (max-width: 480px) {
-  .in-nav {
-    flex-wrap: wrap;
-  }
-  .in-nav > a {
-    width: 100%;
-    padding: var(--e-12) var(--e-20);
-    border-inline: 0;
-    border-bottom: 1px solid var(--in-linea, var(--linea));
-  }
+
+/* Menú móvil: un círculo blanco con «+» que despliega una hoja amarilla a pantalla completa. */
+.in-menu-boton {
+  width: 44px;
+  padding: 0;
+}
+.in-nav .in-menu-boton {
+  display: none;
+}
+@media (max-width: 640px) {
   .in-nav nav {
-    width: 100%;
+    display: none;
   }
-  .in-nav nav a {
-    flex: 1;
-    justify-content: center;
-    padding-inline: var(--e-8);
-  }
-  .in-nav nav a:first-child {
-    border-left: 0;
+  .in-nav .in-menu-boton {
+    display: inline-flex;
   }
 }
-@media (max-width: 360px) {
-  .in-nav nav a {
-    padding-inline: var(--e-4);
+html:has(.in-menu[open]) {
+  overflow: hidden;
+}
+.in-menu {
+  --marca-color: currentColor;
+  --foco: var(--tinta);
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: var(--e-8);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-28);
+  background:
+    radial-gradient(120% 70% at 100% 0%, #ffd34d 0%, rgba(255, 211, 77, 0) 60%), var(--amarillo);
+  color: var(--tinta);
+  clip-path: inset(0 0 100% 0 round var(--r-28));
+  transition:
+    clip-path 200ms var(--curva-salida),
+    display 200ms allow-discrete,
+    overlay 200ms allow-discrete;
+}
+.in-menu[open] {
+  display: flex;
+  flex-direction: column;
+  clip-path: inset(0 round var(--r-28));
+  transition:
+    clip-path 420ms var(--curva-cajon),
+    display 420ms allow-discrete,
+    overlay 420ms allow-discrete;
+}
+.in-menu::backdrop {
+  background: transparent;
+}
+.in-menu-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 80px;
+  padding: var(--e-16) var(--margen);
+}
+.in-menu-barra > a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.in-menu-cerrar .icono {
+  transform: rotate(45deg);
+  shape-rendering: auto;
+  transition: transform 420ms var(--curva-salida);
+}
+.in-menu nav {
+  display: grid;
+  margin: var(--e-32) var(--margen) 0;
+  border-top: 1px solid rgb(34 34 34 / 0.16);
+}
+.in-menu nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  border-bottom: 1px solid rgb(34 34 34 / 0.16);
+  font-family: var(--font-titular);
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  transition:
+    opacity 360ms var(--curva-salida),
+    transform 360ms var(--curva-salida);
+}
+.in-menu nav a:nth-child(2) {
+  transition-delay: 40ms;
+}
+.in-menu nav a:nth-child(3) {
+  transition-delay: 80ms;
+}
+.in-menu-participar {
+  min-height: 52px;
+  margin: auto var(--margen) var(--margen);
+}
+@starting-style {
+  .in-menu[open] {
+    clip-path: inset(0 0 100% 0 round var(--r-28));
+  }
+  .in-menu[open] .in-menu-cerrar .icono {
+    transform: none;
+  }
+  .in-menu[open] nav a {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .in-menu,
+  .in-menu[open],
+  .in-menu-cerrar .icono,
+  .in-menu nav a {
+    transition: none;
   }
 }

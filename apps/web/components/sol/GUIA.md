@@ -96,9 +96,9 @@ Todas: radio 20 y relleno 24 (20 en móvil). El prefijo `caja-` está reservado.
 
 ## Iconos
 
-`<Icono n="…" size={14–20} />` (por defecto 18). Los chevrons (`derecha`, `abajo`, `enviar`) son pixelados; el resto usa Nucleo UI Essential outline 18. Los iconos son decorativos (`aria-hidden`); el nombre lo da el texto o el `aria-label` del control.
+`<Icono n="…" size={14–20} />` (por defecto 18). Los chevrons (`derecha`, `abajo`, `enviar`) y `mas` (cinco puntos en cruz, que girado 45° cierra el menú) son pixelados; el resto usa Nucleo UI Essential outline 18. Los iconos son decorativos (`aria-hidden`); el nombre lo da el texto o el `aria-label` del control.
 
-Nombres: enviar, detener, copiar, util, noUtil, reintentar, nueva · cerrar, abajo, derecha · buscar, fuentes, contacto, externo, descargar · protegido, info, error, nunca, hecho, candado · calendario, documento, ubicacion, usuario, tarjeta, telefono. Solo los que se usan: si necesitas otro, añádelo desde la misma familia.
+Nombres: enviar, detener, copiar, util, noUtil, reintentar, nueva · cerrar, abajo, derecha, mas · buscar, fuentes, contacto, externo, descargar · protegido, info, error, nunca, hecho, candado · calendario, documento, ubicacion, usuario, tarjeta, telefono. Solo los que se usan: si necesitas otro, añádelo desde la misma familia.
 
 Sustituciones: `detener` es un cuadrado redondeado propio; `noUtil`, el pulgar de `util` girado 180°; `nunca`, la equis; `externo`, el eslabón.
 

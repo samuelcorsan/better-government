@@ -1,21 +1,8 @@
 .buscador .in-nav {
-  --in-linea: var(--linea);
   position: sticky;
   top: 0;
   z-index: 20;
   background: var(--blanco);
-}
-.bs-nueva {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--e-8);
-  min-height: 44px;
-  padding-inline: var(--e-24);
-  border: 0;
-  border-inline: 1px solid var(--linea);
-  background: var(--superficie);
-  color: var(--tinta);
 }
 .buscador .chat-conversation {
   max-width: 760px;
@@ -139,14 +126,13 @@
 .buscador .chat-page:has(.chat-empty) .chat-composer-dock::after {
   display: none;
 }
-@media (max-width: 800px) {
-  .bs-nueva {
-    padding-inline: var(--e-16);
-  }
-}
 @media (max-width: 600px) {
   .buscador .chat-page:has(.chat-empty) .chat-conversation {
     padding-top: var(--e-48);
+  }
+  .buscador .bs-nueva {
+    width: 44px;
+    padding: 0;
   }
   .bs-nueva span {
     position: absolute;
