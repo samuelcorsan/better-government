@@ -136,6 +136,24 @@ Todas: radio 20 y relleno 24 (20 en móvil). El prefijo `caja-` está reservado.
 
 El compositor del chat es composición de la app (`app/(search)/chat/chat-view.css` sobre `components/chat.css`): radio 28, borde `--linea` que pasa a `--tinta` mientras se escribe, `--sombra-flota` y botón de enviar `.chat-send` de 52 px en tinta, apagado (`--apagado`) hasta que hay texto y con `--atardecer-boton` al pasar el ratón.
 
+## Chat
+
+`@reforma-digital/design/sol/chat` (estilos en `sol/chat.css`) tiene las piezas que no dependen de la app; los iconos se pasan como props porque `Icon` vive aquí.
+
+| Pieza                                                                                                         | Uso                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `UserMessage`                                                                                                 | Burbuja de la pregunta. `note` va debajo (p. ej. datos ocultados, con `<Icon name="protegido" />`)                                     |
+| `Thinking`                                                                                                    | «Preparando todo…» o «Pensando…» con brillo; `stage` nombra la etapa y cambia con un fundido                                           |
+| `Answer`, `StepList`/`Step`, `DocumentList`/`DocumentItem`, `FigureGrid`/`KeyFigure`, `Fact`, `AnswerHeading` | Un componente por `kind` de claim (DESIGN.md §8.3). `KeyFigure` es `.caja-gris` con la cifra en `.t-cifra`                             |
+| `Notice`                                                                                                      | `tone`: `info` (`.caja-plana`), `warning` (`.caja-aviso`) o `error` (`.caja-error`). Con icono, titular y acciones                     |
+| `Response`                                                                                                    | Markdown con Streamdown. `streaming` revela por palabra; `skipHtml` para fragmentos oficiales; `renderCitation` pinta la cita en línea |
+| `Suggestions`/`Suggestion`                                                                                    | Preguntas de ejemplo y de seguimiento; `index` escalona la entrada                                                                     |
+| `IconSwap`                                                                                                    | Dos glifos en un mismo control (enviar/detener, copiar/copiado)                                                                        |
+| `JumpButton`                                                                                                  | Ir al último mensaje; siempre montado, `visible` lo muestra                                                                            |
+
+- `.chat-enter` es la entrada de una sola vez (sube 6 px desde un desenfoque de 3 px). No la pongas en nada que se repita al teclear.
+- El compositor, las acciones, el mapa y las citas (`SourcePopover`) siguen siendo composición de la app.
+
 ## Iconos
 
 `<Icon name="…" size={14–20} />` (por defecto 18). Los chevrons (`derecha`, `abajo`, `enviar`) son pixelados; el resto usa Nucleo UI Essential outline 18. Los iconos son decorativos (`aria-hidden`); el nombre lo da el texto o el `aria-label` del control.

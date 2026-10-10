@@ -1,0 +1,451 @@
+/* Sol chat. Requires tokens.css inside .sol-raiz. Usage in GUIA.md (Chat); in React, the
+   components in chat.tsx.
+
+   Motion (DESIGN.md §8.4):
+   - Only transform, opacity and filter animate.
+   - Things that appear once (a verified block, a notice) rise 6px out of a 3px blur: the blur
+     hides that the block arrives whole rather than letter by letter.
+   - Things that toggle (jump to latest, send/stop, copy/copied) use transitions so they can be
+     interrupted mid-way.
+   - Anything repeated from the keyboard (typing, Enter) does not animate.
+   - With reduced motion, fades stay; movement and blur are removed. */
+
+@keyframes chat-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+}
+@keyframes chat-enter-bubble {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes chat-stage-change {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+    filter: blur(2px);
+  }
+}
+@keyframes chat-shimmer {
+  from {
+    background-position:
+      100% 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0% 0,
+      0 0;
+  }
+}
+/* Streamdown per-word reveal (`animated={{ animation: 'reveal' }}`). */
+@keyframes sd-reveal {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+}
+.chat-md [data-sd-animate] {
+  animation: var(--sd-animation, sd-reveal) var(--sd-duration, 240ms)
+    var(--sd-easing, var(--curva-salida)) var(--sd-delay, 0ms) both;
+}
+.chat-enter {
+  animation: chat-enter 360ms var(--curva-salida) both;
+}
+
+/* ─── Question ─────────────────────────────────────────────────────────────── */
+
+.chat-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-bottom: var(--e-32);
+}
+.chat-bubble {
+  max-width: 85%;
+  margin: 0;
+  padding: var(--e-16) var(--e-20);
+  border-radius: var(--r-20) var(--r-20) 6px var(--r-20);
+  background: var(--superficie);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  transform-origin: bottom right;
+  animation: chat-enter-bubble 280ms var(--curva-salida) both;
+}
+.chat-attached-message {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  padding-bottom: var(--e-8);
+  color: var(--tinta-2);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.chat-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--e-8);
+  color: var(--tinta-2);
+  font-size: 14px;
+  line-height: 1.5;
+  animation-delay: 80ms;
+}
+.chat-note .icono {
+  color: var(--azul);
+}
+
+/* ─── Activity ──────────────────────────────────────────────────────────── */
+
+.chat-thinking {
+  display: grid;
+  gap: 2px;
+  min-height: 24px;
+  margin: 0 0 var(--e-24);
+}
+.chat-shimmer {
+  width: fit-content;
+  font-weight: 500;
+  color: transparent;
+  background:
+    linear-gradient(
+      90deg,
+      transparent calc(50% - 28px),
+      var(--tinta),
+      transparent calc(50% + 28px)
+    ),
+    linear-gradient(var(--tinta-3), var(--tinta-3));
+  background-size:
+    250% 100%,
+    auto;
+  background-repeat: no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: chat-shimmer 1.6s linear infinite;
+}
+.chat-stage {
+  color: var(--tinta-2);
+  font-size: 14px;
+  animation: chat-stage-change 280ms var(--curva-salida) both;
+}
+
+/* ─── Notices ──────────────────────────────────────────────────────────────── */
+
+.chat-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-12);
+  margin: 0 0 var(--e-8);
+}
+.chat-notice > .icono {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.chat-notice > div {
+  min-width: 0;
+}
+.chat-notice-title {
+  display: block;
+  margin-bottom: var(--e-4);
+  font-weight: 500;
+}
+.chat-notice p {
+  margin: 0;
+  color: var(--tinta-2);
+  white-space: pre-wrap;
+}
+.caja-aviso.chat-notice p {
+  color: inherit;
+}
+.chat-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8) var(--e-12);
+  margin-top: var(--e-16);
+}
+
+/* ─── Answer blocks ────────────────────────────────────────────────────── */
+
+.chat-answer > * + * {
+  margin-top: var(--e-20);
+}
+.chat-answer > .chat-section-label {
+  margin-top: var(--e-32);
+}
+.chat-answer > .chat-section-label:first-child {
+  margin-top: 0;
+}
+.chat-answer > .chat-section-label + * {
+  margin-top: var(--e-12);
+}
+.chat-section-label {
+  color: var(--tinta-3);
+}
+
+.chat-steps,
+.chat-documents {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chat-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: var(--e-16);
+  padding-bottom: var(--e-20);
+}
+.chat-step:last-child {
+  padding-bottom: 0;
+}
+/* The connector draws down to the next step once it is verified. */
+.chat-step::before {
+  content: '';
+  position: absolute;
+  top: 32px;
+  bottom: 4px;
+  left: 13.5px;
+  width: 1px;
+  background: var(--linea);
+  transform-origin: top;
+  transition: transform 420ms var(--curva-salida);
+}
+.chat-step:last-child::before {
+  transform: scaleY(0);
+}
+.chat-step-number {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: -1px;
+  border-radius: 50%;
+  background: var(--superficie);
+  font-size: 14px;
+}
+
+.chat-documents {
+  display: grid;
+  gap: var(--e-12);
+}
+.chat-document {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: var(--e-12);
+}
+.chat-document > .icono {
+  margin-top: 3px;
+  color: var(--tinta-3);
+}
+
+.chat-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--e-12);
+}
+.chat-figure .t-etiqueta {
+  margin: 0 0 var(--e-8);
+  color: var(--tinta-2);
+}
+.chat-figure-value {
+  margin: 0 0 var(--e-12);
+  font-size: clamp(30px, 3vw, 36px);
+}
+.chat-figure-detail {
+  color: var(--tinta-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* ─── Markdown ─────────────────────────────────────────────────────────────── */
+
+.chat-md > * + *,
+.chat-md p + p {
+  margin-top: var(--e-12);
+}
+.chat-md :where(p, ul, ol, blockquote) {
+  margin-block: 0;
+}
+.chat-md :where(ul, ol) {
+  padding-left: 22px;
+}
+.chat-md li + li {
+  margin-top: var(--e-4);
+}
+.chat-md strong {
+  font-weight: 600;
+}
+.chat-md-heading {
+  margin: var(--e-16) 0 var(--e-4) !important;
+  font-family: var(--font-texto);
+  font-size: 1em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.chat-md blockquote {
+  padding-left: var(--e-12);
+  border-left: 2px solid var(--linea);
+  color: var(--tinta-2);
+}
+.chat-md hr {
+  margin: var(--e-16) 0;
+  border: 0;
+  border-top: 1px solid var(--linea);
+}
+.chat-md code {
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--superficie);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+.chat-md-table {
+  overflow-x: auto;
+}
+.chat-md-table table {
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.chat-md-table :is(th, td) {
+  padding: var(--e-8) 10px;
+  border-bottom: 1px solid var(--linea);
+  text-align: left;
+  vertical-align: top;
+}
+
+/* ─── Suggestions ──────────────────────────────────────────────────────────── */
+
+.chat-followups {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-12);
+  margin-top: var(--e-32);
+}
+.chat-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-24);
+  max-width: 100%;
+  min-height: 56px;
+  padding: 15px var(--e-20);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-pildora);
+  background: var(--blanco);
+  color: var(--tinta);
+  text-align: left;
+  cursor: pointer;
+  animation: chat-enter 360ms calc(var(--index, 0) * 50ms + 120ms) var(--curva-salida) both;
+  transition:
+    background-color var(--t-rapido) ease,
+    transform var(--t-rapido) var(--curva-salida);
+}
+.chat-suggestion .icono {
+  flex-shrink: 0;
+  transition: transform var(--t-medio) var(--curva-salida);
+}
+.chat-suggestion:active {
+  transform: scale(0.96);
+}
+@media (hover: hover) and (pointer: fine) {
+  .chat-suggestion:hover {
+    background: var(--superficie);
+  }
+  .chat-suggestion:hover .icono {
+    transform: translateX(2px);
+  }
+}
+
+/* ─── Controls ─────────────────────────────────────────────────────────────── */
+
+.icon-swap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.icon-swap > span {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  transition:
+    opacity 180ms var(--curva-salida),
+    transform 180ms var(--curva-salida),
+    filter 180ms var(--curva-salida);
+}
+.icon-swap[data-active='a'] > .icon-swap-b,
+.icon-swap[data-active='b'] > .icon-swap-a {
+  opacity: 0;
+  transform: scale(0.5);
+  filter: blur(3px);
+}
+
+.chat-jump {
+  position: absolute;
+  top: -32px;
+  left: calc(50% - 22px);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--tinta);
+  box-shadow: var(--sombra-suave);
+  cursor: pointer;
+  transition:
+    opacity var(--t-medio) var(--curva-salida),
+    transform var(--t-medio) var(--curva-salida);
+}
+.chat-jump[data-visible='false'] {
+  opacity: 0;
+  transform: translateY(6px) scale(0.9);
+  pointer-events: none;
+}
+
+/* ─── Reduced motion: fades stay ───────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes chat-enter {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes chat-enter-bubble {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes chat-stage-change {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes sd-reveal {
+    from {
+      opacity: 0;
+    }
+  }
+  .chat-shimmer {
+    animation: none;
+    background: none;
+    color: var(--tinta-2);
+  }
+  .icon-swap > span {
+    transform: none !important;
+    filter: none !important;
+  }
+  .chat-step::before {
+    transition: none;
+  }
+  .chat-jump[data-visible='false'],
+  .chat-suggestion:active {
+    transform: none;
+  }
+}

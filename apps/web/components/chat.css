@@ -1,3 +1,5 @@
+/* App composition around the chat: composer, actions, citations and the map dialog. The question,
+   answer blocks, notices, suggestions and motion live in @reforma-digital/design/sol/chat.css. */
 body:has(.chat-page) {
   overflow-x: clip;
 }
@@ -37,19 +39,6 @@ html:has(.chat-page) {
   margin-bottom: 56px;
   scroll-margin-top: 120px;
 }
-.chat-user {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-bottom: 36px;
-}
-.chat-hidden-summary {
-  margin-top: 8px;
-  color: rgb(var(--bg-ink-muted));
-  font-size: 12px;
-  line-height: 1.5;
-  text-align: right;
-}
 .chat-hidden-datum {
   position: relative;
   text-decoration: underline dashed;
@@ -87,60 +76,9 @@ html:has(.chat-page) {
   .chat-hidden-tooltip {
   visibility: hidden;
 }
-.chat-user p {
-  max-width: 85%;
-  padding: 18px 22px;
-  margin: 0;
-  border-radius: var(--bg-radius-card);
-  background: rgb(var(--bg-surface));
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
 .chat-assistant {
   line-height: 1.6;
   overflow-wrap: anywhere;
-}
-.chat-assistant p {
-  margin: 0;
-}
-.chat-claim {
-  margin: 0 0 18px;
-}
-.chat-claim:first-child h2 {
-  margin-top: 0;
-}
-.chat-claim h2 {
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
-  margin: 32px 0 12px;
-  letter-spacing: 0;
-  color: rgb(var(--bg-ink-subtle));
-}
-.chat-step {
-  display: flex;
-  gap: 12px;
-}
-.chat-step-number {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  margin-top: -1px;
-  border-radius: 50%;
-  background: rgb(var(--bg-surface-muted));
-  border: 1px solid rgb(var(--bg-line));
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.chat-fact p,
-.chat-step p {
-  white-space: pre-wrap;
 }
 .chat-inline-citation {
   display: inline-flex;
@@ -160,6 +98,13 @@ html:has(.chat-page) {
   vertical-align: 1px;
   white-space: normal;
   text-decoration: none;
+  transition:
+    border-color var(--t-rapido) ease,
+    color var(--t-rapido) ease,
+    transform var(--t-rapido) var(--curva-salida);
+}
+.chat-inline-citation:active {
+  transform: scale(0.96);
 }
 .chat-inline-citation svg {
   flex-shrink: 0;
@@ -185,64 +130,6 @@ html:has(.chat-page) {
     border-color: rgb(var(--bg-line-control));
   }
 }
-.chat-thinking {
-  margin: 16px 0 24px;
-  min-height: 24px;
-}
-.chat-thinking > span:first-child {
-  color: transparent;
-  background:
-    linear-gradient(
-      90deg,
-      transparent calc(50% - 28px),
-      rgb(var(--bg-ink)),
-      transparent calc(50% + 28px)
-    ),
-    linear-gradient(rgb(var(--bg-ink-subtle)), rgb(var(--bg-ink-subtle)));
-  background-repeat: no-repeat;
-  background-size:
-    250% 100%,
-    auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  animation: text-shimmer 1.6s linear infinite;
-}
-.chat-notice {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  border: 1px solid rgb(var(--bg-line));
-  border-radius: var(--bg-radius-card);
-  background: rgb(var(--bg-surface));
-  padding: 18px 20px;
-  margin: 0 0 8px;
-}
-.chat-notice > svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: rgb(var(--bg-ink-subtle));
-}
-.chat-notice > div {
-  min-width: 0;
-}
-.chat-notice h2 {
-  font: 600 16px/24px var(--bg-font);
-  letter-spacing: 0;
-  margin: 0 0 4px;
-}
-.chat-notice p {
-  color: rgb(var(--bg-ink-muted));
-  white-space: pre-wrap;
-}
-.chat-notice-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
-  margin-top: 8px;
-}
-.chat-notice-actions:empty {
-  display: none;
-}
 .chat-partial {
   font-size: 14px;
   color: rgb(var(--bg-ink-subtle));
@@ -254,6 +141,7 @@ html:has(.chat-page) {
   align-items: center;
   gap: 12px;
   margin-top: 24px;
+  animation-delay: 80ms;
 }
 .chat-icon {
   border: 0;
@@ -267,6 +155,13 @@ html:has(.chat-page) {
   flex-shrink: 0;
   border-radius: 50%;
   padding: 0;
+  transition:
+    background-color var(--t-rapido) ease,
+    color var(--t-rapido) ease,
+    transform var(--t-rapido) var(--curva-salida);
+}
+.chat-icon:not(:disabled):active {
+  transform: scale(0.96);
 }
 @media (hover: hover) and (pointer: fine) {
   .chat-icon:hover {
@@ -276,6 +171,15 @@ html:has(.chat-page) {
 .chat-icon[aria-pressed='true'] {
   background: rgb(var(--bg-brand-100));
   color: rgb(var(--bg-brand-600));
+}
+/* The chosen vote pulses once. Animates `scale`, not `transform`: the thumbs-down is already rotated. */
+.chat-icon[aria-pressed='true'] .icono {
+  animation: chat-pulse 320ms var(--curva-salida);
+}
+@keyframes chat-pulse {
+  50% {
+    scale: 1.18;
+  }
 }
 .chat-sources-pill,
 .chat-votes,
@@ -291,6 +195,10 @@ html:has(.chat-page) {
   font-size: 14px !important;
   height: 44px;
   padding: 0 12px 0 8px;
+  transition: transform var(--t-rapido) var(--curva-salida);
+}
+.chat-sources-pill:active {
+  transform: scale(0.96);
 }
 @media (hover: hover) and (pointer: fine) {
   .chat-sources-pill:hover {
@@ -328,36 +236,6 @@ html:has(.chat-page) {
 }
 .agency-stack .agency-badge + .agency-badge {
   margin-left: -7px;
-}
-.chat-followups {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  margin-top: 32px;
-}
-.chat-followups button {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  justify-content: space-between;
-  border: 1px solid rgb(var(--bg-line-strong));
-  border-radius: 30px;
-  background: rgb(var(--bg-surface));
-  color: rgb(var(--bg-ink-muted));
-  padding: 15px 20px;
-  min-height: 56px;
-  text-align: left;
-  max-width: 100%;
-}
-@media (hover: hover) and (pointer: fine) {
-  .chat-followups button:hover {
-    background: rgb(var(--bg-surface-muted));
-    border-color: rgb(var(--bg-line-control));
-  }
-}
-.chat-followups button svg {
-  flex-shrink: 0;
 }
 .chat-bottom {
   height: calc(var(--chat-dock-height, 160px) + 24px);
@@ -420,8 +298,8 @@ html:has(.chat-page) {
   padding: 12px 10px 10px 16px;
   cursor: text;
   transition:
-    border-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    border-color var(--t-rapido) var(--curva-salida),
+    box-shadow var(--t-rapido) var(--curva-salida);
 }
 .chat-composer:focus-within {
   outline: none;
@@ -485,7 +363,7 @@ html:has(.chat-page) {
   transition:
     background-color 150ms ease,
     color 150ms ease,
-    transform 160ms ease-out;
+    transform var(--t-rapido) var(--curva-salida);
 }
 .chat-send:disabled {
   background: rgb(var(--bg-surface-muted));
@@ -498,30 +376,6 @@ html:has(.chat-page) {
 }
 .chat-send:not(:disabled):active {
   transform: scale(0.96);
-}
-.chat-jump {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: -32px;
-  left: calc(50% - 22px);
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid rgb(var(--bg-brand-100));
-  background: rgb(var(--bg-surface));
-  box-shadow: none;
-}
-.chat-error {
-  border-color: rgb(var(--bg-danger-line));
-  margin: 20px 0;
-  color: rgb(var(--bg-danger-fg));
-  background: rgb(var(--bg-danger-bg));
-}
-.chat-error > svg,
-.chat-error p {
-  color: inherit;
 }
 .chat-composer-error {
   font-size: 14px;
@@ -559,6 +413,7 @@ html:has(.chat-page) {
   color: rgb(var(--bg-ink-subtle));
   margin-top: 8px !important;
 }
+/* Map dialog: grows in from the centre (it is not anchored to a control) and leaves faster. */
 .chat-source-dialog {
   position: fixed;
   inset: 0;
@@ -573,10 +428,40 @@ html:has(.chat-page) {
   font: 16px/24px var(--bg-font);
   box-shadow: none;
   overflow: auto;
+  opacity: 0;
+  transform: scale(0.97);
+  transition:
+    opacity 150ms var(--curva-salida),
+    transform 150ms var(--curva-salida),
+    overlay 150ms allow-discrete,
+    display 150ms allow-discrete;
+}
+.chat-source-dialog[open] {
+  opacity: 1;
+  transform: none;
+  transition-duration: 240ms;
+}
+@starting-style {
+  .chat-source-dialog[open] {
+    opacity: 0;
+    transform: scale(0.97);
+  }
 }
 .chat-source-dialog::backdrop {
-  background: rgb(var(--bg-ink) / 0.35);
+  background: rgb(var(--bg-ink) / 0);
   backdrop-filter: none;
+  transition:
+    background-color 150ms var(--curva-salida),
+    overlay 150ms allow-discrete,
+    display 150ms allow-discrete;
+}
+.chat-source-dialog[open]::backdrop {
+  background: rgb(var(--bg-ink) / 0.35);
+}
+@starting-style {
+  .chat-source-dialog[open]::backdrop {
+    background: rgb(var(--bg-ink) / 0);
+  }
 }
 .chat-coverage-dialog {
   width: min(960px, calc(100vw - 32px));
@@ -585,7 +470,7 @@ html:has(.chat-page) {
   top: 24px;
   right: 24px;
 }
-/* Más alto que el diálogo: llega a su altura máxima y no cambia de tamaño al cargar el mapa. */
+/* Taller than the dialog: it reaches max height and does not resize when the map loads. */
 .sources-map-cargando {
   min-height: 100dvh;
 }
@@ -609,41 +494,9 @@ html:has(.chat-coverage-dialog[open]) {
 .chat-page textarea:focus-visible {
   outline: none;
 }
-@keyframes text-shimmer {
-  from {
-    background-position:
-      100% 0,
-      0 0;
-  }
-  to {
-    background-position:
-      0% 0,
-      0 0;
-  }
-}
 @media (max-width: 800px) {
-  .chat-menu summary {
-    padding: 8px 18px;
-    min-height: 44px;
-  }
-  .chat-menu nav {
-    width: min(245px, calc(100vw - 32px));
-  }
-  .chat-menu nav a,
-  .chat-menu nav button {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-  }
   .chat-conversation {
     padding: calc(96px + env(safe-area-inset-top, 0px)) 16px 0;
-  }
-  .chat-user {
-    margin-bottom: 28px;
-  }
-  .chat-user p {
-    max-width: 92%;
-    padding: 15px 19px;
   }
   .chat-turn {
     margin-bottom: 42px;
@@ -661,13 +514,6 @@ html:has(.chat-coverage-dialog[open]) {
   .chat-composer {
     width: 100%;
     padding: 12px 8px 8px 14px;
-  }
-  .chat-notice {
-    padding: 16px;
-  }
-  .chat-followups button {
-    padding: 12px 16px;
-    min-height: 44px;
   }
   .chat-feedback button {
     min-height: 44px;
@@ -700,26 +546,27 @@ html:has(.chat-coverage-dialog[open]) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chat-thinking > span:first-child {
-    animation: none;
-    color: rgb(var(--bg-ink-subtle));
-    background: none;
-  }
-  .chat-claim {
-    animation: none;
-  }
   .chat-composer,
   .chat-send {
     transition-duration: 0ms;
   }
-  .chat-send:not(:disabled):active {
+  .chat-icon[aria-pressed='true'] .icono {
+    animation: none;
+  }
+  .chat-source-dialog,
+  .chat-source-dialog[open] {
+    transform: none;
+  }
+  @starting-style {
+    .chat-source-dialog[open] {
+      transform: none;
+    }
+  }
+  :is(.chat-send, .chat-icon, .chat-sources-pill, .chat-inline-citation):active {
     transform: none;
   }
 }
 
-.chat-attach {
-  color: rgb(var(--bg-ink-subtle));
-}
 .chat-attachment-preview {
   background: rgb(var(--bg-surface));
   border: 1px solid rgb(var(--bg-brand-100));
@@ -746,13 +593,4 @@ html:has(.chat-coverage-dialog[open]) {
   font-size: 14px;
   line-height: 16px;
   margin-top: 4px;
-}
-.chat-attached-message {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 14px;
-  color: rgb(var(--bg-ink-subtle));
-  padding-bottom: 8px;
-  overflow-wrap: anywhere;
 }

@@ -63,6 +63,12 @@ export type QueryUnderstanding = {
   temporal: boolean;
   requestedYear?: number;
 };
+/**
+ * Answer block catalog. Each kind is rendered by one chat component, so the model chooses how a
+ * verified claim is presented but never writes markup.
+ */
+export const claimKinds = ['step', 'document', 'cost', 'deadline', 'warning', 'fact'] as const;
+export type ClaimKind = (typeof claimKinds)[number];
 export const answerSchema = z.object({
   status: z.enum(['answered', 'insufficient_evidence', 'needs_clarification']),
   answer: z.string().max(1800),
@@ -71,7 +77,9 @@ export const answerSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string().max(900),
-        kind: z.enum(['step', 'document', 'cost', 'deadline', 'fact']),
+        kind: z.enum(claimKinds),
+        /** Amount or deadline set large in its block; always a literal fragment of `text`. */
+        figure: z.string().max(48).optional(),
       }),
     )
     .max(16),
@@ -159,4 +167,14 @@ export function evidenceText(markdown: string): string {
 export function quoteSupported(content: string, quote: string): boolean {
   const text = evidenceText(quote);
   return text.length >= 8 && evidenceText(content).includes(text);
+}
+/** Keeps a highlighted figure only on cost and deadline claims that contain it word for word. */
+export function verbatimFigure(
+  kind: ClaimKind,
+  text: string,
+  figure: string | undefined,
+): string | undefined {
+  const value = figure?.replace(/\s+/g, ' ').trim();
+  if (!value || (kind !== 'cost' && kind !== 'deadline') || !/\d/.test(value)) return undefined;
+  return text.replace(/\s+/g, ' ').toLowerCase().includes(value.toLowerCase()) ? value : undefined;
 }

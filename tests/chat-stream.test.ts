@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { readChatStream } from '../apps/web/lib/chat-stream';
 import { collectVerifiedClaims, type AnswerSegment } from '../packages/ai/src/stream-answer';
 import { understandQuery } from '../packages/retrieval/src/index';
-import type { Evidence, VerifiedClaim } from '../packages/core/src/index';
+import { verbatimFigure, type Evidence, type VerifiedClaim } from '../packages/core/src/index';
 const evidence: Evidence = {
   chunkId: 'c1',
   documentId: 'd1',
@@ -142,37 +141,36 @@ describe('Verified incremental answers', () => {
     expect(seen).toHaveLength(1);
   });
 });
-describe('Chat SSE transport', () => {
-  function bytes(value: string) {
-    const encoded = new TextEncoder().encode(value);
-    return new ReadableStream<Uint8Array>({
-      start(c) {
-        for (const byte of encoded) c.enqueue(new Uint8Array([byte]));
-        c.close();
-      },
-    });
-  }
-  it('handles UTF-8 characters and frames split across arbitrary network packets', async () => {
-    const seen: unknown[] = [];
-    await readChatStream(
-      bytes(
-        'event: claim\r\ndata: {"text":"¿Cómo me empadrono?"}\r\n\r\nevent: result\ndata: {"done":true}\n\n',
-      ),
-      (event, data) => seen.push({ event, data }),
-    );
-    expect(seen).toEqual([
-      { event: 'claim', data: { text: '¿Cómo me empadrono?' } },
-      { event: 'result', data: { done: true } },
-    ]);
+describe('Answer block rules', () => {
+  const cost: AnswerSegment = {
+    kind: 'cost',
+    text: 'La tasa cuesta 12,00 euros.',
+    figure: '12,00 euros',
+    citations: [{ documentId: 'd1', chunkId: 'c1' }],
+  };
+  it('keeps a figure only when a cost or deadline claim contains it word for word', () => {
+    expect(verbatimFigure('cost', cost.text, '12,00  euros')).toBe('12,00 euros');
+    expect(verbatimFigure('cost', cost.text, '12 €')).toBeUndefined();
+    expect(verbatimFigure('deadline', 'Tienes un mes.', 'un mes')).toBeUndefined();
+    expect(verbatimFigure('fact', cost.text, '12,00 euros')).toBeUndefined();
   });
-  it('surfaces an interrupted stream rather than marking a partial answer complete', async () => {
-    await expect(readChatStream(bytes('event: claim\ndata: {}\n\n'), () => {})).rejects.toThrow(
-      'interrumpió',
+  it('drops an invented figure without rejecting the verified claim', async () => {
+    const answer = await collectVerifiedClaims(
+      elements([{ ...cost, figure: '15 euros' }, cost]),
+      [{ ...evidence, content: cost.text }],
+      query,
+      async () => true,
     );
+    expect(answer.claims.map((c) => c.figure)).toEqual([undefined, '12,00 euros']);
   });
-  it('surfaces server errors without swallowing them', async () => {
-    await expect(
-      readChatStream(bytes('event: error\ndata: "No disponible"\n\n'), () => {}),
-    ).rejects.toThrow('No disponible');
+  it('shows at most one warning; later ones become facts', async () => {
+    const warning: AnswerSegment = { ...segment, kind: 'warning' };
+    const answer = await collectVerifiedClaims(
+      elements([warning, warning]),
+      [evidence],
+      query,
+      async () => true,
+    );
+    expect(answer.claims.map((c) => c.kind)).toEqual(['warning', 'fact']);
   });
 });

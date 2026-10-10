@@ -1,18 +1,5 @@
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { Response } from '@reforma-digital/design/sol/chat';
 
 export default function SourceExcerpt({ content }: { content: string }) {
-  return (
-    <Markdown
-      remarkPlugins={[remarkGfm]}
-      skipHtml
-      components={{
-        a: ({ children: text }) => <span>{text}</span>,
-        img: () => null,
-        input: () => null,
-      }}
-    >
-      {content}
-    </Markdown>
-  );
+  return <Response skipHtml>{content}</Response>;
 }

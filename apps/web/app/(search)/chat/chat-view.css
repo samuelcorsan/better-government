@@ -12,15 +12,16 @@
 .buscador .chat-turn {
   scroll-margin-top: 100px;
 }
-.buscador .chat-user p {
-  background: var(--superficie);
-}
-.buscador .chat-claim h2 {
-  font-family: var(--font-texto);
-}
+/* 28px visible so lines stay together; the ::after layer extends the tap area to 44px. */
 .buscador .chat-inline-citation {
-  min-height: 44px;
+  position: relative;
+  min-height: 28px;
   font-size: 14px !important;
+}
+.buscador .chat-inline-citation::after {
+  content: '';
+  position: absolute;
+  inset: -8px -2px;
 }
 .buscador .chat-composer-dock {
   width: min(760px, calc(100% - 2 * var(--margen)));
