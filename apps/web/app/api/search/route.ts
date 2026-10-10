@@ -5,6 +5,7 @@ import {
   searchRequestSchema,
 } from '../../../lib/search-request';
 import { createUIMessageStream, createUIMessageStreamResponse, type InferUIMessageChunk } from 'ai';
+import { checkBotId } from 'botid/server';
 import { search } from '@reforma-digital/ai';
 import { db, searches } from '@reforma-digital/db';
 import {
@@ -20,6 +21,12 @@ export const runtime = 'nodejs';
 export const maxDuration = 120;
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return Response.json({ error: 'Origen no permitido' }, { status: 403 });
+  // Rejects scripted clients before any model call; always passes in local development.
+  if ((await checkBotId()).isBot)
+    return Response.json(
+      { error: 'No hemos podido verificar tu navegador. Recarga la página e inténtalo de nuevo.' },
+      { status: 403 },
+    );
   if (Number(request.headers.get('content-length') ?? 0) > MAX_SEARCH_BODY_BYTES)
     return Response.json({ error: 'Consulta demasiado larga' }, { status: 413 });
   try {
