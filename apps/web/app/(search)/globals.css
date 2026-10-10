@@ -2,6 +2,7 @@
 @import '@reforma-digital/design/sol/tokens.css';
 @import '@reforma-digital/design/sol/botones.css';
 @import '@reforma-digital/design/sol/campos.css';
+@import '@reforma-digital/design/sol/chat.css';
 @import 'tailwindcss/theme.css' layer(theme);
 @import '@reforma-digital/design/sol/tailwind.css';
 /* Sin capa y después de Sol: una utilidad puede ajustar una clase del sistema. Solo se buscan

@@ -48,7 +48,7 @@ export function AttachmentPicker({
         aria-label="Adjuntar PDF"
         title="Adjuntar PDF · Hasta 5 MB y 20 páginas"
       >
-        <Icon name="documento" size={21} />
+        <Icon name="paperclip" size={20} />
       </button>
     </>
   );

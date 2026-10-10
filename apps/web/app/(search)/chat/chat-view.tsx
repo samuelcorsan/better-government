@@ -54,7 +54,7 @@ export function ChatView({
             <p>
               {mode === 'preview'
                 ? 'Vista previa con fragmentos oficiales; la generación con IA no está activada.'
-                : 'Comprueba las fuentes antes de realizar el trámite.'}
+                : 'Las respuestas se basan en fuentes oficiales. Comprueba las citas antes de hacer el trámite.'}
             </p>
             <nav aria-label="Información del buscador">
               <a href="/sources">Fuentes oficiales</a>

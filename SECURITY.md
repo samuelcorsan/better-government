@@ -28,7 +28,7 @@ La compatibilidad con validaciones personalizadas, restricciones del navegador, 
 
 No incluyas sesiones, documentos personales, tokens reales o datos identificativos en issues, fixtures, logs ni capturas. Para un fallo de seguridad, utiliza el canal privado de reporte del repositorio cuando esté habilitado; evita publicar detalles que expongan datos de usuarios.
 
-El chat de `apps/web` no forma parte de la extensión. Sustituye datos personales en el navegador antes de enviar la consulta y no la envía si esa protección falla. Consulta [docs/search.md](docs/search.md#datos-personales).
+El chat de `apps/web` no forma parte de la extensión. Sustituye datos personales en el navegador antes de enviar la consulta y no la envía si esa protección falla. `/api/search` exige el mismo origen, pasa por Vercel BotID (`checkBotId()`) antes de cualquier llamada al modelo y limita las peticiones por IP. Consulta [docs/search.md](docs/search.md#datos-personales).
 
 Referencias técnicas consultadas:
 

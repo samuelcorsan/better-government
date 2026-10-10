@@ -4,6 +4,8 @@ import {
   SearchBodyTooLargeError,
   searchRequestSchema,
 } from '../../../lib/search-request';
+import { createUIMessageStream, createUIMessageStreamResponse, type InferUIMessageChunk } from 'ai';
+import { checkBotId } from 'botid/server';
 import { search } from '@reforma-digital/ai';
 import { db, searches } from '@reforma-digital/db';
 import {
@@ -14,10 +16,17 @@ import {
   databaseAvailable,
   searchMode,
 } from '../../../lib/security';
+import type { ChatMessage } from '../../../lib/chat-message';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return Response.json({ error: 'Origen no permitido' }, { status: 403 });
+  // Rejects scripted clients before any model call; always passes in local development.
+  if ((await checkBotId()).isBot)
+    return Response.json(
+      { error: 'No hemos podido verificar tu navegador. Recarga la página e inténtalo de nuevo.' },
+      { status: 403 },
+    );
   if (Number(request.headers.get('content-length') ?? 0) > MAX_SEARCH_BODY_BYTES)
     return Response.json({ error: 'Consulta demasiado larga' }, { status: 413 });
   try {
@@ -44,75 +53,81 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
-    const encoder = new TextEncoder();
     const cancellation = new AbortController();
-    let open = true;
-    const signal = AbortSignal.any([request.signal, cancellation.signal]);
-    const stream = new ReadableStream({
-      async start(controller) {
-        const send = (event: string, data: unknown) => {
-          if (open)
-            try {
-              controller.enqueue(
-                encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
-              );
-            } catch {
-              open = false;
-            }
-        };
-        request.signal.addEventListener(
-          'abort',
-          () => {
-            open = false;
-          },
-          { once: true },
-        );
-        try {
-          const result = await search(redactQuery(parsed.data.query), {
-            mode: searchMode(),
-            signal,
-            context: parsed.data.context?.map(redactQuery),
-            attachmentContext: parsed.data.attachmentContext
-              ? redactQuery(parsed.data.attachmentContext)
-              : undefined,
-            onEvidence: (evidence) => send('evidence', evidence),
-            onClaim: (claim) => send('claim', claim),
-            onStage: (s) => send('stage', s),
-          });
-          let token: string | null = null;
-          if (databaseAvailable() && process.env.FEEDBACK_SECRET) {
-            await db().insert(searches).values({ id: result.id, result });
-            token = feedbackToken(result.id);
-          }
+    const chunks = createUIMessageStream<ChatMessage>({
+      async execute({ writer }) {
+        writer.write({ type: 'start' });
+        const result = await search(redactQuery(parsed.data.query), {
+          mode: searchMode(),
+          signal: AbortSignal.any([request.signal, cancellation.signal]),
+          context: parsed.data.context?.map(redactQuery),
+          attachmentContext: parsed.data.attachmentContext
+            ? redactQuery(parsed.data.attachmentContext)
+            : undefined,
+          onStage: (stage) =>
+            writer.write({ type: 'data-stage', data: { stage }, transient: true }),
+          onEvidence: (items) =>
+            writer.write({ type: 'data-evidence', id: 'evidence', data: { items } }),
           // Only validated claims are streamed. Partial model JSON is never shown to citizens.
-          send('result', {
-            id: result.id,
-            query: result.query,
-            understanding: result.understanding,
-            evidence: result.evidence,
-            answer: result.answer,
-            mode: result.mode,
-            feedbackToken: token,
-          });
-        } catch (e) {
-          const message = e instanceof Error ? e.message : 'Error';
-          console.error(
-            'search_failed',
-            message.replace(/[a-z][a-z0-9+.-]*:\/\/\S+/gi, '[url]').slice(0, 300),
-          );
-          send('error', 'No hemos podido consultar las fuentes. Inténtalo de nuevo en un momento.');
-        } finally {
-          if (open) controller.close();
+          onClaim: (block) => writer.write({ type: 'data-claim', id: block.claim.id, data: block }),
+        });
+        let token: string | null = null;
+        if (databaseAvailable() && process.env.FEEDBACK_SECRET) {
+          await db().insert(searches).values({ id: result.id, result });
+          token = feedbackToken(result.id);
         }
+        // The final answer is authoritative: re-sent parts replace the streamed ones by id.
+        writer.write({ type: 'data-evidence', id: 'evidence', data: { items: result.evidence } });
+        for (const claim of result.answer.claims)
+          writer.write({
+            type: 'data-claim',
+            id: claim.id,
+            data: {
+              claim,
+              citations: result.answer.citations.filter((c) => c.claimId === claim.id),
+            },
+          });
+        if (!result.answer.claims.length) {
+          writer.write({ type: 'text-start', id: 'answer' });
+          writer.write({ type: 'text-delta', id: 'answer', delta: result.answer.answer });
+          writer.write({ type: 'text-end', id: 'answer' });
+        }
+        writer.write({
+          type: 'finish',
+          messageMetadata: {
+            searchId: result.id,
+            feedbackToken: token,
+            status: result.answer.status,
+            incomplete: result.answer.incomplete,
+            region: result.understanding.region,
+          },
+        });
       },
-      cancel() {
-        open = false;
-        cancellation.abort();
+      onError(e) {
+        const message = e instanceof Error ? e.message : 'Error';
+        console.error(
+          'search_failed',
+          message.replace(/[a-z][a-z0-9+.-]*:\/\/\S+/gi, '[url]').slice(0, 300),
+        );
+        return 'No hemos podido consultar las fuentes. Inténtalo de nuevo en un momento.';
       },
     });
-    return new Response(stream, {
+    // Stopping in the browser cancels the response; that must also stop the provider calls.
+    const reader = chunks.getReader();
+    const stream = new ReadableStream<InferUIMessageChunk<ChatMessage>>({
+      async pull(controller) {
+        const { done, value } = await reader.read();
+        if (done) controller.close();
+        else controller.enqueue(value);
+      },
+      cancel(reason) {
+        cancellation.abort();
+        return reader.cancel(reason);
+      },
+    });
+    return createUIMessageStreamResponse({
+      stream,
       headers: {
-        'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-store',
         'X-Accel-Buffering': 'no',
         'X-Content-Type-Options': 'nosniff',

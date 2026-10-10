@@ -136,6 +136,29 @@ Todas: radio 20 y relleno 24 (20 en móvil). El prefijo `caja-` está reservado.
 
 El compositor del chat es composición de la app (`app/(search)/chat/chat-view.css` sobre `components/chat.css`): radio 28, borde `--linea` que pasa a `--tinta` mientras se escribe, `--sombra-flota` y botón de enviar `.chat-send` de 52 px en tinta, apagado (`--apagado`) hasta que hay texto y con `--atardecer-boton` al pasar el ratón.
 
+## Chat
+
+`@reforma-digital/design/sol/chat` (estilos en `sol/chat.css`) tiene las piezas que no dependen de la app; los iconos se pasan como props porque `Icon` vive aquí. La composición sigue la página Chat de Paper («Reforma Digital Sol»).
+
+| Pieza                                                    | Uso                                                                                                                                                      |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Question`, `QuestionDetail`                             | La pregunta es el titular del turno (Geist, 34–52 px). Debajo, líneas cortas: datos ocultados al modelo y «Respuesta verificada con N fuentes oficiales» |
+| `Thinking`                                               | «Preparando todo…» o «Pensando…» con brillo; `stage` nombra la etapa y cambia con un fundido                                                             |
+| `Answer`, `StepList`/`Step`, `Fact`                      | Pasos con número rojo y párrafos (DESIGN.md §8.3)                                                                                                        |
+| `DetailGrid`/`DetailCard`                                | Documentación, Coste y Plazos en tarjetas `.caja-gris`; Coste va en `.caja-sol` (`highlight`) con la cifra en grande                                     |
+| `WhereCard`                                              | «Dónde se hace»: la página oficial del primer paso, con el botón que la abre                                                                             |
+| `SourceChip`                                             | Cita en línea con el organismo; abre el fragmento en la hoja de fuentes                                                                                  |
+| `Monogram`, `SourcesButton`                              | Iniciales del organismo, dibujadas en local (sin pedir favicons), y «Fuentes · N»                                                                        |
+| `SourceSheet`, `SourceDetail`, `SourceList`/`SourceCard` | Hoja lateral (en móvil, inferior) con el fragmento citado, sus datos, el botón al documento oficial y las otras fuentes                                  |
+| `Notice`                                                 | `tone`: `info` (`.caja-plana`), `warning` (`.caja-aviso`) o `error` (`.caja-error`). Con icono, titular y acciones                                       |
+| `Response`                                               | Markdown con Streamdown. `streaming` revela por palabra; `skipHtml` para fragmentos oficiales; `renderCitation` pinta la cita en línea                   |
+| `Suggestions`/`Suggestion`                               | Preguntas de ejemplo y de seguimiento; `index` escalona la entrada                                                                                       |
+| `IconSwap`                                               | Dos glifos en un mismo control (enviar/detener, copiar/copiado)                                                                                          |
+| `JumpButton`                                             | Ir al último mensaje; siempre montado, `visible` lo muestra                                                                                              |
+
+- `.chat-enter` es la entrada de una sola vez (sube 6 px desde un desenfoque de 3 px). No la pongas en nada que se repita al teclear.
+- El compositor (una fila: adjuntar, pregunta y enviar), las acciones y el mapa siguen siendo composición de la app.
+
 ## Iconos
 
 `<Icon name="…" size={14–20} />` (por defecto 18). Los chevrons (`derecha`, `abajo`, `enviar`) son pixelados; el resto usa Nucleo UI Essential outline 18. Los iconos son decorativos (`aria-hidden`); el nombre lo da el texto o el `aria-label` del control.

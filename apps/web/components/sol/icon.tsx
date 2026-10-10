@@ -5,6 +5,8 @@ import {
   IconBookOpenOutline18,
   IconCalendarOutline18,
   IconCheckOutline18,
+  IconChevronLeftOutline18,
+  IconChevronRightOutline18,
   IconCircleCompose2Outline18,
   IconCircleInfoOutline18,
   IconClipboardOutline18,
@@ -16,6 +18,7 @@ import {
   IconLockOutline18,
   IconMagnifierOutline18,
   IconMsgsOutline18,
+  IconPaperclipOutline18,
   IconPhoneOutline18,
   IconRefresh2Outline18,
   IconShieldCheckOutline18,
@@ -36,7 +39,29 @@ function Detener({ size, className }: { size?: number; className?: string }) {
   );
 }
 
+// Nucleo UI Essential has no straight arrows: same 18 grid, 1.5 stroke and round caps as its chevrons.
+const arrow = (d: string) =>
+  function Arrow({ size, className }: { size?: number; className?: string }) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 18 18" className={className} aria-hidden="true">
+        <path
+          d={d}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  };
+
 const iconos = {
+  arrowUp: arrow('M9 15V3.5M4 8.25 9 3.25l5 5'),
+  arrowUpRight: arrow('M5 13 13 5M6.5 5H13v6.5'),
+  chevronLeft: IconChevronLeftOutline18,
+  chevronRight: IconChevronRightOutline18,
+  paperclip: IconPaperclipOutline18,
   detener: Detener,
   descargar: IconInboxArrowDownOutline18,
   externo: IconLinkOutline18,

@@ -1,19 +1,35 @@
 'use client';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { APICallError } from 'ai';
 import { Icon } from './sol/icon';
 import './chat.css';
-import type { Evidence, Region, SearchResult, Stage, VerifiedClaim } from '@reforma-digital/core';
+import type { Region, Stage } from '@reforma-digital/core';
 import { Button } from '@reforma-digital/design/sol';
+import {
+  IconSwap,
+  JumpButton,
+  Notice,
+  Question,
+  QuestionDetail,
+  Response,
+  SourcesButton,
+  Suggestion,
+  Suggestions,
+  Thinking,
+} from '@reforma-digital/design/sol/chat';
 import { AttachmentPicker } from './attachment-picker';
 import type { PdfContext } from '../lib/attachment';
-import { protectMessages, ProtectionTimeoutError, warm } from '../lib/pii';
-import type { HiddenRange, ProtectedText } from '../lib/pii-display';
+import { warm } from '../lib/pii';
 import { ProtectedQuestion } from './protected-question';
-import { readChatStream } from '../lib/chat-stream';
+import { chatTransport, textOf } from '../lib/chat-transport';
+import type { ChatMessage } from '../lib/chat-message';
+import { AnswerBlocks, citedEvidence, readAnswer, type AnswerView } from './chat-answer';
+import { Sources, type SourceView } from './chat-sources';
+import type { Evidence } from '@reforma-digital/core';
 import dynamic from 'next/dynamic';
 import './sources-map.css';
-import { AgencyBadge, SourcePopover } from './source-popover';
-// La geometría del mapa solo se descarga al abrir el diálogo de cobertura.
+// The map geometry is only downloaded when the coverage dialog opens.
 const SourcesMap = dynamic(() => import('./sources-map'), {
   loading: () => (
     <section className="sources-map sources-map-cargando" aria-labelledby="sources-map-title">
@@ -22,27 +38,30 @@ const SourcesMap = dynamic(() => import('./sources-map'), {
   ),
 });
 
-type Result = SearchResult & { feedbackToken: string | null };
-type Turn = {
-  id: string;
-  query: string;
-  state: 'loading' | 'done' | 'stopped' | 'error';
-  stage: Stage;
-  protecting?: boolean;
-  hiddenData?: HiddenRange[];
-  evidence: Evidence[];
-  blocks: VerifiedClaim[];
-  result?: Result;
-  error?: string;
-  attachment?: PdfContext;
-};
 const stages: Record<Stage, string> = {
   understandQuery: 'Entendiendo tu pregunta',
   retrieval: 'Consultando fuentes oficiales',
   generation: 'Redactando y verificando la respuesta',
   evaluation: 'Comprobando referencias',
 };
+const fallbackError = 'No se ha podido completar la respuesta.';
 export type LimitedRegion = { id: Region; name: string; sourceCount: number };
+
+function describeError(error: Error | undefined): string {
+  if (!error) return fallbackError;
+  if (APICallError.isInstance(error)) {
+    try {
+      const body = JSON.parse(error.responseBody ?? '') as { error?: unknown };
+      if (typeof body.error === 'string') return body.error;
+    } catch {
+      /* HTML or empty error bodies are not shown to the user. */
+    }
+    return 'No se ha podido consultar las fuentes.';
+  }
+  if (error instanceof TypeError)
+    return 'No se ha podido conectar. Comprueba tu conexión e inténtalo de nuevo.';
+  return error.message || fallbackError;
+}
 
 function CoverageNotice({
   region,
@@ -53,7 +72,7 @@ function CoverageNotice({
 }) {
   if (!region) return null;
   return (
-    <p className="chat-coverage-note">
+    <p className="chat-coverage-note chat-enter">
       Nuestra cobertura territorial en {region.name} es limitada: {region.sourceCount}{' '}
       {region.sourceCount === 1 ? 'fuente registrada' : 'fuentes registradas'}.{' '}
       <Button
@@ -67,29 +86,33 @@ function CoverageNotice({
     </p>
   );
 }
-function AnswerActions({ turn }: { turn: Turn }) {
+function AnswerActions({
+  message,
+  view,
+  showSources,
+}: {
+  message: ChatMessage;
+  view: AnswerView;
+  showSources: (evidence: Evidence[]) => void;
+}) {
   const [copied, setCopied] = useState(false);
   const [rating, setRating] = useState<1 | -1>();
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [note, setNote] = useState('');
   const [negative, setNegative] = useState(false);
   const [reason, setReason] = useState('incorrect');
-  const evidence = turn.evidence.filter((e) =>
-    turn.blocks.some((b) => b.citations.some((c) => c.chunkId === e.chunkId)),
-  );
-  const agencies = [
-    ...new Map(evidence.map((e) => [new URL(e.canonicalUrl).hostname, e])).values(),
-  ];
+  const evidence = citedEvidence(view);
+  const { searchId, feedbackToken } = message.metadata ?? {};
   async function vote(value: 1 | -1) {
-    if (!turn.result?.feedbackToken) return;
+    if (!searchId || !feedbackToken) return;
     setBusy(true);
     try {
       const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          searchId: turn.result.id,
-          token: turn.result.feedbackToken,
+          searchId,
+          token: feedbackToken,
           rating: value,
           ...(value === -1 ? { reason } : {}),
         }),
@@ -97,9 +120,9 @@ function AnswerActions({ turn }: { turn: Turn }) {
       if (!response.ok) throw new Error();
       setRating(value);
       setNegative(false);
-      setMessage('Gracias por tu valoración.');
+      setNote('Gracias por tu valoración.');
     } catch {
-      setMessage('No se pudo guardar. Inténtalo de nuevo.');
+      setNote('No se pudo guardar. Inténtalo de nuevo.');
     } finally {
       setBusy(false);
     }
@@ -108,76 +131,75 @@ function AnswerActions({ turn }: { turn: Turn }) {
     try {
       await navigator.clipboard.writeText(
         [
-          turn.blocks.map((b) => b.claim.text).join('\n\n'),
-          ...[...new Set(evidence.map((e) => e.canonicalUrl))],
+          view.blocks.map((b) => b.claim.text).join('\n\n'),
+          ...new Set(evidence.map((e) => e.canonicalUrl)),
         ].join('\n\n'),
       );
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setMessage('No se pudo copiar. Puedes seleccionar el texto de la respuesta.');
+      setNote('No se pudo copiar. Puedes seleccionar el texto de la respuesta.');
     }
   }
   // Sources, votes and copy only make sense next to verified claims.
-  if (!turn.blocks.length) return null;
+  if (!view.blocks.length) return null;
   return (
     <>
-      <div className="chat-actions">
+      <div className="chat-actions chat-enter">
         {evidence.length > 0 && (
-          <SourcePopover className="chat-sources-pill" evidence={evidence}>
-            <span className="agency-stack">
-              {agencies.slice(0, 3).map((source) => (
-                <AgencyBadge
-                  key={new URL(source.canonicalUrl).hostname}
-                  name={source.organization}
-                  url={source.canonicalUrl}
-                />
-              ))}
-            </span>
-            Fuentes
-          </SourcePopover>
+          <SourcesButton
+            organization={evidence[0]!.organization}
+            count={new Set(evidence.map((e) => e.documentId)).size}
+            onOpen={() => showSources(evidence)}
+          />
         )}
-        {turn.result?.feedbackToken && (
-          <div className="chat-votes">
-            <button
-              className="chat-icon"
-              disabled={busy}
-              aria-label="Respuesta útil"
-              aria-pressed={rating === 1}
-              onClick={() => void vote(1)}
-            >
-              <Icon name="util" size={16} />
-            </button>
-            <button
-              className="chat-icon"
-              disabled={busy}
-              aria-label="Respuesta no útil"
-              aria-pressed={rating === -1}
-              onClick={() => setNegative(!negative)}
-            >
-              <Icon name="noUtil" size={16} />
-            </button>
-          </div>
-        )}
-        <button
-          className="chat-icon chat-copy"
-          onClick={() => void copy()}
-          aria-label={copied ? 'Copiado' : 'Copiar respuesta'}
-        >
-          {copied ? <Icon name="hecho" size={16} /> : <Icon name="copiar" size={16} />}
-        </button>
+        <div className="chat-action-icons">
+          {feedbackToken && (
+            <>
+              <button
+                className="chat-icon"
+                disabled={busy}
+                aria-label="Respuesta útil"
+                aria-pressed={rating === 1}
+                onClick={() => void vote(1)}
+              >
+                <Icon name="util" size={20} />
+              </button>
+              <button
+                className="chat-icon"
+                disabled={busy}
+                aria-label="Respuesta no útil"
+                aria-pressed={rating === -1}
+                onClick={() => setNegative(!negative)}
+              >
+                <Icon name="noUtil" size={20} />
+              </button>
+            </>
+          )}
+          <button
+            className="chat-icon"
+            onClick={() => void copy()}
+            aria-label={copied ? 'Copiado' : 'Copiar respuesta'}
+          >
+            <IconSwap
+              active={copied ? 'b' : 'a'}
+              a={<Icon name="copiar" size={20} />}
+              b={<Icon name="hecho" size={20} />}
+            />
+          </button>
+        </div>
       </div>
       {negative && (
         <form
-          className="chat-feedback"
+          className="chat-feedback chat-enter"
           onSubmit={(e) => {
             e.preventDefault();
             void vote(-1);
           }}
         >
-          <label htmlFor={`reason-${turn.id}`}>¿Qué falló?</label>
+          <label htmlFor={`reason-${message.id}`}>¿Qué falló?</label>
           <select
-            id={`reason-${turn.id}`}
+            id={`reason-${message.id}`}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           >
@@ -193,9 +215,9 @@ function AnswerActions({ turn }: { turn: Turn }) {
           </button>
         </form>
       )}
-      {message && (
-        <p className="chat-action-message" role="status">
-          {message}
+      {note && (
+        <p className="chat-action-message chat-enter" role="status">
+          {note}
         </p>
       )}
     </>
@@ -212,14 +234,16 @@ export default function Chat({
   footer?: ReactNode;
   limitedRegions: readonly LimitedRegion[];
 }) {
-  const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
+  const [stage, setStage] = useState<Stage>('understandQuery');
+  const [stopped, setStopped] = useState<ReadonlySet<string>>(new Set());
   const [showJump, setShowJump] = useState(false);
+  const [sourceView, setSourceView] = useState<SourceView | null>(null);
+  const showSources = (evidence: Evidence[], selected?: Evidence) =>
+    setSourceView({ evidence, ...(selected ? { selected } : {}) });
   const [attachment, setAttachment] = useState<PdfContext>();
   const [attachmentBusy, setAttachmentBusy] = useState(false);
   const [attachmentError, setAttachmentError] = useState('');
-  const active = useRef<AbortController | null>(null);
-  const history = useRef<Turn[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const dock = useRef<HTMLDivElement>(null);
@@ -227,130 +251,52 @@ export default function Chat({
   const [coverageRegionId, setCoverageRegionId] = useState<string | null>(null);
   const [coverageOpened, setCoverageOpened] = useState(false);
   const nearBottom = useRef(true);
-  const loading = turns.some((t) => t.state === 'loading');
-  function update(id: string, change: Partial<Turn> | ((turn: Turn) => Partial<Turn>)) {
-    setTurns((previous) => {
-      const next = previous.map((t) =>
-        t.id === id ? { ...t, ...(typeof change === 'function' ? change(t) : change) } : t,
-      );
-      history.current = next;
-      return next;
-    });
+  const { messages, sendMessage, regenerate, stop, status, error } = useChat<ChatMessage>({
+    transport: chatTransport,
+    onData: (part) => {
+      if (part.type === 'data-stage') setStage(part.data.stage);
+    },
+  });
+  const loading = status === 'submitted' || status === 'streaming';
+  const turns: { user: ChatMessage; assistant?: ChatMessage }[] = [];
+  for (const message of messages) {
+    if (message.role === 'user') turns.push({ user: message });
+    else if (message.role === 'assistant' && turns.length) turns.at(-1)!.assistant = message;
   }
   function jump() {
     nearBottom.current = true;
     bottom.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
     setShowJump(false);
   }
-  async function send(question: string, retryId?: string) {
+  function send(question: string) {
     const query = question.trim();
-    if (query.length < 4 || active.current || attachmentBusy) return;
-    const controller = new AbortController();
-    active.current = controller;
-    const id = retryId ?? crypto.randomUUID();
-    const prior = retryId
-      ? history.current.slice(
-          0,
-          history.current.findIndex((t) => t.id === retryId),
-        )
-      : history.current;
-    const attached = retryId
-      ? history.current.find((t) => t.id === retryId)?.attachment
-      : attachment;
-    const documentContext = attached ?? [...prior].reverse().find((t) => t.attachment)?.attachment;
-    const turn: Turn = {
-      id,
-      query,
-      attachment: attached,
-      state: 'loading',
-      stage: 'understandQuery',
-      protecting: true,
-      evidence: [],
-      blocks: [],
-    };
-    history.current = [...prior, turn];
-    setTurns(history.current);
+    if (query.length < 4 || loading || attachmentBusy) return;
+    nearBottom.current = true;
+    setStage('understandQuery');
+    void sendMessage({ text: query, ...(attachment ? { metadata: { attachment } } : {}) });
     setInput('');
     setAttachment(undefined);
     setAttachmentError('');
+  }
+  function retry() {
+    const last = turns.at(-1);
+    if (!last || loading) return;
+    setStopped((ids) => new Set([...ids].filter((id) => id !== last.user.id)));
+    setStage('understandQuery');
     nearBottom.current = true;
-    try {
-      const outgoing = [query, ...prior.slice(-6).map((t) => t.query)];
-      if (documentContext) outgoing.push(documentContext.text);
-      let protectedMessages: ProtectedText[];
-      try {
-        protectedMessages = await protectMessages(outgoing, controller.signal);
-      } catch (error) {
-        if (controller.signal.aborted || error instanceof ProtectionTimeoutError) throw error;
-        throw new Error(
-          'No hemos podido proteger tus datos personales en este dispositivo, así que no se ha enviado la consulta. Inténtalo de nuevo.',
-        );
-      }
-      controller.signal.throwIfAborted();
-      const safe = protectedMessages.map((message) => message.text);
-      update(id, { protecting: false, hiddenData: protectedMessages[0]?.ranges ?? [] });
-      const response = await fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: safe[0],
-          attachmentContext: documentContext ? safe.at(-1) : undefined,
-          context: safe.slice(1, outgoing.length - (documentContext ? 1 : 0)),
-        }),
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        let message = 'No se ha podido consultar las fuentes.';
-        try {
-          const body = JSON.parse(text) as { error?: string };
-          if (body.error) message = body.error;
-        } catch {
-          /* HTML or empty error bodies are not shown to the user. */
-        }
-        throw new Error(message);
-      }
-      if (!response.body) throw new Error('No se ha recibido una respuesta.');
-      await readChatStream(response.body, (event, data) => {
-        if (controller.signal.aborted) return;
-        if (event === 'stage') update(id, { stage: data as Stage });
-        if (event === 'evidence') update(id, { evidence: data as Evidence[] });
-        if (event === 'claim')
-          update(id, (t) => ({ blocks: [...t.blocks, data as VerifiedClaim] }));
-        if (event === 'result') {
-          const result = data as Result;
-          update(id, {
-            result,
-            evidence: result.evidence,
-            blocks: result.answer.claims.map((claim) => ({
-              claim,
-              citations: result.answer.citations.filter((c) => c.claimId === claim.id),
-            })),
-            state: 'done',
-          });
-        }
-      });
-    } catch (error) {
-      update(id, {
-        state: controller.signal.aborted ? 'stopped' : 'error',
-        error: controller.signal.aborted
-          ? undefined
-          : error instanceof Error
-            ? error.message
-            : 'No se ha podido completar la respuesta.',
-      });
-    } finally {
-      if (active.current === controller) active.current = null;
-    }
+    void regenerate();
+  }
+  function halt() {
+    const last = turns.at(-1);
+    if (last) setStopped((ids) => new Set(ids).add(last.user.id));
+    void stop();
   }
   useEffect(() => {
     let cancelled = false;
     if (!initialQuestion) inputRef.current?.focus({ preventScroll: true });
     if (initialQuestion)
       queueMicrotask(() => {
-        if (!cancelled) {
-          void send(initialQuestion);
-        }
+        if (!cancelled) send(initialQuestion);
       });
     return () => {
       cancelled = true;
@@ -365,14 +311,14 @@ export default function Chat({
       setShowJump(!nearBottom.current);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      active.current?.abort();
-    };
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
+  // «Nueva conversación» remounts the chat: the pending search and its model calls must stop.
+  useEffect(() => () => void stop(), [stop]);
+  // Errors and stops change the status without a new message part; follow them too.
   useEffect(() => {
     if (nearBottom.current) jump();
-  }, [turns]);
+  }, [messages, status]);
   useEffect(() => {
     const el = inputRef.current;
     if (el) {
@@ -422,7 +368,7 @@ export default function Chat({
   }
   function submit(e?: FormEvent) {
     e?.preventDefault();
-    void send(input);
+    send(input);
   }
   function openCoverage(regionId: string | null = null) {
     setCoverageRegionId(regionId);
@@ -440,223 +386,198 @@ export default function Chat({
           <div className="chat-empty">
             <h1>¿Qué necesitas hacer?</h1>
             <p>Pregunta con tus palabras. Te acercamos a las fuentes oficiales.</p>
-            <div className="chat-followups">
-              {['¿Cómo me hago autónomo?', '¿Cómo me empadrono en Madrid?'].map((q) => (
-                <button key={q} onClick={() => void send(q)}>
+            <Suggestions>
+              {['¿Cómo me hago autónomo?', '¿Cómo me empadrono en Madrid?'].map((q, i) => (
+                <Suggestion
+                  key={q}
+                  index={i}
+                  icon={<Icon name="derecha" size={17} />}
+                  onSelect={send}
+                >
                   {q}
-                  <Icon name="derecha" size={17} />
-                </button>
+                </Suggestion>
               ))}
-            </div>
+            </Suggestions>
           </div>
         )}
-        {turns.map((turn, turnIndex) => (
-          <section className="chat-turn" key={turn.id} aria-label={`Pregunta ${turnIndex + 1}`}>
-            <div className="chat-user">
-              <p>
-                {turn.attachment && (
-                  <span className="chat-attached-message">
-                    <Icon name="documento" size={16} /> {turn.attachment.name}
-                  </span>
-                )}
-                <ProtectedQuestion text={turn.query} ranges={turn.hiddenData ?? []} id={turn.id} />
-              </p>
-              {!!turn.hiddenData?.length && (
-                <small className="chat-hidden-summary">
-                  {turn.hiddenData.length === 1
-                    ? '1 dato personal ocultado al modelo'
-                    : `${turn.hiddenData.length} datos personales ocultados al modelo`}
-                </small>
-              )}
-            </div>
-            <div className="chat-assistant">
-              {turn.blocks.map((block, index) => {
-                const citations = [
-                  ...new Map(
-                    block.citations.map((c) => [
-                      c.chunkId,
-                      turn.evidence.find(
-                        (e) => e.chunkId === c.chunkId && e.documentId === c.documentId,
-                      ),
-                    ]),
-                  ).values(),
-                ].filter((e): e is Evidence => !!e);
-                const sourceCount = new Set(citations.map((source) => source.documentId)).size;
-                const previousKind = turn.blocks[index - 1]?.claim.kind;
-                const heading =
-                  block.claim.kind !== previousKind
-                    ? (
-                        {
-                          document: 'Documentación',
-                          cost: 'Coste',
-                          deadline: 'Plazos',
-                        } as Record<string, string>
-                      )[block.claim.kind]
-                    : undefined;
-                return (
-                  <div className="chat-claim" key={block.claim.id}>
-                    {heading && <h2>{heading}</h2>}
-                    <div className={block.claim.kind === 'step' ? 'chat-step' : 'chat-fact'}>
-                      {block.claim.kind === 'step' && (
-                        <span className="chat-step-number">
-                          {
-                            turn.blocks.slice(0, index + 1).filter((b) => b.claim.kind === 'step')
-                              .length
-                          }
-                          .
-                        </span>
+        {turns.map(({ user, assistant }, turnIndex) => {
+          const last = turnIndex === turns.length - 1;
+          const pending = last && loading;
+          const failed = last && status === 'error';
+          const halted = !pending && stopped.has(user.id);
+          const view = readAnswer(assistant);
+          const meta = assistant?.metadata;
+          const question = textOf(user);
+          // A reply that ends without its final metadata was cut off on the way.
+          const interrupted = !pending && !failed && !halted && !meta?.status;
+          const cited = citedEvidence(view);
+          const documents = new Set(cited.map((e) => e.documentId)).size;
+          return (
+            <section className="chat-turn" key={user.id} aria-label={`Pregunta ${turnIndex + 1}`}>
+              <Question
+                level={turnIndex === 0 ? 1 : 2}
+                attachment={
+                  user.metadata?.attachment && (
+                    <>
+                      <Icon name="documento" size={16} /> {user.metadata.attachment.name}
+                    </>
+                  )
+                }
+                details={
+                  (view.hidden.length > 0 || documents > 0) && (
+                    <>
+                      {view.hidden.length > 0 && (
+                        <QuestionDetail icon={<Icon name="candado" size={16} />}>
+                          {view.hidden.length === 1
+                            ? '1 dato personal ocultado al modelo'
+                            : `${view.hidden.length} datos personales ocultados al modelo`}
+                        </QuestionDetail>
                       )}
-                      <p>
-                        {block.claim.text}
-                        {citations.length > 0 && (
-                          <>
-                            {' '}
-                            <SourcePopover
-                              className="chat-inline-citation"
-                              evidence={citations}
-                              href={citations[0]!.canonicalUrl}
+                      {documents > 0 && (
+                        <QuestionDetail icon={<Icon name="protegido" size={16} />}>
+                          Respuesta verificada con {documents}{' '}
+                          {documents === 1 ? 'fuente oficial' : 'fuentes oficiales'}
+                        </QuestionDetail>
+                      )}
+                    </>
+                  )
+                }
+              >
+                <ProtectedQuestion text={question} ranges={view.hidden} id={user.id} />
+              </Question>
+              <div className="chat-assistant">
+                <AnswerBlocks view={view} onCite={(selected) => showSources(cited, selected)} />
+                {pending && (
+                  <Thinking
+                    label={assistant ? 'Pensando…' : 'Preparando todo…'}
+                    stage={assistant ? stages[stage] : undefined}
+                  />
+                )}
+                {meta?.status === 'answered' && !view.blocks.length && (
+                  <Response streaming={view.streaming} className="chat-enter">
+                    {view.text}
+                  </Response>
+                )}
+                {meta?.status && meta.status !== 'answered' && (
+                  <Notice
+                    tone="info"
+                    role="status"
+                    icon={<Icon name="info" size={20} />}
+                    title={
+                      meta.status === 'needs_clarification'
+                        ? 'Necesitamos un poco más de detalle'
+                        : 'No hemos encontrado una respuesta verificada'
+                    }
+                    actions={
+                      (last || view.evidence.length > 0) && (
+                        <>
+                          {last && (
+                            <Button variant="secondary" onClick={() => rephrase(question)}>
+                              <Icon name="nueva" size={15} />
+                              Reformular la pregunta
+                            </Button>
+                          )}
+                          {view.evidence.length > 0 && (
+                            <Button
+                              variant="secondary"
+                              aria-haspopup="dialog"
+                              onClick={() => showSources(view.evidence)}
                             >
-                              <AgencyBadge
-                                name={citations[0]!.organization}
-                                url={citations[0]!.canonicalUrl}
-                              />
-                              <span>{citations[0]!.organization}</span>
-                              {sourceCount > 1 && <small>+{sourceCount - 1}</small>}
-                            </SourcePopover>
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              {turn.state === 'loading' && (
-                <div className="chat-thinking" role="status">
-                  <span aria-hidden="true">
-                    {turn.protecting ? 'Preparando todo…' : 'Pensando…'}
-                  </span>
-                  <span className="sr-only">
-                    {turn.protecting ? 'Preparando todo.' : stages[turn.stage]}
-                  </span>
-                </div>
-              )}
-              {turn.result &&
-                !turn.blocks.length &&
-                (turn.result.answer.status === 'answered' ? (
-                  <p>{turn.result.answer.answer}</p>
-                ) : (
-                  <div className="chat-notice" role="status">
-                    <Icon name="info" size={20} />
-                    <div>
-                      <h2>
-                        {turn.result.answer.status === 'needs_clarification'
-                          ? 'Necesitamos un poco más de detalle'
-                          : 'No hemos encontrado una respuesta verificada'}
-                      </h2>
-                      <p>{turn.result.answer.answer}</p>
-                      <div className="chat-notice-actions">
-                        {turnIndex === turns.length - 1 && (
-                          <Button variant="secondary" onClick={() => rephrase(turn.query)}>
-                            <Icon name="nueva" size={15} />
-                            Reformular la pregunta
-                          </Button>
-                        )}
-                        {turn.evidence.length > 0 && (
-                          <SourcePopover className="boton-claro" evidence={turn.evidence}>
-                            Ver lo consultado ({turn.evidence.length})
-                          </SourcePopover>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              {turn.result?.answer.incomplete && (
-                <p className="chat-partial">
-                  Las fuentes no permiten confirmar todos los detalles. Aquí aparecen únicamente los
-                  que hemos podido verificar.
-                </p>
-              )}
-              {turn.result && (
-                <CoverageNotice
-                  region={limitedRegions.find(
-                    (region) => region.id === turn.result?.understanding.region,
-                  )}
-                  openMap={openCoverage}
-                />
-              )}
-              {turn.state === 'stopped' && (
-                <div className="chat-stopped">
-                  <p className="chat-partial" role="status">
-                    Respuesta detenida.
-                    {turn.blocks.length > 0 && ' Los fragmentos mostrados ya están verificados.'}
+                              Ver lo consultado ({view.evidence.length})
+                            </Button>
+                          )}
+                        </>
+                      )
+                    }
+                  >
+                    <Response streaming={view.streaming}>{view.text}</Response>
+                  </Notice>
+                )}
+                {meta?.incomplete && (
+                  <p className="chat-partial chat-enter">
+                    Las fuentes no permiten confirmar todos los detalles. Aquí aparecen únicamente
+                    los que hemos podido verificar.
                   </p>
-                  {turnIndex === turns.length - 1 && (
-                    <Button
-                      variant="secondary"
-                      disabled={loading}
-                      onClick={() => void send(turn.query, turn.id)}
-                    >
-                      <Icon name="reintentar" size={14} /> Volver a intentar
-                    </Button>
-                  )}
-                </div>
-              )}
-              {turn.state === 'error' && (
-                <div className="chat-notice chat-error" role="alert">
-                  <Icon name="error" size={20} />
-                  <div>
-                    <h2>No se ha podido completar la respuesta</h2>
-                    <p>{turn.error}</p>
-                    {turn.blocks.length > 0 && (
+                )}
+                {meta?.status && (
+                  <CoverageNotice
+                    region={limitedRegions.find((region) => region.id === meta.region)}
+                    openMap={openCoverage}
+                  />
+                )}
+                {halted && (
+                  <div className="chat-stopped chat-enter">
+                    <p className="chat-partial" role="status">
+                      Respuesta detenida.
+                      {view.blocks.length > 0 && ' Los fragmentos mostrados ya están verificados.'}
+                    </p>
+                    {last && (
+                      <Button variant="secondary" disabled={loading} onClick={retry}>
+                        <Icon name="reintentar" size={14} /> Volver a intentar
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {(failed || interrupted) && (
+                  <Notice
+                    tone="error"
+                    role="alert"
+                    icon={<Icon name="error" size={20} />}
+                    title="No se ha podido completar la respuesta"
+                    actions={
+                      last && (
+                        <Button variant="secondary" disabled={loading} onClick={retry}>
+                          <Icon name="reintentar" size={15} /> Volver a intentar
+                        </Button>
+                      )
+                    }
+                  >
+                    <p>
+                      {failed
+                        ? describeError(error)
+                        : 'La conexión se interrumpió. Puedes volver a intentarlo.'}
+                    </p>
+                    {view.blocks.length > 0 && (
                       <p>
                         La respuesta está incompleta. Los fragmentos mostrados están verificados.
                       </p>
                     )}
-                    {turnIndex === turns.length - 1 && (
-                      <div className="chat-notice-actions">
-                        <Button
-                          variant="secondary"
-                          disabled={loading}
-                          onClick={() => void send(turn.query, turn.id)}
-                        >
-                          <Icon name="reintentar" size={15} /> Volver a intentar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              {turn.state !== 'loading' && <AnswerActions turn={turn} />}
-              {turn.state === 'done' &&
-                turn.result?.answer.status === 'answered' &&
-                turnIndex === turns.length - 1 && (
-                  <div className="chat-followups">
-                    {['¿Qué documentación necesito?', '¿Dónde lo puedo tramitar?'].map((q) => (
-                      <button key={q} onClick={() => void send(q)}>
-                        {q}
-                        <Icon name="derecha" size={17} />
-                      </button>
-                    ))}
-                  </div>
+                  </Notice>
                 )}
-            </div>
-          </section>
-        ))}
+                {assistant && !pending && (
+                  <AnswerActions message={assistant} view={view} showSources={showSources} />
+                )}
+                {last && !pending && meta?.status === 'answered' && (
+                  <Suggestions>
+                    {['¿Qué documentación necesito?', '¿Dónde lo puedo tramitar?'].map((q, i) => (
+                      <Suggestion
+                        key={q}
+                        index={i}
+                        icon={<Icon name="arrowUp" size={14} />}
+                        onSelect={send}
+                      >
+                        {q}
+                      </Suggestion>
+                    ))}
+                  </Suggestions>
+                )}
+              </div>
+            </section>
+          );
+        })}
         <div ref={bottom} className="chat-bottom" />
       </main>
       <div ref={dock} className="chat-composer-dock">
-        {showJump && (
-          <button className="chat-jump" onClick={jump} aria-label="Ir al último mensaje">
-            <Icon name="abajo" size={18} />
-          </button>
-        )}
+        <JumpButton visible={showJump} onClick={jump}>
+          <Icon name="abajo" size={18} />
+        </JumpButton>
         {attachmentError && (
-          <p className="chat-composer-error" role="alert">
+          <p className="chat-composer-error chat-enter" role="alert">
             {attachmentError}
           </p>
         )}
         {(attachment || attachmentBusy) && (
-          <div className="chat-attachment-preview">
+          <div className="chat-attachment-preview chat-enter">
             <div>
               <Icon name="documento" size={20} />
               <span>{attachmentBusy ? 'Leyendo PDF…' : attachment?.name}</span>
@@ -688,13 +609,20 @@ export default function Chat({
             }
           }}
         >
+          <AttachmentPicker
+            busy={attachmentBusy}
+            disabled={loading}
+            onBusy={setAttachmentBusy}
+            onAttachment={setAttachment}
+            onError={setAttachmentError}
+          />
           <label htmlFor="chat-input" className="sr-only">
             Pregunta sobre trámites, ayudas o impuestos
           </label>
           <textarea
             id="chat-input"
             ref={inputRef}
-            rows={2}
+            rows={1}
             value={input}
             maxLength={1200}
             placeholder="Pregunta aquí"
@@ -711,45 +639,20 @@ export default function Chat({
               }
             }}
           />
-          <div className="composer-controls">
-            <div className="composer-tools">
-              <AttachmentPicker
-                busy={attachmentBusy}
-                disabled={loading}
-                onBusy={setAttachmentBusy}
-                onAttachment={setAttachment}
-                onError={setAttachmentError}
-              />
-              <button
-                className="chat-icon"
-                type="button"
-                aria-label="Mapa de fuentes"
-                aria-haspopup="dialog"
-                aria-controls="chat-coverage-dialog"
-                onClick={() => openCoverage()}
-              >
-                <Icon name="fuentes" size={20} />
-              </button>
-            </div>
-            {loading ? (
-              <button
-                className="chat-send"
-                type="button"
-                onClick={() => active.current?.abort()}
-                aria-label="Detener respuesta"
-              >
-                <Icon name="detener" size={13} />
-              </button>
-            ) : (
-              <button
-                className="chat-send"
-                disabled={input.trim().length < 4 || attachmentBusy}
-                aria-label="Enviar pregunta"
-              >
-                <Icon name="enviar" size={20} />
-              </button>
-            )}
-          </div>
+          {/* One button for both states so the control never jumps; the glyphs crossfade. */}
+          <button
+            className="chat-send"
+            type={loading ? 'button' : 'submit'}
+            onClick={loading ? halt : undefined}
+            disabled={!loading && (input.trim().length < 4 || attachmentBusy)}
+            aria-label={loading ? 'Detener respuesta' : 'Enviar pregunta'}
+          >
+            <IconSwap
+              active={loading ? 'b' : 'a'}
+              a={<Icon name="arrowUp" size={18} />}
+              b={<Icon name="detener" size={16} />}
+            />
+          </button>
         </form>
         {footer}
         <span className="sr-only">
@@ -780,6 +683,11 @@ export default function Chat({
           )}
         </div>
       </dialog>
+      <Sources
+        view={sourceView}
+        onClose={() => setSourceView(null)}
+        onSelect={(selected) => setSourceView((v) => (v ? { ...v, selected } : null))}
+      />
     </div>
   );
 }
