@@ -53,7 +53,6 @@ const pages = [
 // en los tamaños de favicon es múltiplo de 4 para que cada módulo caiga en píxeles enteros.
 const icons = [
   { file: 'public/icon-512.png', size: 512, r: 300 },
-  { file: 'public/icon-192.png', size: 192, r: 112 },
   { file: 'app/apple-icon.png', size: 180, r: 108 },
 ];
 const favicon = [

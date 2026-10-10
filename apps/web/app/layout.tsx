@@ -2,8 +2,8 @@ import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import { fuentesSol } from '../components/sol/fuentes';
 import { RouteFocus } from '../components/route-focus';
-import { pageMetadata, siteName } from '../lib/seo';
-import { links, siteUrl } from '../lib/site';
+import { pageMetadata } from '../lib/seo';
+import { siteUrl } from '../lib/site';
 import './(search)/globals.css';
 
 // Valores por defecto para las páginas sin metadatos propios. Sin canonical: cada página declara
@@ -18,8 +18,6 @@ export const metadata: Metadata = {
   }),
   alternates: null,
   metadataBase: siteUrl,
-  applicationName: siteName,
-  authors: [{ name: 'Comunidad de Reforma Digital', url: links.repo }],
   robots: {
     index: true,
     follow: true,

@@ -14,7 +14,6 @@ import {
   organizationId,
   pageMetadata,
   siteName,
-  webPage,
   websiteId,
 } from '../../lib/seo';
 import { JsonLd } from '../../components/json-ld';
@@ -35,19 +34,11 @@ const graph = [
     '@id': websiteId,
     url: absolute('/'),
     name: siteName,
-    alternateName: 'Lo público, a la altura de las personas',
     description,
     inLanguage: 'es-ES',
     publisher: { '@id': organizationId },
   },
   organization,
-  webPage({
-    name: title,
-    description,
-    path: '/',
-    about: { '@id': organizationId },
-    primaryImageOfPage: absolute('/og/portada.jpg'),
-  }),
   {
     '@type': 'WebApplication',
     name: 'Buscador de trámites',
