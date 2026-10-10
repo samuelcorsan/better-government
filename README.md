@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="apps/web/public/favicon.svg" alt="" width="64" height="64">
+  <img src="apps/web/app/icon.svg" alt="" width="64" height="64">
 </p>
 
 <h1 align="center">Reforma Digital</h1>

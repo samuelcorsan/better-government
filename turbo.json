@@ -13,6 +13,7 @@
         "LANGFUSE_BASE_URL",
         "FEEDBACK_SECRET",
         "APP_ORIGIN",
+        "VERCEL_PROJECT_PRODUCTION_URL",
         "OPENROUTER_API_KEY"
       ]
     },

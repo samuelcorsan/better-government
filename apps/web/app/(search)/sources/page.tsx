@@ -3,10 +3,43 @@ import { sources } from '@reforma-digital/government';
 import { InfoPage } from '../../../components/sol/info-page';
 import { Icon } from '../../../components/sol/icon';
 import { SourcesMapPanel } from '../../../components/sources-map-panel';
-export const metadata: Metadata = { title: 'Fuentes oficiales · Reforma Digital' };
+import { JsonLd } from '../../../components/json-ld';
+import { breadcrumbs, pageMetadata, webPage } from '../../../lib/seo';
+
+const title = 'Fuentes oficiales del buscador de trámites · Reforma Digital';
+const description =
+  'Los organismos que consulta el buscador: BOE, Agencia Tributaria, Seguridad Social, DGT, SEPE, Comunidad y Ayuntamiento de Madrid, entre otros.';
+
+export const metadata: Metadata = pageMetadata({
+  title,
+  description,
+  path: '/sources',
+  og: 'fuentes',
+});
+
+const graph = [
+  webPage({
+    type: 'CollectionPage',
+    name: title,
+    description,
+    path: '/sources',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: sources.length,
+      itemListElement: sources.map((s, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: { '@type': 'GovernmentOrganization', name: s.name, url: s.baseUrl },
+      })),
+    },
+  }),
+  breadcrumbs('Fuentes oficiales', '/sources'),
+];
+
 export default function Sources() {
   return (
     <InfoPage>
+      <JsonLd graph={graph} />
       <span className="t-etiqueta info-etiqueta">INFORMACIÓN CON ORIGEN</span>
       <h1>Las fuentes importan.</h1>
       <p className="info-entradilla">

@@ -1,0 +1,16 @@
+# Reforma Digital
+
+> Proyecto independiente y abierto para que hacer un trámite en España sea más claro, accesible y sencillo. Construimos herramientas en comunidad y con código abierto.
+
+## Proyectos
+
+- [Buscador de trámites](/chat): pregunta con tus palabras por un trámite, una ayuda o un impuesto. Cada respuesta cita fuentes oficiales que se pueden abrir y comprobar.
+- [Extensión para Chrome](https://github.com/samuelcorsan/reforma-digital/releases/tag/v0.1.0-pre-alpha): otra interfaz para pantallas de DNI, Extranjería, Hacienda y Registro de asociaciones. Los formularios y los envíos siguen en la sede oficial.
+- [Fuentes oficiales](/sources): los organismos que consulta el buscador, como el BOE, la Agencia Tributaria, la Seguridad Social, la DGT, el SEPE, la Comunidad y el Ayuntamiento de Madrid.
+
+## Más información
+
+- [Cómo funciona](/how-it-works): de la pregunta al trámite, con citas y evaluación de calidad.
+- [Privacidad](/privacy): qué datos se procesan y cómo se protegen.
+- [Equipo](/equipo): el core team y las personas que contribuyen.
+- [Código fuente](https://github.com/samuelcorsan/reforma-digital): repositorio, guía de contribución y licencia MIT.

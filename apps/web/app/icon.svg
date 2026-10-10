@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-24 0 192 192">
+  <style>
+    .r { fill: #df1717 }
+    .d { fill: #a50e0e }
+    @media (prefers-color-scheme: dark) {
+      .r { fill: #fff }
+      .d { fill: #df1717 }
+    }
+  </style>
+  <path class="r" d="M48 0H96V48H48V96H96V144H48V192H0V48H48Z"/>
+  <path class="d" d="M0 48L48 0V48Z"/>
+  <rect class="r" x="96" y="48" width="48" height="48"/>
+  <rect class="r" x="96" y="144" width="48" height="48"/>
+</svg>

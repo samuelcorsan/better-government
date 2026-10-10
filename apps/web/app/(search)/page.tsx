@@ -8,19 +8,78 @@ import { Footer } from '../../components/sol/footer';
 import { ProjectScene } from '../../components/sol/project-scene';
 import { ProjectTour } from '../../components/sol/project-tour';
 import { links } from '../../lib/site';
+import {
+  absolute,
+  organization,
+  organizationId,
+  pageMetadata,
+  siteName,
+  webPage,
+  websiteId,
+} from '../../lib/seo';
+import { JsonLd } from '../../components/json-ld';
 import { Contribution } from '../../components/sol/contribution';
 import '../../components/sol/iniciativa.css';
 
-export const metadata: Metadata = {
-  title: 'Una reforma hecha en comunidad · Reforma Digital',
-  description:
-    'Una iniciativa abierta para mejorar nuestra relación con la Administración. Descubre el buscador, la extensión y las fuentes oficiales.',
-  robots: { index: true, follow: true },
-};
+const title = 'Reforma Digital · Lo público, a la altura de las personas';
+const description =
+  'Iniciativa abierta para hacer más sencillos los trámites con la Administración: buscador con fuentes oficiales, extensión para Chrome y código abierto.';
+
+export const metadata: Metadata = pageMetadata({ title, description, path: '/', og: 'portada' });
+
+const free = { '@type': 'Offer', price: '0', priceCurrency: 'EUR' };
+
+const graph = [
+  {
+    '@type': 'WebSite',
+    '@id': websiteId,
+    url: absolute('/'),
+    name: siteName,
+    alternateName: 'Lo público, a la altura de las personas',
+    description,
+    inLanguage: 'es-ES',
+    publisher: { '@id': organizationId },
+  },
+  organization,
+  webPage({
+    name: title,
+    description,
+    path: '/',
+    about: { '@id': organizationId },
+    primaryImageOfPage: absolute('/og/portada.jpg'),
+  }),
+  {
+    '@type': 'WebApplication',
+    name: 'Buscador de trámites',
+    url: absolute('/chat'),
+    description:
+      'Pregunta con tus palabras y recibe respuestas con enlaces y fragmentos de fuentes oficiales.',
+    applicationCategory: 'ReferenceApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'es-ES',
+    isAccessibleForFree: true,
+    offers: free,
+    publisher: { '@id': organizationId },
+  },
+  {
+    '@type': 'SoftwareApplication',
+    name: 'Reforma Digital para Chrome',
+    description:
+      'Extensión que propone otra interfaz en pantallas de DNI, Extranjería, Hacienda y Registro de asociaciones. Los formularios y los envíos siguen en la sede oficial.',
+    applicationCategory: 'BrowserApplication',
+    operatingSystem: 'Google Chrome',
+    downloadUrl: links.install,
+    license: links.license,
+    isAccessibleForFree: true,
+    offers: free,
+    publisher: { '@id': organizationId },
+  },
+];
 
 export default function HomePage() {
   return (
     <div className="iniciativa">
+      <JsonLd graph={graph} />
       <main id="main" tabIndex={-1}>
         <section className="in-hero" aria-labelledby="in-titulo">
           <Header />
