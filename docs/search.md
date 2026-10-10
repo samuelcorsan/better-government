@@ -8,7 +8,7 @@ Requiere Node 22+, pnpm 11 y `OPENROUTER_API_KEY`.
 
 ```sh
 pnpm install --frozen-lockfile
-# Configurar OPENROUTER_API_KEY en .env, sin subir credenciales al repositorio.
+cp .env.example .env  # Configura OPENROUTER_API_KEY; el .env no se sube al repositorio.
 pnpm dev
 ```
 
