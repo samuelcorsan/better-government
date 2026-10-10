@@ -6,7 +6,7 @@ import { chromium } from '@playwright/test';
 const pages = [
   {
     slug: 'portada',
-    escena: 'producto',
+    escena: 'portada',
     etiqueta: 'Iniciativa abierta',
     titular: 'Lo público, a la altura de las personas.',
     texto: 'Herramientas y propuestas para una Administración más clara, accesible y sencilla.',
