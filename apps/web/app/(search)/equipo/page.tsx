@@ -4,21 +4,46 @@ import { ViewTransition } from 'react';
 import { Icon } from '../../../components/sol/icon';
 import { Header } from '../../../components/sol/header';
 import { links } from '../../../lib/site';
+import { breadcrumbs, organization, pageMetadata, webPage } from '../../../lib/seo';
+import { JsonLd } from '../../../components/json-ld';
 import './core-team.css';
 import { coreTeam, getContributors } from './contributors';
 
-export const metadata: Metadata = {
-  title: 'Core team · Reforma Digital',
-  description:
-    'Conoce a las personas detrás de Reforma Digital, una iniciativa abierta para mejorar nuestra relación con lo público.',
-  robots: { index: true, follow: true },
-};
+const title = 'Equipo · Reforma Digital';
+const description =
+  'Conoce al core team y a las personas que contribuyen a Reforma Digital, una iniciativa abierta para mejorar nuestra relación con lo público.';
+
+export const metadata: Metadata = pageMetadata({
+  title,
+  description,
+  path: '/equipo',
+  og: 'equipo',
+});
+
+const graph = [
+  webPage({
+    type: 'AboutPage',
+    name: title,
+    description,
+    path: '/equipo',
+    about: {
+      ...organization,
+      member: coreTeam.map(({ name, login }) => ({
+        '@type': 'Person',
+        name,
+        url: `https://github.com/${login}`,
+      })),
+    },
+  }),
+  breadcrumbs('Equipo', '/equipo'),
+];
 
 export default async function CoreTeamPage() {
   const contributors = await getContributors();
   return (
     <ViewTransition enter="equipo-entra" exit="equipo-sale" default="none">
       <div className="core-team">
+        <JsonLd graph={graph} />
         <Header current="/equipo" />
         <main id="main" tabIndex={-1}>
           <section className="ct-equipo" aria-labelledby="ct-titulo">

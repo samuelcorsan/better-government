@@ -1,9 +1,28 @@
 import type { Metadata } from 'next';
 import { InfoPage } from '../../../components/sol/info-page';
-export const metadata: Metadata = { title: 'Privacidad · Reforma Digital' };
+import { JsonLd } from '../../../components/json-ld';
+import { breadcrumbs, pageMetadata, webPage } from '../../../lib/seo';
+
+const title = 'Privacidad · Reforma Digital';
+const description =
+  'Pregunta sin cuenta y sin identificarte. Qué datos se procesan en el buscador, cómo se ocultan los datos personales y qué servicios externos intervienen.';
+
+export const metadata: Metadata = pageMetadata({
+  title,
+  description,
+  path: '/privacy',
+  og: 'privacidad',
+});
+
+const graph = [
+  webPage({ name: title, description, path: '/privacy' }),
+  breadcrumbs('Privacidad', '/privacy'),
+];
+
 export default function Privacy() {
   return (
     <InfoPage narrow>
+      <JsonLd graph={graph} />
       <span className="t-etiqueta info-etiqueta">TUS DATOS, CON CUIDADO</span>
       <h1>Pregunta sin identificarte.</h1>
       <p className="info-entradilla">
