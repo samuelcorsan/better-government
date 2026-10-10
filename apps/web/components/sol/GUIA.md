@@ -138,21 +138,26 @@ El compositor del chat es composición de la app (`app/(search)/chat/chat-view.c
 
 ## Chat
 
-`@reforma-digital/design/sol/chat` (estilos en `sol/chat.css`) tiene las piezas que no dependen de la app; los iconos se pasan como props porque `Icon` vive aquí.
+`@reforma-digital/design/sol/chat` (estilos en `sol/chat.css`) tiene las piezas que no dependen de la app; los iconos se pasan como props porque `Icon` vive aquí. La composición sigue la página Chat de Paper («Reforma Digital Sol»).
 
-| Pieza                                                                                                         | Uso                                                                                                                                    |
-| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `UserMessage`                                                                                                 | Burbuja de la pregunta. `note` va debajo (p. ej. datos ocultados, con `<Icon name="protegido" />`)                                     |
-| `Thinking`                                                                                                    | «Preparando todo…» o «Pensando…» con brillo; `stage` nombra la etapa y cambia con un fundido                                           |
-| `Answer`, `StepList`/`Step`, `DocumentList`/`DocumentItem`, `FigureGrid`/`KeyFigure`, `Fact`, `AnswerHeading` | Un componente por `kind` de claim (DESIGN.md §8.3). `KeyFigure` es `.caja-gris` con la cifra en `.t-cifra`                             |
-| `Notice`                                                                                                      | `tone`: `info` (`.caja-plana`), `warning` (`.caja-aviso`) o `error` (`.caja-error`). Con icono, titular y acciones                     |
-| `Response`                                                                                                    | Markdown con Streamdown. `streaming` revela por palabra; `skipHtml` para fragmentos oficiales; `renderCitation` pinta la cita en línea |
-| `Suggestions`/`Suggestion`                                                                                    | Preguntas de ejemplo y de seguimiento; `index` escalona la entrada                                                                     |
-| `IconSwap`                                                                                                    | Dos glifos en un mismo control (enviar/detener, copiar/copiado)                                                                        |
-| `JumpButton`                                                                                                  | Ir al último mensaje; siempre montado, `visible` lo muestra                                                                            |
+| Pieza                                                    | Uso                                                                                                                                                      |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Question`, `QuestionDetail`                             | La pregunta es el titular del turno (Geist, 34–52 px). Debajo, líneas cortas: datos ocultados al modelo y «Respuesta verificada con N fuentes oficiales» |
+| `Thinking`                                               | «Preparando todo…» o «Pensando…» con brillo; `stage` nombra la etapa y cambia con un fundido                                                             |
+| `Answer`, `StepList`/`Step`, `Fact`                      | Pasos con número rojo y párrafos (DESIGN.md §8.3)                                                                                                        |
+| `DetailGrid`/`DetailCard`                                | Documentación, Coste y Plazos en tarjetas `.caja-gris`; Coste va en `.caja-sol` (`highlight`) con la cifra en grande                                     |
+| `WhereCard`                                              | «Dónde se hace»: la página oficial del primer paso, con el botón que la abre                                                                             |
+| `SourceChip`                                             | Cita en línea con el organismo; abre el fragmento en la hoja de fuentes                                                                                  |
+| `Monogram`, `SourcesButton`                              | Iniciales del organismo, dibujadas en local (sin pedir favicons), y «Fuentes · N»                                                                        |
+| `SourceSheet`, `SourceDetail`, `SourceList`/`SourceCard` | Hoja lateral (en móvil, inferior) con el fragmento citado, sus datos, el botón al documento oficial y las otras fuentes                                  |
+| `Notice`                                                 | `tone`: `info` (`.caja-plana`), `warning` (`.caja-aviso`) o `error` (`.caja-error`). Con icono, titular y acciones                                       |
+| `Response`                                               | Markdown con Streamdown. `streaming` revela por palabra; `skipHtml` para fragmentos oficiales; `renderCitation` pinta la cita en línea                   |
+| `Suggestions`/`Suggestion`                               | Preguntas de ejemplo y de seguimiento; `index` escalona la entrada                                                                                       |
+| `IconSwap`                                               | Dos glifos en un mismo control (enviar/detener, copiar/copiado)                                                                                          |
+| `JumpButton`                                             | Ir al último mensaje; siempre montado, `visible` lo muestra                                                                                              |
 
 - `.chat-enter` es la entrada de una sola vez (sube 6 px desde un desenfoque de 3 px). No la pongas en nada que se repita al teclear.
-- El compositor, las acciones, el mapa y las citas (`SourcePopover`) siguen siendo composición de la app.
+- El compositor (una fila: adjuntar, pregunta y enviar), las acciones y el mapa siguen siendo composición de la app.
 
 ## Iconos
 

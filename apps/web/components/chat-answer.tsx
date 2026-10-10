@@ -1,22 +1,21 @@
 'use client';
 import { Fragment, type ReactNode } from 'react';
 import type { ClaimKind, Evidence, VerifiedClaim } from '@reforma-digital/core';
+import { Button } from '@reforma-digital/design/sol';
 import {
   Answer,
-  AnswerHeading,
-  DocumentItem,
-  DocumentList,
+  DetailCard,
+  DetailGrid,
   Fact,
-  FigureGrid,
-  KeyFigure,
   Notice,
   Response,
+  SourceChip,
   Step,
   StepList,
+  WhereCard,
   withCitations,
 } from '@reforma-digital/design/sol/chat';
 import { Icon } from './sol/icon';
-import { AgencyBadge, SourcePopover } from './source-popover';
 import type { ChatMessage } from '../lib/chat-message';
 import type { HiddenRange } from '../lib/pii-display';
 
@@ -72,17 +71,22 @@ export function citedEvidence(view: AnswerView): Evidence[] {
   return view.evidence.filter((e) => ids.has(e.chunkId));
 }
 
-type Layout = 'steps' | 'documents' | 'figures' | 'notice' | 'fact';
+function sourcesOf(block: VerifiedClaim, evidence: Evidence[]): Evidence[] {
+  return block.citations
+    .map((c) => evidence.find((e) => e.chunkId === c.chunkId && e.documentId === c.documentId))
+    .filter((e): e is Evidence => !!e);
+}
 
-function layoutOf(kind: ClaimKind): Layout {
+type Section = 'steps' | 'details' | 'notice' | 'fact';
+
+function sectionOf(kind: ClaimKind): Section {
   switch (kind) {
     case 'step':
       return 'steps';
     case 'document':
-      return 'documents';
     case 'cost':
     case 'deadline':
-      return 'figures';
+      return 'details';
     case 'warning':
       return 'notice';
     case 'fact':
@@ -94,61 +98,77 @@ function layoutOf(kind: ClaimKind): Layout {
   }
 }
 
-/** Consecutive blocks that share a list or grid render inside one container. */
-function group(blocks: VerifiedClaim[]) {
-  const groups: { layout: Layout; blocks: VerifiedClaim[] }[] = [];
+/**
+ * Consecutive steps share one list. Documentation, cost and deadline share one grid, placed where
+ * the first of them arrived, so the cards stay together however the model orders them.
+ */
+function sections(blocks: VerifiedClaim[]) {
+  const out: { section: Section; blocks: VerifiedClaim[] }[] = [];
   for (const block of blocks) {
-    const layout = layoutOf(block.claim.kind);
-    const last = groups.at(-1);
-    if (last?.layout === layout && layout !== 'notice' && layout !== 'fact')
-      last.blocks.push(block);
-    else groups.push({ layout, blocks: [block] });
+    const section = sectionOf(block.claim.kind);
+    const target =
+      section === 'details'
+        ? out.find((s) => s.section === 'details')
+        : section === 'steps' && out.at(-1)?.section === 'steps'
+          ? out.at(-1)
+          : undefined;
+    if (target) target.blocks.push(block);
+    else out.push({ section, blocks: [block] });
   }
-  return groups;
+  return out;
 }
 
-function BlockText({ block, evidence }: { block: VerifiedClaim; evidence: Evidence[] }) {
-  const citations = [
-    ...new Map(
-      block.citations.map((c) => [
-        c.chunkId,
-        evidence.find((e) => e.chunkId === c.chunkId && e.documentId === c.documentId),
-      ]),
-    ).values(),
-  ].filter((e): e is Evidence => !!e);
-  const first = citations[0];
-  if (!first) return <Response>{block.claim.text}</Response>;
-  const sourceCount = new Set(citations.map((source) => source.documentId)).size;
-  return (
-    <Response
-      renderCitation={() => (
-        <SourcePopover
-          className="chat-inline-citation"
-          evidence={citations}
-          href={first.canonicalUrl}
-        >
-          <AgencyBadge name={first.organization} url={first.canonicalUrl} />
-          <span>{first.organization}</span>
-          {sourceCount > 1 && <small>+{sourceCount - 1}</small>}
-        </SourcePopover>
-      )}
-    >
-      {withCitations(block.claim.text, [first.organization])}
-    </Response>
-  );
-}
-
-const figureLabels = { cost: 'Coste', deadline: 'Plazo' } as const;
-
-export function AnswerBlocks({ view }: { view: AnswerView }) {
+export function AnswerBlocks({
+  view,
+  onCite,
+}: {
+  view: AnswerView;
+  onCite: (selected: Evidence) => void;
+}) {
   if (!view.blocks.length) return null;
   let stepNumber = 0;
-  const text = (block: VerifiedClaim) => <BlockText block={block} evidence={view.evidence} />;
+  const text = (block: VerifiedClaim) => {
+    const first = sourcesOf(block, view.evidence)[0];
+    if (!first) return <Response>{block.claim.text}</Response>;
+    return (
+      <Response
+        renderCitation={(_, label) => (
+          <SourceChip
+            icon={<Icon name="arrowUpRight" size={12} />}
+            title={`Ver el fragmento citado: ${first.title}`}
+            onOpen={() => onCite(first)}
+          >
+            {label}
+          </SourceChip>
+        )}
+      >
+        {withCitations(block.claim.text, [first.organization])}
+      </Response>
+    );
+  };
+  const card = (kind: ClaimKind, label: string, blocks: VerifiedClaim[]) => {
+    const ofKind = blocks.filter((b) => b.claim.kind === kind);
+    if (!ofKind.length) return null;
+    return (
+      <DetailCard
+        label={label}
+        highlight={kind === 'cost'}
+        figure={ofKind.length === 1 ? ofKind[0]!.claim.figure : undefined}
+      >
+        {ofKind.map((block) => (
+          <Fragment key={block.claim.id}>{text(block)}</Fragment>
+        ))}
+      </DetailCard>
+    );
+  };
+  // The page where the first step is done: the citation of that step.
+  const firstStep = view.blocks.find((b) => b.claim.kind === 'step');
+  const where = firstStep && sourcesOf(firstStep, view.evidence)[0];
   return (
     <Answer>
-      {group(view.blocks).map(({ layout, blocks }) => {
+      {sections(view.blocks).map(({ section, blocks }) => {
         let content: ReactNode;
-        switch (layout) {
+        switch (section) {
           case 'steps':
             content = (
               <StepList start={stepNumber + 1}>
@@ -160,33 +180,13 @@ export function AnswerBlocks({ view }: { view: AnswerView }) {
               </StepList>
             );
             break;
-          case 'documents':
+          case 'details':
             content = (
-              <>
-                <AnswerHeading>Documentación</AnswerHeading>
-                <DocumentList>
-                  {blocks.map((block) => (
-                    <DocumentItem key={block.claim.id} icon={<Icon name="documento" size={18} />}>
-                      {text(block)}
-                    </DocumentItem>
-                  ))}
-                </DocumentList>
-              </>
-            );
-            break;
-          case 'figures':
-            content = (
-              <FigureGrid>
-                {blocks.map((block) => (
-                  <KeyFigure
-                    key={block.claim.id}
-                    label={block.claim.kind === 'cost' ? figureLabels.cost : figureLabels.deadline}
-                    figure={block.claim.figure}
-                  >
-                    {text(block)}
-                  </KeyFigure>
-                ))}
-              </FigureGrid>
+              <DetailGrid>
+                {card('document', 'Documentación', blocks)}
+                {card('cost', 'Coste', blocks)}
+                {card('deadline', 'Plazos', blocks)}
+              </DetailGrid>
             );
             break;
           case 'notice':
@@ -200,12 +200,26 @@ export function AnswerBlocks({ view }: { view: AnswerView }) {
             content = <Fact>{text(blocks[0]!)}</Fact>;
             break;
           default: {
-            const unhandled: never = layout;
-            throw new Error(`Unhandled layout: ${String(unhandled)}`);
+            const unhandled: never = section;
+            throw new Error(`Unhandled section: ${String(unhandled)}`);
           }
         }
         return <Fragment key={blocks[0]!.claim.id}>{content}</Fragment>;
       })}
+      {where && (
+        <WhereCard
+          label="Dónde se hace"
+          title={`${where.title} · ${where.organization}`}
+          description={<span className="t-dato">{new URL(where.canonicalUrl).hostname}</span>}
+          action={
+            <Button href={where.canonicalUrl} target="_blank" rel="noopener noreferrer">
+              Abrir la web oficial
+              <span className="sr-only"> (se abre en una pestaña nueva)</span>
+              <Icon name="arrowUpRight" size={16} />
+            </Button>
+          }
+        />
+      )}
     </Answer>
   );
 }

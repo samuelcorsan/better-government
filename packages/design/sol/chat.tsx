@@ -1,5 +1,13 @@
 'use client';
-import { memo, type ComponentProps, type CSSProperties, type ReactNode } from 'react';
+import {
+  memo,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { Streamdown, type Components, type ExtraProps } from 'streamdown';
 
 /**
@@ -97,24 +105,35 @@ export function withCitations(text: string, labels: readonly string[]): string {
 
 /* ─── Conversation ─────────────────────────────────────────────────────────── */
 
-export function UserMessage({
+/** The question is the heading of its turn; `details` holds the lines under it. */
+export function Question({
+  level,
   children,
   attachment,
-  note,
+  details,
 }: {
+  level: 1 | 2;
   children: ReactNode;
   attachment?: ReactNode;
-  /** Summary under the bubble, e.g. the personal data hidden from the model. */
-  note?: ReactNode;
+  details?: ReactNode;
 }) {
+  const Heading = level === 1 ? 'h1' : 'h2';
   return (
-    <div className="chat-user">
-      <p className="chat-bubble">
-        {attachment && <span className="chat-attached-message">{attachment}</span>}
-        {children}
-      </p>
-      {note && <small className="chat-note chat-enter">{note}</small>}
-    </div>
+    <header className="chat-question">
+      {attachment && <p className="chat-attached-message">{attachment}</p>}
+      <Heading className="chat-question-title">{children}</Heading>
+      {details && <div className="chat-question-details">{details}</div>}
+    </header>
+  );
+}
+
+/** One short status line under the question, e.g. «Respuesta verificada con 2 fuentes oficiales». */
+export function QuestionDetail({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <p className="chat-question-detail chat-enter">
+      {icon}
+      {children}
+    </p>
   );
 }
 
@@ -161,14 +180,10 @@ export function Notice({
   );
 }
 
-/* ─── Answer blocks ────────────────────────────────────────────────────── */
+/* ─── Answer blocks ────────────────────────────────────────────────────────── */
 
 export function Answer({ children }: { children: ReactNode }) {
   return <div className="chat-answer">{children}</div>;
-}
-
-export function AnswerHeading({ children }: { children: ReactNode }) {
-  return <h2 className="chat-section-label t-etiqueta chat-enter">{children}</h2>;
 }
 
 export function StepList({ start, children }: { start: number; children: ReactNode }) {
@@ -182,7 +197,7 @@ export function StepList({ start, children }: { start: number; children: ReactNo
 export function Step({ number, children }: { number: number; children: ReactNode }) {
   return (
     <li className="chat-step chat-enter">
-      <span className="chat-step-number t-dato">
+      <span className="chat-step-number">
         {number}
         <span className="sr-only">.</span>
       </span>
@@ -191,44 +206,111 @@ export function Step({ number, children }: { number: number; children: ReactNode
   );
 }
 
-export function DocumentList({ children }: { children: ReactNode }) {
-  return <ul className="chat-documents">{children}</ul>;
+export function Fact({ children }: { children: ReactNode }) {
+  return <div className="chat-fact chat-enter">{children}</div>;
 }
 
-export function DocumentItem({ icon, children }: { icon: ReactNode; children: ReactNode }) {
-  return (
-    <li className="chat-document chat-enter">
-      {icon}
-      <div>{children}</div>
-    </li>
-  );
+export function DetailGrid({ children }: { children: ReactNode }) {
+  return <div className="chat-details">{children}</div>;
 }
 
-export function FigureGrid({ children }: { children: ReactNode }) {
-  return <div className="chat-figures">{children}</div>;
-}
-
-/** Cost or deadline: the literal figure set large, with the sentence that cites it below. */
-export function KeyFigure({
+/** Documentation, cost or deadline card. `highlight` is the single sun-coloured card of a view. */
+export function DetailCard({
   label,
   figure,
+  highlight = false,
   children,
 }: {
   label: string;
   figure?: string | undefined;
+  highlight?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className="chat-figure caja-gris chat-enter">
-      <p className="t-etiqueta">{label}</p>
-      {figure && <p className="chat-figure-value t-cifra">{figure}</p>}
-      <div className={figure ? 'chat-figure-detail' : undefined}>{children}</div>
-    </div>
+    <section className={join('chat-detail chat-enter', highlight ? 'caja-sol' : 'caja-gris')}>
+      <h3 className="chat-detail-label">{label}</h3>
+      {figure && <p className="chat-detail-figure">{figure}</p>}
+      <div className={figure ? 'chat-detail-note' : 'chat-detail-text'}>{children}</div>
+    </section>
   );
 }
 
-export function Fact({ children }: { children: ReactNode }) {
-  return <div className="chat-fact chat-enter">{children}</div>;
+/** Where the procedure is done, with the action that opens the official page. */
+export function WhereCard({
+  label,
+  title,
+  description,
+  action,
+}: {
+  label: string;
+  title: string;
+  description?: ReactNode;
+  action: ReactNode;
+}) {
+  return (
+    <section className="chat-where caja-plana chat-enter">
+      <div>
+        <p className="chat-where-label">{label}</p>
+        <h3 className="chat-where-title">{title}</h3>
+        {description && <p className="chat-where-description">{description}</p>}
+      </div>
+      {action}
+    </section>
+  );
+}
+
+/** Inline citation: the organisation's name; opens the cited fragment. */
+export function SourceChip({
+  children,
+  icon,
+  title,
+  onOpen,
+}: {
+  children: ReactNode;
+  icon: ReactNode;
+  title?: string;
+  onOpen: () => void;
+}) {
+  return (
+    <button type="button" className="chat-source-chip" title={title} onClick={onOpen}>
+      {children}
+      {icon}
+    </button>
+  );
+}
+
+/** Organisation monogram. Drawn locally, so no request reveals which sources were consulted. */
+export function Monogram({ name }: { name: string }) {
+  const initials =
+    name
+      .split(/\s+/)
+      .filter((word) => word.length > 3)
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase() || 'ES';
+  return (
+    <span className="chat-monogram" aria-hidden="true">
+      {initials}
+    </span>
+  );
+}
+
+export function SourcesButton({
+  organization,
+  count,
+  onOpen,
+}: {
+  organization: string;
+  count: number;
+  onOpen: () => void;
+}) {
+  return (
+    <button type="button" className="chat-sources-button" onClick={onOpen}>
+      <Monogram name={organization} />
+      Fuentes · {count}
+    </button>
+  );
 }
 
 /* ─── Controls ─────────────────────────────────────────────────────────────── */
@@ -297,5 +379,144 @@ export function JumpButton({
     >
       {children}
     </button>
+  );
+}
+
+/* ─── Sources sheet ────────────────────────────────────────────────────────── */
+
+/**
+ * Native modal dialog: a side sheet on wide screens and a bottom sheet on phones. Moving between the
+ * list and a fragment slides in the direction of travel; the first view arrives with the sheet.
+ */
+export function SourceSheet({
+  open,
+  view,
+  title,
+  back,
+  close,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  /** Changing it remounts the content with a slide; `detail` slides forward. */
+  view: string;
+  title: string;
+  back?: ReactNode;
+  close: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [shown, setShown] = useState<{
+    open: boolean;
+    view: string;
+    direction?: 'forward' | 'back' | undefined;
+  }>({ open, view });
+  if (shown.open !== open || shown.view !== view)
+    setShown({
+      open,
+      view,
+      direction: open && shown.open ? (view === 'list' ? 'back' : 'forward') : undefined,
+    });
+  useEffect(() => {
+    const el = dialog.current;
+    if (open && !el?.open) el?.showModal();
+    if (!open && el?.open) el.close();
+  }, [open]);
+  return (
+    <dialog
+      ref={dialog}
+      className="chat-sheet"
+      aria-label={title}
+      onCancel={onClose}
+      onClose={onClose}
+      onClick={(event) => {
+        if (event.target === dialog.current) onClose();
+      }}
+    >
+      <div className="chat-sheet-inner">
+        <div className="chat-sheet-bar">
+          {back}
+          {close}
+        </div>
+        <div key={view} className="chat-sheet-view" data-direction={shown.direction}>
+          {children}
+        </div>
+      </div>
+    </dialog>
+  );
+}
+
+export function SourceDetail({
+  eyebrow,
+  organization,
+  title,
+  excerpt,
+  meta,
+  action,
+  children,
+}: {
+  eyebrow: string;
+  organization: string;
+  title: string;
+  excerpt: ReactNode;
+  meta: { label: string; value: string }[];
+  action: ReactNode;
+  /** Other sources of the same answer. */
+  children?: ReactNode;
+}) {
+  return (
+    <article className="chat-source">
+      <p className="chat-source-eyebrow">{eyebrow}</p>
+      <p className="chat-source-organization">
+        <Monogram name={organization} />
+        {organization}
+      </p>
+      <h2 className="chat-source-title">{title}</h2>
+      <blockquote className="chat-source-excerpt">{excerpt}</blockquote>
+      <dl className="chat-source-meta">
+        {meta.map((item) => (
+          <div key={item.label}>
+            <dt>{item.label}</dt>
+            <dd>{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {action}
+      {children}
+    </article>
+  );
+}
+
+export function SourceList({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="chat-source-list">
+      <h3>{title}</h3>
+      <ul>{children}</ul>
+    </section>
+  );
+}
+
+export function SourceCard({
+  title,
+  meta,
+  icon,
+  onOpen,
+}: {
+  title: string;
+  meta: string;
+  icon: ReactNode;
+  onOpen: () => void;
+}) {
+  return (
+    <li>
+      <button type="button" className="chat-source-card" onClick={onOpen}>
+        <span>
+          <strong>{title}</strong>
+          <small>{meta}</small>
+        </span>
+        {icon}
+      </button>
+    </li>
   );
 }

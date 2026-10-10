@@ -10,11 +10,13 @@ import {
   IconSwap,
   JumpButton,
   Notice,
+  Question,
+  QuestionDetail,
   Response,
+  SourcesButton,
   Suggestion,
   Suggestions,
   Thinking,
-  UserMessage,
 } from '@reforma-digital/design/sol/chat';
 import { AttachmentPicker } from './attachment-picker';
 import type { PdfContext } from '../lib/attachment';
@@ -23,9 +25,10 @@ import { ProtectedQuestion } from './protected-question';
 import { chatTransport, textOf } from '../lib/chat-transport';
 import type { ChatMessage } from '../lib/chat-message';
 import { AnswerBlocks, citedEvidence, readAnswer, type AnswerView } from './chat-answer';
+import { Sources, type SourceView } from './chat-sources';
+import type { Evidence } from '@reforma-digital/core';
 import dynamic from 'next/dynamic';
 import './sources-map.css';
-import { AgencyBadge, SourcePopover } from './source-popover';
 // The map geometry is only downloaded when the coverage dialog opens.
 const SourcesMap = dynamic(() => import('./sources-map'), {
   loading: () => (
@@ -83,7 +86,15 @@ function CoverageNotice({
     </p>
   );
 }
-function AnswerActions({ message, view }: { message: ChatMessage; view: AnswerView }) {
+function AnswerActions({
+  message,
+  view,
+  showSources,
+}: {
+  message: ChatMessage;
+  view: AnswerView;
+  showSources: (evidence: Evidence[]) => void;
+}) {
   const [copied, setCopied] = useState(false);
   const [rating, setRating] = useState<1 | -1>();
   const [busy, setBusy] = useState(false);
@@ -91,9 +102,6 @@ function AnswerActions({ message, view }: { message: ChatMessage; view: AnswerVi
   const [negative, setNegative] = useState(false);
   const [reason, setReason] = useState('incorrect');
   const evidence = citedEvidence(view);
-  const agencies = [
-    ...new Map(evidence.map((e) => [new URL(e.canonicalUrl).hostname, e])).values(),
-  ];
   const { searchId, feedbackToken } = message.metadata ?? {};
   async function vote(value: 1 | -1) {
     if (!searchId || !feedbackToken) return;
@@ -139,52 +147,47 @@ function AnswerActions({ message, view }: { message: ChatMessage; view: AnswerVi
     <>
       <div className="chat-actions chat-enter">
         {evidence.length > 0 && (
-          <SourcePopover className="chat-sources-pill" evidence={evidence}>
-            <span className="agency-stack">
-              {agencies.slice(0, 3).map((source) => (
-                <AgencyBadge
-                  key={new URL(source.canonicalUrl).hostname}
-                  name={source.organization}
-                  url={source.canonicalUrl}
-                />
-              ))}
-            </span>
-            Fuentes
-          </SourcePopover>
-        )}
-        {feedbackToken && (
-          <div className="chat-votes">
-            <button
-              className="chat-icon"
-              disabled={busy}
-              aria-label="Respuesta útil"
-              aria-pressed={rating === 1}
-              onClick={() => void vote(1)}
-            >
-              <Icon name="util" size={16} />
-            </button>
-            <button
-              className="chat-icon"
-              disabled={busy}
-              aria-label="Respuesta no útil"
-              aria-pressed={rating === -1}
-              onClick={() => setNegative(!negative)}
-            >
-              <Icon name="noUtil" size={16} />
-            </button>
-          </div>
-        )}
-        <button
-          className="chat-icon chat-copy"
-          onClick={() => void copy()}
-          aria-label={copied ? 'Copiado' : 'Copiar respuesta'}
-        >
-          <IconSwap
-            active={copied ? 'b' : 'a'}
-            a={<Icon name="copiar" size={16} />}
-            b={<Icon name="hecho" size={16} />}
+          <SourcesButton
+            organization={evidence[0]!.organization}
+            count={new Set(evidence.map((e) => e.documentId)).size}
+            onOpen={() => showSources(evidence)}
           />
-        </button>
+        )}
+        <div className="chat-action-icons">
+          {feedbackToken && (
+            <>
+              <button
+                className="chat-icon"
+                disabled={busy}
+                aria-label="Respuesta útil"
+                aria-pressed={rating === 1}
+                onClick={() => void vote(1)}
+              >
+                <Icon name="util" size={20} />
+              </button>
+              <button
+                className="chat-icon"
+                disabled={busy}
+                aria-label="Respuesta no útil"
+                aria-pressed={rating === -1}
+                onClick={() => setNegative(!negative)}
+              >
+                <Icon name="noUtil" size={20} />
+              </button>
+            </>
+          )}
+          <button
+            className="chat-icon"
+            onClick={() => void copy()}
+            aria-label={copied ? 'Copiado' : 'Copiar respuesta'}
+          >
+            <IconSwap
+              active={copied ? 'b' : 'a'}
+              a={<Icon name="copiar" size={20} />}
+              b={<Icon name="hecho" size={20} />}
+            />
+          </button>
+        </div>
       </div>
       {negative && (
         <form
@@ -235,6 +238,9 @@ export default function Chat({
   const [stage, setStage] = useState<Stage>('understandQuery');
   const [stopped, setStopped] = useState<ReadonlySet<string>>(new Set());
   const [showJump, setShowJump] = useState(false);
+  const [sourceView, setSourceView] = useState<SourceView | null>(null);
+  const showSources = (evidence: Evidence[], selected?: Evidence) =>
+    setSourceView({ evidence, ...(selected ? { selected } : {}) });
   const [attachment, setAttachment] = useState<PdfContext>();
   const [attachmentBusy, setAttachmentBusy] = useState(false);
   const [attachmentError, setAttachmentError] = useState('');
@@ -404,9 +410,12 @@ export default function Chat({
           const question = textOf(user);
           // A reply that ends without its final metadata was cut off on the way.
           const interrupted = !pending && !failed && !halted && !meta?.status;
+          const cited = citedEvidence(view);
+          const documents = new Set(cited.map((e) => e.documentId)).size;
           return (
             <section className="chat-turn" key={user.id} aria-label={`Pregunta ${turnIndex + 1}`}>
-              <UserMessage
+              <Question
+                level={turnIndex === 0 ? 1 : 2}
                 attachment={
                   user.metadata?.attachment && (
                     <>
@@ -414,21 +423,30 @@ export default function Chat({
                     </>
                   )
                 }
-                note={
-                  view.hidden.length > 0 && (
+                details={
+                  (view.hidden.length > 0 || documents > 0) && (
                     <>
-                      <Icon name="protegido" size={14} />
-                      {view.hidden.length === 1
-                        ? '1 dato personal ocultado al modelo'
-                        : `${view.hidden.length} datos personales ocultados al modelo`}
+                      {view.hidden.length > 0 && (
+                        <QuestionDetail icon={<Icon name="candado" size={16} />}>
+                          {view.hidden.length === 1
+                            ? '1 dato personal ocultado al modelo'
+                            : `${view.hidden.length} datos personales ocultados al modelo`}
+                        </QuestionDetail>
+                      )}
+                      {documents > 0 && (
+                        <QuestionDetail icon={<Icon name="protegido" size={16} />}>
+                          Respuesta verificada con {documents}{' '}
+                          {documents === 1 ? 'fuente oficial' : 'fuentes oficiales'}
+                        </QuestionDetail>
+                      )}
                     </>
                   )
                 }
               >
                 <ProtectedQuestion text={question} ranges={view.hidden} id={user.id} />
-              </UserMessage>
+              </Question>
               <div className="chat-assistant">
-                <AnswerBlocks view={view} />
+                <AnswerBlocks view={view} onCite={(selected) => showSources(cited, selected)} />
                 {pending && (
                   <Thinking
                     label={assistant ? 'Pensando…' : 'Preparando todo…'}
@@ -460,9 +478,13 @@ export default function Chat({
                             </Button>
                           )}
                           {view.evidence.length > 0 && (
-                            <SourcePopover className="boton-claro" evidence={view.evidence}>
+                            <Button
+                              variant="secondary"
+                              aria-haspopup="dialog"
+                              onClick={() => showSources(view.evidence)}
+                            >
                               Ver lo consultado ({view.evidence.length})
-                            </SourcePopover>
+                            </Button>
                           )}
                         </>
                       )
@@ -522,14 +544,16 @@ export default function Chat({
                     )}
                   </Notice>
                 )}
-                {assistant && !pending && <AnswerActions message={assistant} view={view} />}
+                {assistant && !pending && (
+                  <AnswerActions message={assistant} view={view} showSources={showSources} />
+                )}
                 {last && !pending && meta?.status === 'answered' && (
                   <Suggestions>
                     {['¿Qué documentación necesito?', '¿Dónde lo puedo tramitar?'].map((q, i) => (
                       <Suggestion
                         key={q}
                         index={i}
-                        icon={<Icon name="derecha" size={17} />}
+                        icon={<Icon name="arrowUp" size={14} />}
                         onSelect={send}
                       >
                         {q}
@@ -585,13 +609,20 @@ export default function Chat({
             }
           }}
         >
+          <AttachmentPicker
+            busy={attachmentBusy}
+            disabled={loading}
+            onBusy={setAttachmentBusy}
+            onAttachment={setAttachment}
+            onError={setAttachmentError}
+          />
           <label htmlFor="chat-input" className="sr-only">
             Pregunta sobre trámites, ayudas o impuestos
           </label>
           <textarea
             id="chat-input"
             ref={inputRef}
-            rows={2}
+            rows={1}
             value={input}
             maxLength={1200}
             placeholder="Pregunta aquí"
@@ -608,41 +639,20 @@ export default function Chat({
               }
             }}
           />
-          <div className="composer-controls">
-            <div className="composer-tools">
-              <AttachmentPicker
-                busy={attachmentBusy}
-                disabled={loading}
-                onBusy={setAttachmentBusy}
-                onAttachment={setAttachment}
-                onError={setAttachmentError}
-              />
-              <button
-                className="chat-icon"
-                type="button"
-                aria-label="Mapa de fuentes"
-                aria-haspopup="dialog"
-                aria-controls="chat-coverage-dialog"
-                onClick={() => openCoverage()}
-              >
-                <Icon name="fuentes" size={20} />
-              </button>
-            </div>
-            {/* One button for both states so the control never jumps; the glyphs crossfade. */}
-            <button
-              className="chat-send"
-              type={loading ? 'button' : 'submit'}
-              onClick={loading ? halt : undefined}
-              disabled={!loading && (input.trim().length < 4 || attachmentBusy)}
-              aria-label={loading ? 'Detener respuesta' : 'Enviar pregunta'}
-            >
-              <IconSwap
-                active={loading ? 'b' : 'a'}
-                a={<Icon name="enviar" size={20} />}
-                b={<Icon name="detener" size={13} />}
-              />
-            </button>
-          </div>
+          {/* One button for both states so the control never jumps; the glyphs crossfade. */}
+          <button
+            className="chat-send"
+            type={loading ? 'button' : 'submit'}
+            onClick={loading ? halt : undefined}
+            disabled={!loading && (input.trim().length < 4 || attachmentBusy)}
+            aria-label={loading ? 'Detener respuesta' : 'Enviar pregunta'}
+          >
+            <IconSwap
+              active={loading ? 'b' : 'a'}
+              a={<Icon name="arrowUp" size={18} />}
+              b={<Icon name="detener" size={16} />}
+            />
+          </button>
         </form>
         {footer}
         <span className="sr-only">
@@ -673,6 +683,11 @@ export default function Chat({
           )}
         </div>
       </dialog>
+      <Sources
+        view={sourceView}
+        onClose={() => setSourceView(null)}
+        onSelect={(selected) => setSourceView((v) => (v ? { ...v, selected } : null))}
+      />
     </div>
   );
 }

@@ -12,39 +12,38 @@
 .buscador .chat-turn {
   scroll-margin-top: 100px;
 }
-/* 28px visible so lines stay together; the ::after layer extends the tap area to 44px. */
-.buscador .chat-inline-citation {
-  position: relative;
-  min-height: 28px;
-  font-size: 14px !important;
-}
-.buscador .chat-inline-citation::after {
-  content: '';
-  position: absolute;
-  inset: -8px -2px;
-}
 .buscador .chat-composer-dock {
   width: min(760px, calc(100% - 2 * var(--margen)));
 }
+/* One row: attach, question and send, as in Paper (Chat · C3). */
 .buscador .chat-composer {
-  padding: var(--e-20) var(--e-16) var(--e-12) var(--e-24);
+  align-items: center;
+  min-height: 68px;
+  padding: var(--e-8) 10px var(--e-8) var(--e-12);
   border: 1px solid var(--linea);
-  border-radius: var(--r-28);
-  box-shadow: var(--sombra-flota);
+  border-radius: var(--r-pildora);
+  box-shadow: var(--sombra-suave);
+}
+.buscador .chat-composer .chat-icon {
+  color: var(--tinta-3);
+}
+.buscador .chat-composer textarea {
+  font-size: 17px;
 }
 .buscador .chat-composer:focus-within {
   border-color: var(--tinta);
-  box-shadow: var(--sombra-flota);
+  box-shadow: var(--sombra-suave);
 }
 .buscador .chat-send {
-  width: 52px;
-  height: 52px;
+  align-self: center;
+  width: 48px;
+  height: 48px;
   background: var(--tinta);
   color: var(--blanco);
 }
 .buscador .chat-send:disabled {
   background: var(--apagado);
-  color: var(--apagado-texto);
+  color: var(--tinta-2);
 }
 .buscador .chat-send:not(:disabled):hover {
   background: var(--atardecer-boton);
@@ -57,6 +56,30 @@
   font-size: 14px;
   line-height: 1.5;
   text-align: center;
+}
+/* In a conversation the footer is a single line over the sunset glow; links stay on the start screen. */
+.buscador .chat-page:not(:has(.chat-empty)) .bs-pie nav {
+  display: none;
+}
+.buscador .chat-page:not(:has(.chat-empty)) .chat-composer-dock::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  height: 96px;
+  background: radial-gradient(
+    60% 100% at 50% 100%,
+    rgb(255 122 26 / 0.34),
+    rgb(255 190 11 / 0.12) 55%,
+    transparent 85%
+  );
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.buscador .chat-page:not(:has(.chat-empty)) .chat-composer-dock::after {
+  z-index: -2;
 }
 .bs-pie nav {
   display: flex;
